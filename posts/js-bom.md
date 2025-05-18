@@ -308,3 +308,74 @@ JavaScript 是一种解释型语言，也就是说，它不需要编译，由解
 逐行解释将字节码转为机器码，是很低效的。为了提高运行速度，现代浏览器改为采用“即时编译”（Just In Time compiler，缩写 JIT），即字节码只在运行时编译，用到哪一行就编译哪一行，并且把编译结果缓存（inline cache）。通常，一个程序被经常用到的，只是其中一小部分代码，有了缓存的编译结果，整个程序的运行速度就会显著提升。
 
 字节码不能直接运行，而是运行在一个虚拟机（Virtual Machine）之上，一般也把虚拟机称为 JavaScript 引擎。并非所有的 JavaScript 虚拟机运行时都有字节码，有的 JavaScript 虚拟机基于源码，即只要有可能，就通过 JIT（just in time）编译器直接把源码编译成机器码运行，省略字节码步骤。这一点与其他采用虚拟机（比如 Java）的语言不尽相同。这样做的目的，是为了尽可能地优化代码、提高性能。下面是目前最常见的一些 JavaScript 虚拟机：
+
+## window 对象
+
+### window.closed
+
+这个属性一般用来检查，使用脚本打开的新窗口是否关闭。
+
+```js
+var popup = window.open();
+
+if ((popup !== null) && !popup.closed) {
+  // 窗口仍然打开着
+}
+```
+
+### window.opener
+
+`window.opener`属性表示打开当前窗口的父窗口。如果当前窗口没有父窗口（即直接在地址栏输入打开），则返回`null`。
+
+```js
+window.open().opener === window // true
+```
+
+```js
+var newWin = window.open('example.html', 'newWindow', 'height=400,width=400');
+newWin.opener = null;
+```
+
+上面代码中，子窗口的`opener`属性设为`null`，两个窗口之间就没办法再联系了。
+
+通过`opener`属性，可以获得父窗口的全局属性和方法，但只限于两个窗口同源的情况，且其中一个窗口由另一个打开。`<a>`元素添加`rel="noopener"`属性，可以防止新打开的窗口获取父窗口，减轻被恶意网站修改父窗口 URL 的风险。
+
+### 位置大小属性
+
+#### **（1）window.screenX，window.screenY**
+
+`window.screenX`和`window.screenY`属性，返回浏览器窗口左上角相对于当前屏幕左上角的水平距离和垂直距离（单位像素）。这两个属性只读。
+
+#### **（2） window.innerHeight，window.innerWidth**
+
+`window.innerHeight`和`window.innerWidth`属性，返回网页在当前窗口中可见部分的高度和宽度，即“视口”（viewport）的大小（单位像素）。这两个属性只读。
+
+用户放大网页的时候（比如将网页从100%的大小放大为200%），这两个属性会变小。因为这时网页的像素大小不变（比如宽度还是960像素），只是每个像素占据的屏幕空间变大了，因此可见部分（视口）就变小了。
+
+注意，这两个属性值包括滚动条的高度和宽度。
+
+#### **（3）window.outerHeight，window.outerWidth**
+
+`window.outerHeight`和`window.outerWidth`属性返回浏览器窗口的高度和宽度，包括浏览器菜单和边框（单位像素）。这两个属性只读。
+
+#### **（4）window.scrollX，window.scrollY**
+
+`window.scrollX`属性返回页面的水平滚动距离，`window.scrollY`属性返回页面的垂直滚动距离，单位都为像素。这两个属性只读。
+
+注意，这两个属性的返回值不是整数，而是双精度浮点数。如果页面没有滚动，它们的值就是`0`。
+
+举例来说，如果用户向下拉动了垂直滚动条75像素，那么`window.scrollY`就是75左右。用户水平向右拉动水平滚动条200像素，`window.scrollX`就是200左右。
+
+```js
+if (window.scrollY < 75) {
+  window.scroll(0, 75);
+}
+```
+
+上面代码中，如果页面向下滚动的距离小于75像素，那么页面向下滚动75像素。
+
+#### **（5）window.pageXOffset，window.pageYOffset**
+
+`window.pageXOffset`属性和`window.pageYOffset`属性，是`window.scrollX`和`window.scrollY`别名。
+
+### 组件属性

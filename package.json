@@ -18,7 +18,8 @@
     "globby": "^14.1.0",
     "gray-matter": "^4.0.3",
     "vitepress": "^1.6.3",
-    "vitepress-plugin-nprogress": "^0.0.4"
+    "vitepress-plugin-nprogress": "^0.0.4",
+    "vitepress-plugin-pagefind": "^0.4.13"
   },
   "dependencies": {
     "medium-zoom": "^1.1.0",
