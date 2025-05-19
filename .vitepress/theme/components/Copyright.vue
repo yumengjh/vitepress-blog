@@ -15,7 +15,7 @@ const route = useRoute()
 const website = theme.value.website.copyrightLink
 const webTitle = site.value.title
 
-const isHome = computed(() => route.path === '/')
+const isHome = computed(() => route.path === '/' || route.path.startsWith('/page'))
 </script>
 
 <style>

@@ -4013,3 +4013,112 @@ ready('.foo', function(element){
   // ...
 });
 ```
+
+## 网页元素接口
+
+### `<a>`元素接口
+
+#### accessKey 属性
+
+`accessKey`属性用来读写`<a>`元素的快捷键。
+
+```js
+// HTML 代码如下
+// <a id="test" href="http://example.com">test</a>
+var a = document.getElementById('test');
+a.accessKey = 'k';
+```
+
+上面代码设置`<a>`元素的快捷键为`k`，以后只要按下这个快捷键，浏览器就会跳转到`example.com`。
+
+注意，不同的浏览器在不同的操作系统下，唤起快捷键的功能键组合是[不一样](https://developer.mozilla.org/en-US/docs/Web/HTML/Global_attributes/accesskey)的。比如，Chrome 浏览器在 Linux 系统下，需要按下`Alt + k`，才会跳转到`example.com`。
+
+#### download 属性
+
+`download`属性表示当前链接不是用来浏览，而是用来下载的。它的值是一个字符串，表示用户下载得到的文件名。
+
+```js
+// HTML 代码如下
+// <a id="test" href="foo.jpg">下载</a>
+var a = document.getElementById('test');
+a.download = 'bar.jpg';
+```
+
+上面代码中，`<a>`元素是一个图片链接，默认情况下，点击后图片会在当前窗口加载。设置了`download`属性以后，再点击这个链接，就会下载对话框，询问用户保存位置，而且下载的文件名为`bar.jpg`。
+
+### `<img>` 元素
+
+浏览器提供一个原生构造函数`Image`，用于生成`HTMLImageElement`实例。
+
+```js
+var img = new Image();
+img instanceof Image // true
+img instanceof HTMLImageElement // true
+```
+
+`Image`构造函数可以接受两个整数作为参数，分别表示`<img>`元素的宽度和高度。
+
+```js
+// 语法
+Image(width, height)
+
+// 用法
+var myImage = new Image(100, 200);
+```
+
+`<img>`实例的src属性可以定义图像的网址。
+
+```js
+var img = new Image();
+img.src = 'picture.jpg';
+```
+
+新生成的`<img>`实例并不属于文档的一部分。如果想让它显示在文档中，必须手动插入文档。
+
+```js
+var img = new Image();
+img.src = 'image1.png';
+document.body.appendChild(img);
+```
+
+#### 属性
+
+**（1）HTMLImageElement.src**
+
+`HTMLImageElement.src`属性返回图像的完整网址。
+
+**（2）HTMLImageElement.currentSrc**
+
+`HTMLImageElement.currentSrc`属性返回当前正在展示的图像的网址。JavaScript 和 CSS 的 mediaQuery 都可能改变正在展示的图像。
+
+### `<form>` 元素
+
+#### 实例属性
+
+- `elements`：返回一个类似数组的对象，成员是属于该表单的所有控件元素。该属性只读。
+- `length`：返回一个整数，表示属于该表单的控件数量。该属性只读。
+- `name`：字符串，表示该表单的名称。
+- `method`：字符串，表示提交给服务器时所使用的 HTTP 方法。
+- `target`：字符串，表示表单提交后，服务器返回的数据的展示位置。
+- `action`：字符串，表示表单提交数据的 URL。
+- `enctype`（或`encoding`）：字符串，表示表单提交数据的编码方法，可能的值有`application/x-www-form-urlencoded`、`multipart/form-data`和`text/plain`。
+- `acceptCharset`：字符串，表示服务器所能接受的字符编码，多个编码格式之间使用逗号或空格分隔。
+- `autocomplete`：字符串`on`或`off`，表示浏览器是否要对`<input>`控件提供自动补全。
+- `noValidate`：布尔值，表示是否关闭表单的自动校验。
+
+#### 实例方法
+
+- `submit()`：提交表单，但是不会触发`submit`事件和表单的自动校验。
+- `reset()`：重置表单控件的值为默认值。
+- `checkValidity()`：如果控件能够通过自动校验，返回`true`，否则返回`false`，同时触发`invalid`事件。
+
+下面是一个创建表单并提交的例子。
+
+```js
+var f = document.createElement('form');
+document.body.appendChild(f);
+f.action = '/cgi-bin/some.cgi';
+f.method = 'POST';
+f.submit();
+```
+
