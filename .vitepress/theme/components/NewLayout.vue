@@ -2,7 +2,7 @@
     <Layout>
         <template #nav-bar-content-after>
             <!-- 导航栏内容后 -->
-             <CustomNavbar />
+             <!-- <CustomNavbar /> -->
         </template>
         <template #doc-before>
             <!-- 文档内容前 - 文章日期、标签和更新时间 -->
@@ -47,7 +47,7 @@
 <script setup>
 import DefaultTheme from 'vitepress/theme'
 import Copyright from './Copyright.vue'
-import CustomNavbar from './CustomNavbar.vue'
+// import CustomNavbar from './CustomNavbar.vue'
 // import NotFound from './notfound.vue'
 // import Giscus from './giscus.vue'
 import { withBase, useData } from "vitepress"

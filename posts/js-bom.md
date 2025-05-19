@@ -2619,8 +2619,2201 @@ decodeURIComponent('%E6%98%A5%E8%8A%82')
 
 ## URL 对象
 
+浏览器原生提供`URL()`接口，它是一个构造函数，用来构造、解析和编码 URL。一般情况下，通过`window.URL`可以拿到这个构造函数。
 
+### 构造函数
 
+`URL()`作为构造函数，可以生成 URL 实例。它接受一个表示 URL 的字符串作为参数。如果参数不是合法的 URL，会报错。
 
+```js
+var url = new URL('http://www.example.com/index.html');
+url.href
+// "http://www.example.com/index.html"
+```
+
+除了字符串，`URL()`的参数也可以是另一个 URL 实例。这时，`URL()`会自动读取该实例的`href`属性，作为实际参数。
+
+如果 URL 字符串是一个相对路径，那么需要表示绝对路径的第二个参数，作为计算基准。
+
+```js
+var url1 = new URL('index.html', 'http://example.com');
+url1.href
+// "http://example.com/index.html"
+
+var url2 = new URL('page2.html', 'http://example.com/page1.html');
+url2.href
+// "http://example.com/page2.html"
+
+var url3 = new URL('..', 'http://example.com/a/b.html')
+url3.href
+// "http://example.com/"
+```
+
+第一个参数是`..`，表示上层路径。
+
+### 实例属性
+
+URL 实例的属性与`Location`对象的属性基本一致，返回当前 URL 的信息。
+
+- URL.href：返回整个 URL
+- URL.protocol：返回协议，以冒号`:`结尾
+- URL.hostname：返回域名
+- URL.host：返回域名与端口，包含`:`号，默认的80和443端口会省略
+- URL.port：返回端口
+- URL.origin：返回协议、域名和端口
+- URL.pathname：返回路径，以斜杠`/`开头
+- URL.search：返回查询字符串，以问号`?`开头
+- URL.searchParams：返回一个`URLSearchParams`实例，该属性是`Location`对象没有的
+- URL.hash：返回片段识别符，以井号`#`开头
+- URL.password：返回域名前面的密码
+- URL.username：返回域名前面的用户名
+
+这些属性里面，只有`origin`属性是只读的，其他属性都可写，并且会立即生效。
+
+### 静态方法
+
+**（1）URL.createObjectURL()**
+
+`URL.createObjectURL()`方法用来为上传/下载的文件、流媒体文件生成一个 URL 字符串。这个字符串代表了`File`对象或`Blob`对象的 URL。
+
+**（2）URL.revokeObjectURL()**
+
+`URL.revokeObjectURL()`方法用来释放`URL.createObjectURL()`方法生成的 URL 实例。它的参数就是`URL.createObjectURL()`方法返回的 URL 字符串。
 
 ## URLSearchParams 对象
+
+### 概述 
+
+`URLSearchParams`对象是浏览器的原生对象，用来构造、解析和处理 URL 的查询字符串（即 URL 问号后面的部分）。
+
+它本身也是一个构造函数，可以生成实例。参数可以为查询字符串，起首的问号`?`有没有都行，也可以是对应查询字符串的数组或对象。
+
+```js
+// 方法一：传入字符串
+var params = new URLSearchParams('?foo=1&bar=2');
+// 等同于
+var params = new URLSearchParams(document.location.search);
+
+// 方法二：传入数组
+var params = new URLSearchParams([['foo', 1], ['bar', 2]]);
+
+// 方法三：传入对象
+var params = new URLSearchParams({'foo' : 1 , 'bar' : 2});
+```
+
+`URLSearchParams`会对查询字符串自动编码。
+
+```js
+var params = new URLSearchParams({'foo': '你好'});
+params.toString() // "foo=%E4%BD%A0%E5%A5%BD"
+```
+
+浏览器向服务器发送表单数据时，可以直接使用`URLSearchParams`实例作为表单数据。
+
+```js
+const params = new URLSearchParams({foo: 1, bar: 2});
+fetch('https://example.com/api', {
+  method: 'POST',
+  body: params
+}).then(...)
+```
+
+`URLSearchParams`可以与`URL()`接口结合使用。
+
+```js
+var url = new URL(window.location);
+var foo = url.searchParams.get('foo') || 'somedefault';
+```
+
+URL 实例的`searchParams`属性就是一个`URLSearchParams`实例，所以可以使用`URLSearchParams`接口的`get`方法。
+
+```js
+new URLSearchParams(document.location.search).get('enc')
+```
+
+### URLSearchParams.toString()
+
+`toString`方法返回实例的字符串形式。
+
+### URLSearchParams.append()
+
+`append()`方法用来追加一个查询参数。它接受两个参数，第一个为键名，第二个为键值，没有返回值。
+
+`append()`方法不会识别是否键名已经存在。
+
+```js
+var params = new URLSearchParams({'foo': 1 , 'bar': 2});
+params.append('foo', 3);
+params.toString() // "foo=1&bar=2&foo=3"
+```
+
+### URLSearchParams.delete()
+
+`delete()`方法用来删除指定的查询参数。它接受键名作为参数。
+
+```js
+params.delete('bar');
+```
+
+### URLSearchParams.has()
+
+`has()`方法返回一个布尔值，表示查询字符串是否包含指定的键名。
+
+```js
+params.has('bar') // true
+```
+
+### URLSearchParams.set()
+
+`set()`方法用来设置查询字符串的键值。
+
+它接受两个参数，第一个是键名，第二个是键值。如果是已经存在的键，键值会被改写，否则会被追加。
+
+```js
+var params = new URLSearchParams('?foo=1');
+params.set('foo', 2);
+params.toString() // "foo=2"
+params.set('bar', 3);
+params.toString() // "foo=2&bar=3"
+```
+
+如果有多个的同名键，`set`会移除现存所有的键。
+
+```js
+var params = new URLSearchParams('?foo=1&foo=2');
+params.set('foo', 3);
+params.toString() // "foo=3"
+```
+
+### URLSearchParams.get()
+
+`get()`方法用来读取查询字符串里面的指定键。它接受键名作为参数。
+
+```js
+params.get('foo')
+```
+
+如果有多个的同名键，`get`返回位置最前面的那个键值。
+
+### URLSearchParams.getAll()
+
+`getAll()`方法返回一个数组，成员是指定键的所有键值。它接受键名作为参数。
+
+### URLSearchParams.sort()
+
+`sort()`方法对查询字符串里面的键进行排序，规则是按照 Unicode 码点从小到大排列。
+
+### URLSearchParams.keys()
+
+### URLSearchParams.values()
+
+### URLSearchParams.entries()
+
+这三个方法都返回一个遍历器对象，供`for...of`循环遍历。它们的区别在于，`keys`方法返回的是键名的遍历器，`values`方法返回的是键值的遍历器，`entries`返回的是键值对的遍历器。
+
+```js
+var params = new URLSearchParams('a=1&b=2');
+
+for(var p of params.keys()) {
+  console.log(p);
+}
+// a
+// b
+
+for(var p of params.values()) {
+  console.log(p);
+}
+// 1
+// 2
+
+for(var p of params.entries()) {
+  console.log(p);
+}
+// ["a", "1"]
+// ["b", "2"]
+```
+
+如果直接对`URLSearchParams`进行遍历，其实内部调用的就是`entries`接口。
+
+```js
+for (var p of params) {}
+// 等同于
+for (var p of params.entries()) {}
+```
+
+## ArrayBuffer 对象
+
+ArrayBuffer 对象表示一段二进制数据，用来模拟内存里面的数据。通过这个对象，JavaScript 可以读写二进制数据。这个对象可以看作内存数据的表达。
+
+浏览器原生提供`ArrayBuffer()`构造函数，用来生成实例。它接受一个整数作为参数，表示这段二进制数据占用多少个字节。
+
+```js
+var buffer = new ArrayBuffer(8);
+```
+
+上面代码中，实例对象`buffer`占用8个字节。
+
+ArrayBuffer 对象有实例属性`byteLength`，表示当前实例占用的内存长度（单位字节）。
+
+ArrayBuffer 对象有实例方法`slice()`，用来复制一部分内存。它接受两个整数参数，分别表示复制的开始位置（从0开始）和结束位置（复制时不包括结束位置），如果省略第二个参数，则表示一直复制到结束。
+
+## Blob 对象
+
+### 简介
+
+Blob 对象表示一个二进制文件的数据内容，比如一个图片文件的内容就可以通过 Blob 对象读写。
+
+它通常用来读写文件，它的名字是 Binary Large Object （二进制大型对象）的缩写。它与 ArrayBuffer 的区别在于，它用于操作二进制文件，而 ArrayBuffer 用于操作内存。
+
+浏览器原生提供`Blob()`构造函数，用来生成实例对象。
+
+```js
+new Blob(array [, options])
+```
+
+`Blob`构造函数接受两个参数。
+
+第一个参数是数组，成员是字符串或二进制对象，表示新生成的`Blob`实例对象的内容；
+
+第二个参数是可选的，是一个配置对象，目前只有一个属性`type`，它的值是一个字符串，表示数据的 MIME 类型，默认是空字符串。
+
+```js
+var htmlFragment = ['<a id="a"><b id="b">hey!</b></a>'];
+var myBlob = new Blob(htmlFragment, {type : 'text/html'});
+
+var obj = { hello: 'world' };
+var blob = new Blob([ JSON.stringify(obj) ], {type : 'application/json'});
+```
+
+### 实例属性
+
+`Blob`具有两个实例属性`size`和`type`，分别返回数据的大小和类型。
+
+```js
+myBlob.size // 32
+myBlob.type // "text/html"
+```
+
+### 实例方法
+
+`Blob`具有一个实例方法`slice`，用来拷贝原来的数据，返回的也是一个`Blob`实例。
+
+```js
+myBlob.slice(start, end, contentType)
+```
+
+`slice`方法有三个参数，都是可选的。它们依次是起始的字节位置（默认为0）、结束的字节位置（默认为`size`属性的值，该位置本身将不包含在拷贝的数据之中）、新实例的数据类型（默认为空字符串）。
+
+### 获取文件信息
+
+文件选择器`<input type="file">`用来让用户选取文件。
+
+出于安全考虑，浏览器不允许脚本自行设置这个控件的`value`属性，即文件必须是用户手动选取的，不能是脚本指定的。一旦用户选好了文件，脚本就可以读取这个文件。
+
+文件选择器返回一个 FileList 对象，该对象是一个类似数组的成员，每个成员都是一个 File 实例对象。File 实例对象是一个特殊的 Blob 实例，增加了`name`和`lastModifiedDate`属性。
+
+```js
+// HTML 代码如下
+// <input type="file" accept="image/*" multiple onchange="fileinfo(this.files)"/>
+
+function fileinfo(files) {
+  for (var i = 0; i < files.length; i++) {
+    var f = files[i];
+    console.log(
+      f.name, // 文件名，不含路径
+      f.size, // 文件大小，Blob 实例属性
+      f.type, // 文件类型，Blob 实例属性
+      f.lastModifiedDate // 文件的最后修改时间
+    );
+  }
+}
+```
+
+### 下载文件
+
+AJAX 请求时，如果指定`responseType`属性为`blob`，下载下来的就是一个 Blob 对象。
+
+```js
+function getBlob(url, callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', url);
+  xhr.responseType = 'blob';
+  xhr.onload = function () {
+    callback(xhr.response);
+  }
+  xhr.send(null);
+}
+```
+
+### 生成 URL
+
+浏览器允许使用`URL.createObjectURL()`方法，针对 Blob 对象生成一个临时 URL，以便于某些 API 使用。
+
+这个 URL 以`blob://`开头，表明对应一个 Blob 对象，协议头后面是一个识别符，用来唯一对应内存里面的 Blob 对象。
+
+这一点与`data://URL`（URL 包含实际数据）和`file://URL`（本地文件系统里面的文件）都不一样。
+
+```js
+var droptarget = document.getElementById('droptarget');
+
+droptarget.ondrop = function (e) {
+  var files = e.dataTransfer.files;
+  for (var i = 0; i < files.length; i++) {
+    var type = files[i].type;
+    if (type.substring(0,6) !== 'image/')
+      continue;
+    var img = document.createElement('img');
+    img.src = URL.createObjectURL(files[i]);
+    img.onload = function () {
+      this.width = 100;
+      document.body.appendChild(this);
+      URL.revokeObjectURL(this.src);
+    }
+  }
+}
+```
+
+上面代码通过为拖放的图片文件生成一个 URL，产生它们的缩略图，从而使得用户可以预览选择的文件。
+
+浏览器处理 Blob URL 就跟普通的 URL 一样，如果 Blob 对象不存在，返回404状态码；如果跨域请求，返回403状态码。Blob URL 只对 GET 请求有效，如果请求成功，返回200状态码。由于 Blob URL 就是普通 URL，因此可以下载。
+
+### 读取文件
+
+取得 Blob 对象以后，可以通过`FileReader`对象，读取 Blob 对象的内容，即文件内容。
+
+FileReader 对象提供四个方法，处理 Blob 对象。Blob 对象作为参数传入这些方法，然后以指定的格式返回。
+
+- `FileReader.readAsText()`：返回文本，需要指定文本编码，默认为 UTF-8。
+- `FileReader.readAsArrayBuffer()`：返回 ArrayBuffer 对象。
+- `FileReader.readAsDataURL()`：返回 Data URL。
+- `FileReader.readAsBinaryString()`：返回原始的二进制字符串。
+
+下面是`FileReader.readAsText()`方法的例子，用来读取文本文件。
+
+```js
+// HTML 代码如下
+// <input type="file" onchange="readfile(this.files[0])"></input>
+// <pre id="output"></pre>
+function readfile(f) {
+  var reader = new FileReader();
+  reader.readAsText(f);
+  reader.onload = function () {
+    var text = reader.result;
+    var out = document.getElementById('output');
+    out.innerHTML = '';
+    out.appendChild(document.createTextNode(text));
+  }
+  reader.onerror = function(e) {
+    console.log('Error', e);
+  };
+}
+```
+
+上面代码中，通过指定 FileReader 实例对象的`onload`监听函数，在实例的`result`属性上拿到文件内容。
+
+下面是`FileReader.readAsArrayBuffer()`方法的例子，用于读取二进制文件。
+
+```js
+// HTML 代码如下
+// <input type="file" onchange="typefile(this.files[0])"></input>
+function typefile(file) {
+  // 文件开头的四个字节，生成一个 Blob 对象
+  var slice = file.slice(0, 4);
+  var reader = new FileReader();
+  // 读取这四个字节
+  reader.readAsArrayBuffer(slice);
+  reader.onload = function (e) {
+    var buffer = reader.result;
+    // 将这四个字节的内容，视作一个32位整数
+    var view = new DataView(buffer);
+    var magic = view.getUint32(0, false);
+    // 根据文件的前四个字节，判断它的类型
+    switch(magic) {
+      case 0x89504E47: file.verified_type = 'image/png'; break;
+      case 0x47494638: file.verified_type = 'image/gif'; break;
+      case 0x25504446: file.verified_type = 'application/pdf'; break;
+      case 0x504b0304: file.verified_type = 'application/zip'; break;
+    }
+    console.log(file.name, file.verified_type);
+  };
+}
+```
+
+## File 对象
+
+File 对象代表一个文件，用来读写文件信息。它继承了 Blob 对象，或者说是一种特殊的 Blob 对象，所有可以使用 Blob 对象的场合都可以使用它。
+
+最常见的使用场合是表单的文件上传控件（`<input type="file">`），用户选中文件以后，浏览器就会生成一个数组，里面是每一个用户选中的文件，它们都是 File 实例对象。
+
+```js
+// HTML 代码如下
+// <input id="fileItem" type="file">
+var file = document.getElementById('fileItem').files[0];
+file instanceof File // true
+```
+
+上面代码中，`file`是用户选中的第一个文件，它是 File 的实例。
+
+### 构造函数
+
+浏览器原生提供一个`File()`构造函数，用来生成 File 实例对象。
+
+```js
+new File(array, name [, options])
+```
+
+`File()`构造函数接受三个参数。
+
+- array：一个数组，成员可以是二进制对象或字符串，表示文件的内容。
+- name：字符串，表示文件名或文件路径。
+- options：配置对象，设置实例的属性。该参数可选。
+
+第三个参数配置对象，可以设置两个属性。
+
+- type：字符串，表示实例对象的 MIME 类型，默认值为空字符串。
+- lastModified：时间戳，表示上次修改的时间，默认为`Date.now()`。
+
+```js
+var file = new File(
+  ['foo'],
+  'foo.txt',
+  {
+    type: 'text/plain',
+  }
+);
+```
+
+### 实例属性
+
+File 对象有以下实例属性。
+
+- File.lastModified：最后修改时间
+- File.name：文件名或文件路径
+- File.size：文件大小（单位字节）
+- File.type：文件的 MIME 类型
+
+```js
+var myFile = new File([], 'file.bin', {
+  lastModified: new Date(2018, 1, 1),
+});
+myFile.lastModified // 1517414400000
+myFile.name // "file.bin"
+myFile.size // 0
+myFile.type // ""
+```
+
+### 实例方法
+
+File 对象没有自己的实例方法，由于继承了 Blob 对象，因此可以使用 Blob 的实例方法`slice()`。
+
+## FileList 对象
+
+`FileList`对象是一个类似数组的对象，代表一组选中的文件，每个成员都是一个 File 实例。它主要出现在两个场合。
+
+- 文件控件节点（`<input type="file">`）的`files`属性，返回一个 FileList 实例。
+- 拖拉一组文件时，目标区的`DataTransfer.files`属性，返回一个 FileList 实例。
+
+```js
+// HTML 代码如下
+// <input id="fileItem" type="file">
+var files = document.getElementById('fileItem').files;
+files instanceof FileList // true
+```
+
+上面代码中，文件控件的`files`属性是一个 FileList 实例。
+
+FileList 的实例属性主要是`length`，表示包含多少个文件。
+
+FileList 的实例方法主要是`item()`，用来返回指定位置的实例。
+
+它接受一个整数作为参数，表示位置的序号（从零开始）。但是，由于 FileList 的实例是一个类似数组的对象，可以直接用方括号运算符，即`myFileList[0]`等同于`myFileList.item(0)`，所以一般用不到`item()`方法。
+
+## FileReader 对象
+
+FileReader 对象用于读取 File 对象或 Blob 对象所包含的文件内容。
+
+浏览器原生提供一个`FileReader`构造函数，用来生成 FileReader 实例。
+
+```js
+var reader = new FileReader();
+```
+
+FileReader 有以下的实例属性。
+
+- FileReader.error：读取文件时产生的错误对象
+- FileReader.readyState：整数，表示读取文件时的当前状态。一共有三种可能的状态，`0`表示尚未加载任何数据，`1`表示数据正在加载，`2`表示加载完成。
+- FileReader.result：读取完成后的文件内容，有可能是字符串，也可能是一个 ArrayBuffer 实例。
+- FileReader.onabort：`abort`事件（用户终止读取操作）的监听函数。
+- FileReader.onerror：`error`事件（读取错误）的监听函数。
+- FileReader.onload：`load`事件（读取操作完成）的监听函数，通常在这个函数里面使用`result`属性，拿到文件内容。
+- FileReader.onloadstart：`loadstart`事件（读取操作开始）的监听函数。
+- FileReader.onloadend：`loadend`事件（读取操作结束）的监听函数。
+- FileReader.onprogress：`progress`事件（读取操作进行中）的监听函数。
+
+FileReader 有以下实例方法。
+
+- FileReader.abort()：终止读取操作，`readyState`属性将变成`2`。
+- FileReader.readAsArrayBuffer()：以 ArrayBuffer 的格式读取文件，读取完成后`result`属性将返回一个 ArrayBuffer 实例。
+- FileReader.readAsBinaryString()：读取完成后，`result`属性将返回原始的二进制字符串。
+- FileReader.readAsDataURL()：读取完成后，`result`属性将返回一个 Data URL 格式（Base64 编码）的字符串，代表文件内容。对于图片文件，这个字符串可以用于`<img>`元素的`src`属性。注意，这个字符串不能直接进行 Base64 解码，必须把前缀`data:*/*;base64,`从字符串里删除以后，再进行解码。
+- FileReader.readAsText()：读取完成后，`result`属性将返回文件内容的文本字符串。该方法的第一个参数是代表文件的 Blob 实例，第二个参数是可选的，表示文本编码，默认为 UTF-8。
+
+## FormData 对象
+
+### 概述
+
+表单数据以键值对的形式向服务器发送，这个过程是浏览器自动完成的。但是有时候，我们希望通过脚本完成这个过程，构造或编辑表单的键值对，然后通过脚本发送给服务器。浏览器原生提供了 FormData 对象来完成这项工作。
+
+`FormData()`首先是一个构造函数，用来生成表单的实例。
+
+```js
+var formdata = new FormData(form);
+```
+
+`FormData()`构造函数的参数是一个 DOM 的表单元素，构造函数会自动处理表单的键值对。这个参数是可选的，如果省略该参数，就表示一个空的表单。
+
+```html
+<form id="myForm" name="myForm">
+  <div>
+    <label for="username">用户名：</label>
+    <input type="text" id="username" name="username">
+  </div>
+  <div>
+    <label for="useracc">账号：</label>
+    <input type="text" id="useracc" name="useracc">
+  </div>
+  <div>
+    <label for="userfile">上传文件：</label>
+    <input type="file" id="userfile" name="userfile">
+  </div>
+<input type="submit" value="Submit!">
+</form>
+	<script type="text/javascript">
+				var myForm = document.getElementById('myForm');
+				var formData = new FormData(myForm);
+				
+				// 获取某个控件的值
+				formData.get('username') // ""
+				
+				// 设置某个控件的值
+				formData.set('username', '张三');
+				
+				formData.get('username') // "张三"
+			</script>
+```
+
+### 实例方法
+
+FormData 提供以下实例方法。
+
+- `FormData.get(key)`：获取指定键名对应的键值，参数为键名。如果有多个同名的键值对，则返回第一个键值对的键值。
+- `FormData.getAll(key)`：返回一个数组，表示指定键名对应的所有键值。如果有多个同名的键值对，数组会包含所有的键值。
+- `FormData.set(key, value)`：设置指定键名的键值，参数为键名。如果键名不存在，会添加这个键值对，否则会更新指定键名的键值。如果第二个参数是文件，还可以使用第三个参数，表示文件名。
+- `FormData.delete(key)`：删除一个键值对，参数为键名。
+- `FormData.append(key, value)`：添加一个键值对。如果键名重复，则会生成两个相同键名的键值对。如果第二个参数是文件，还可以使用第三个参数，表示文件名。
+- `FormData.has(key)`：返回一个布尔值，表示是否具有该键名的键值对。
+- `FormData.keys()`：返回一个遍历器对象，用于`for...of`循环遍历所有的键名。
+- `FormData.values()`：返回一个遍历器对象，用于`for...of`循环遍历所有的键值。
+- `FormData.entries()`：返回一个遍历器对象，用于`for...of`循环遍历所有的键值对。如果直接用`for...of`循环遍历 FormData 实例，默认就会调用这个方法。
+
+### 内置验证
+
+#### 自动校验
+
+表单提交的时候，浏览器允许开发者指定一些条件，它会自动验证各个表单控件的值是否符合条件。
+
+```js
+<!-- 必填 -->
+<input required>
+
+<!-- 必须符合正则表达式 -->
+<input pattern="banana|cherry">
+
+<!-- 字符串长度必须为6个字符 -->
+<input minlength="6" maxlength="6">
+
+<!-- 数值必须在1到10之间 -->
+<input type="number" min="1" max="10">
+
+<!-- 必须填入 Email 地址 -->
+<input type="email">
+
+<!-- 必须填入 URL -->
+<input type="URL">
+```
+
+如果一个控件通过验证，它就会匹配`:valid`的 CSS 伪类，浏览器会继续进行表单提交的流程。如果没有通过验证，该控件就会匹配`:invalid`的 CSS 伪类，浏览器会终止表单提交，并显示一个错误信息。
+
+```css
+input:invalid {
+  border-color: red;
+}
+input,
+input:valid {
+  border-color: #ccc;
+}
+```
+
+#### checkValidity()
+
+除了提交表单的时候，浏览器自动校验表单，还可以手动触发表单的校验。表单元素和表单控件都有`checkValidity()`方法，用于手动触发校验。
+
+```js
+// 触发整个表单的校验
+form.checkValidity()
+
+// 触发单个表单控件的校验
+formControl.checkValidity()
+```
+
+`checkValidity()`方法返回一个布尔值，`true`表示通过校验，`false`表示没有通过校验。
+
+#### willValidate 属性
+
+控件元素的`willValidate`属性是一个布尔值，表示该控件是否会在提交时进行校验。
+
+#### validationMessage 属性
+
+控件元素的`validationMessage`属性返回一个字符串，表示控件不满足校验条件时，浏览器显示的提示文本。以下两种情况，该属性返回空字符串。
+
+- 该控件不会在提交时自动校验
+- 该控件满足校验条件
+
+#### setCustomValidity()
+
+控件元素的`setCustomValidity()`方法用来定制校验失败时的报错信息。它接受一个字符串作为参数，该字符串就是定制的报错信息。如果参数为空字符串，则上次设置的报错信息被清除。
+
+#### validity 属性
+
+控件元素的属性`validity`属性返回一个`ValidityState`对象，包含当前校验状态的信息。
+
+该对象有以下属性，全部为只读属性。
+
+- `ValidityState.badInput`：布尔值，表示浏览器是否不能将用户的输入转换成正确的类型，比如用户在数值框里面输入字符串。
+- `ValidityState.customError`：布尔值，表示是否已经调用`setCustomValidity()`方法，将校验信息设置为一个非空字符串。
+- `ValidityState.patternMismatch`：布尔值，表示用户输入的值是否不满足模式的要求。
+- `ValidityState.rangeOverflow`：布尔值，表示用户输入的值是否大于最大范围。
+- `ValidityState.rangeUnderflow`：布尔值，表示用户输入的值是否小于最小范围。
+- `ValidityState.stepMismatch`：布尔值，表示用户输入的值不符合步长的设置（即不能被步长值整除）。
+- `ValidityState.tooLong`：布尔值，表示用户输入的字数超出了最长字数。
+- `ValidityState.tooShort`：布尔值，表示用户输入的字符少于最短字数。
+- `ValidityState.typeMismatch`：布尔值，表示用户填入的值不符合类型要求（主要是类型为 Email 或 URL 的情况）。
+- `ValidityState.valid`：布尔值，表示用户是否满足所有校验条件。
+- `ValidityState.valueMissing`：布尔值，表示用户没有填入必填的值。
+
+下面是一个例子。
+
+```js
+var input = document.getElementById('myinput');
+if (input.validity.valid) {
+  console.log('通过校验');
+} else {
+  console.log('校验失败');
+}
+```
+
+下面是另外一个例子。
+
+```js
+var txt = '';
+if (document.getElementById('myInput').validity.rangeOverflow) {
+  txt = '数值超过上限';
+}
+document.getElementById('prompt').innerHTML = txt;
+```
+
+如果想禁止浏览器弹出表单验证的报错信息，可以监听`invalid`事件。
+
+```js
+var input = document.getElementById('username');
+var form  = document.getElementById('form');
+
+var elem = document.createElement('div');
+elem.id  = 'notify';
+elem.style.display = 'none';
+form.appendChild(elem);
+
+input.addEventListener('invalid', function (event) {
+  event.preventDefault();
+  if (!event.target.validity.valid) {
+    elem.textContent   = '用户名必须是小写字母';
+    elem.className     = 'error';
+    elem.style.display = 'block';
+    input.className    = 'invalid animated shake';
+  }
+});
+
+input.addEventListener('input', function(event){
+  if ( 'block' === elem.style.display ) {
+    input.className = '';
+    elem.style.display = 'none';
+  }
+});
+```
+
+上面代码中，一旦发生`invalid`事件（表单验证失败），`event.preventDefault()`用来禁止浏览器弹出默认的验证失败提示，然后设置定制的报错提示框。
+
+#### novalidate 属性 
+
+表单元素的 HTML 属性`novalidate`，可以关闭浏览器的自动校验。
+
+```html
+<form novalidate>
+</form>
+```
+
+这个属性也可以在脚本里设置。
+
+```js
+form.noValidate = true;
+```
+
+### enctype 属性
+
+表单能够用四种编码，向服务器发送数据。编码格式由表单的`enctype`属性决定。
+
+**（1）GET 方法**
+
+如果表单使用`GET`方法发送数据，`enctype`属性无效。
+
+**（2）application/x-www-form-urlencoded**
+
+如果表单用`POST`方法发送数据，并省略`enctype`属性，那么数据以`application/x-www-form-urlencoded`格式发送（因为这是默认值）。
+
+```http
+Content-Type: application/x-www-form-urlencoded
+```
+
+**（3）text/plain**
+
+如果表单使用`POST`方法发送数据，`enctype`属性为`text/plain`，那么数据将以纯文本格式发送。
+
+```http
+Content-Type: text/plain
+```
+
+**（4）multipart/form-data**
+
+如果表单使用`POST`方法，`enctype`属性为`multipart/form-data`，那么数据将以混合的格式发送。
+
+这种格式也是文件上传的格式。
+
+### 文件上传
+
+用户上传文件，也是通过表单。具体来说，就是通过文件输入框选择本地文件，提交表单的时候，浏览器就会把这个文件发送到服务器。
+
+```html
+<input type="file" id="file" name="myFile">
+```
+
+此外，还需要将表单`<form>`元素的`method`属性设为`POST`，`enctype`属性设为`multipart/form-data`。
+
+其中，`enctype`属性决定了 HTTP 头信息的`Content-Type`字段的值，默认情况下这个字段的值是`application/x-www-form-urlencoded`，但是文件上传的时候要改成`multipart/form-data`。
+
+```html
+<form method="post" enctype="multipart/form-data">
+  <div>
+    <label for="file">选择一个文件</label>
+    <input type="file" id="file" name="myFile" multiple>
+  </div>
+  <div>
+    <input type="submit" id="submit" name="submit_button" value="上传" />
+  </div>
+</form>
+```
+
+上面的 HTML 代码中，file 控件的`multiple`属性，指定可以一次选择多个文件；如果没有这个属性，则一次只能选择一个文件。
+
+```js
+var fileSelect = document.getElementById('file');
+var files = fileSelect.files;
+```
+
+然后，新建一个 FormData 实例对象，模拟发送到服务器的表单数据，把选中的文件添加到这个对象上面。
+
+```js
+var formData = new FormData();
+
+for (var i = 0; i < files.length; i++) {
+  var file = files[i];
+
+  // 只上传图片文件
+  if (!file.type.match('image.*')) {
+    continue;
+  }
+
+  formData.append('photos[]', file, file.name);
+}
+```
+
+最后，使用 Ajax 向服务器上传文件。
+
+```js
+var xhr = new XMLHttpRequest();
+
+xhr.open('POST', 'handler.php', true);
+
+xhr.onload = function () {
+  if (xhr.status !== 200) {
+    console.log('An error occurred!');
+  }
+};
+
+xhr.send(formData);
+```
+
+除了发送 FormData 实例，也可以直接 AJAX 发送文件。
+
+```js
+var file = document.getElementById('test-input').files[0];
+var xhr = new XMLHttpRequest();
+
+xhr.open('POST', 'myserver/uploads');
+xhr.setRequestHeader('Content-Type', file.type);
+xhr.send(file);
+```
+
+## IndexedDB API
+
+### 概述
+
+随着浏览器的功能不断增强，越来越多的网站开始考虑，将大量数据储存在客户端，这样可以减少从服务器获取数据，直接从本地获取数据。
+
+现有的浏览器数据储存方案，都不适合储存大量数据：Cookie 的大小不超过 4KB，且每次请求都会发送回服务器；LocalStorage 在 2.5MB 到 10MB 之间（各家浏览器不同），而且不提供搜索功能，不能建立自定义的索引。所以，需要一种新的解决方案，这就是 IndexedDB 诞生的背景。
+
+通俗地说，IndexedDB 就是浏览器提供的本地数据库，它可以被网页脚本创建和操作。IndexedDB 允许储存大量数据，提供查找接口，还能建立索引。这些都是 LocalStorage 所不具备的。就数据库类型而言，IndexedDB 不属于关系型数据库（不支持 SQL 查询语句），更接近 NoSQL 数据库。
+
+IndexedDB 具有以下特点。
+
+**（1）键值对储存。** IndexedDB 内部采用对象仓库（object store）存放数据。所有类型的数据都可以直接存入，包括 JavaScript 对象。对象仓库中，数据以“键值对”的形式保存，每一个数据记录都有对应的主键，主键是独一无二的，不能有重复，否则会抛出一个错误。
+
+**（2）异步。** IndexedDB 操作时不会锁死浏览器，用户依然可以进行其他操作，这与 LocalStorage 形成对比，后者的操作是同步的。异步设计是为了防止大量数据的读写，拖慢网页的表现。
+
+**（3）支持事务。** IndexedDB 支持事务（transaction），这意味着一系列操作步骤之中，只要有一步失败，整个事务就都取消，数据库回滚到事务发生之前的状态，不存在只改写一部分数据的情况。
+
+**（4）同源限制。** IndexedDB 受到同源限制，每一个数据库对应创建它的域名。网页只能访问自身域名下的数据库，而不能访问跨域的数据库。
+
+**（5）储存空间大。** IndexedDB 的储存空间比 LocalStorage 大得多，一般来说不少于 250MB，甚至没有上限。
+
+**（6）支持二进制储存。** IndexedDB 不仅可以储存字符串，还可以储存二进制数据（ArrayBuffer 对象和 Blob 对象）。
+
+### 基本概念
+
+IndexedDB 是一个比较复杂的 API，涉及不少概念。它把不同的实体，抽象成一个个对象接口。学习这个 API，就是学习它的各种对象接口。
+
+- 数据库：IDBDatabase 对象
+- 对象仓库：IDBObjectStore 对象
+- 索引： IDBIndex 对象
+- 事务： IDBTransaction 对象
+- 操作请求：IDBRequest 对象
+- 指针： IDBCursor 对象
+- 主键集合：IDBKeyRange 对象
+
+下面是一些主要的概念。
+
+**（1）数据库**
+
+数据库是一系列相关数据的容器。每个域名（严格的说，是协议 + 域名 + 端口）都可以新建任意多个数据库。
+
+IndexedDB 数据库有版本的概念。同一个时刻，只能有一个版本的数据库存在。如果要修改数据库结构（新增或删除表、索引或者主键），只能通过升级数据库版本完成。
+
+**（2）对象仓库**
+
+每个数据库包含若干个对象仓库（object store）。它类似于关系型数据库的表格。
+
+**（3）数据记录**
+
+对象仓库保存的是数据记录。每条记录类似于关系型数据库的行，但是只有主键和数据体两部分。主键用来建立默认的索引，必须是不同的，否则会报错。主键可以是数据记录里面的一个属性，也可以指定为一个递增的整数编号。
+
+```javascript
+{ id: 1, text: 'foo' }
+```
+
+上面的对象中，`id`属性可以当作主键。
+
+数据体可以是任意数据类型，不限于对象。
+
+**（4）索引**
+
+为了加速数据的检索，可以在对象仓库里面，为不同的属性建立索引。
+
+**（5）事务**
+
+数据记录的读写和删改，都要通过事务完成。事务对象提供`error`、`abort`和`complete`三个事件，用来监听操作结果。
+
+### 操作流程
+
+IndexedDB 数据库的各种操作，一般是按照下面的流程进行的。这个部分只给出简单的代码示例，用于快速上手，详细的各个对象的 API 放在后文介绍。
+
+#### 打开数据库
+
+使用 IndexedDB 的第一步是打开数据库，使用`indexedDB.open()`方法。
+
+```js
+var request = window.indexedDB.open(databaseName, version);
+```
+
+这个方法接受两个参数，第一个参数是字符串，表示数据库的名字。如果指定的数据库不存在，就会新建数据库。第二个参数是整数，表示数据库的版本。如果省略，打开已有数据库时，默认为当前版本；新建数据库时，默认为`1`。
+
+`indexedDB.open()`方法返回一个 IDBRequest 对象。这个对象通过三种事件`error`、`success`、`upgradeneeded`，处理打开数据库的操作结果。
+
+**（1）error 事件**
+
+`error`事件表示打开数据库失败。
+
+```js
+request.onerror = function (event) {
+  console.log('数据库打开报错');
+};
+```
+
+**（2）success 事件**
+
+`success`事件表示成功打开数据库。
+
+```js
+var db;
+
+request.onsuccess = function (event) {
+  db = request.result;
+  console.log('数据库打开成功');
+};
+```
+
+这时，通过`request`对象的`result`属性拿到数据库对象。
+
+**（3）upgradeneeded 事件**
+
+如果指定的版本号，大于数据库的实际版本号，就会发生数据库升级事件`upgradeneeded`。
+
+```js
+var db;
+
+request.onupgradeneeded = function (event) {
+  db = event.target.result;
+}
+```
+
+这时通过事件对象的`target.result`属性，拿到数据库实例。
+
+#### 新建数据库
+
+新建数据库与打开数据库是同一个操作。如果指定的数据库不存在，就会新建。不同之处在于，后续的操作主要在`upgradeneeded`事件的监听函数里面完成，因为这时版本从无到有，所以会触发这个事件。
+
+通常，新建数据库以后，第一件事是新建对象仓库（即新建表）。
+
+```js
+request.onupgradeneeded = function(event) {
+  db = event.target.result;
+  var objectStore = db.createObjectStore('person', { keyPath: 'id' });
+}
+```
+
+上面代码中，数据库新建成功以后，新增一张叫做`person`的表格，主键是`id`。
+
+更好的写法是先判断一下，这张表格是否存在，如果不存在再新建。
+
+```js
+request.onupgradeneeded = function (event) {
+  db = event.target.result;
+  var objectStore;
+  if (!db.objectStoreNames.contains('person')) {
+    objectStore = db.createObjectStore('person', { keyPath: 'id' });
+  }
+}
+```
+
+主键（key）是默认建立索引的属性。比如，数据记录是`{ id: 1, name: '张三' }`，那么`id`属性可以作为主键。主键也可以指定为下一层对象的属性，比如`{ foo: { bar: 'baz' } }`的`foo.bar`也可以指定为主键。
+
+如果数据记录里面没有合适作为主键的属性，那么可以让 IndexedDB 自动生成主键。
+
+```js
+var objectStore = db.createObjectStore(
+  'person',
+  { autoIncrement: true }
+);
+```
+
+上面代码中，指定主键为一个递增的整数。
+
+新建对象仓库以后，下一步可以新建索引。
+
+```js
+request.onupgradeneeded = function(event) {
+  db = event.target.result;
+  var objectStore = db.createObjectStore('person', { keyPath: 'id' });
+  objectStore.createIndex('name', 'name', { unique: false });
+  objectStore.createIndex('email', 'email', { unique: true });
+}
+```
+
+上面代码中，`IDBObject.createIndex()`的三个参数分别为索引名称、索引所在的属性、配置对象（说明该属性是否包含重复的值）。
+
+#### 新增数据
+
+新增数据指的是向对象仓库写入数据记录。这需要通过事务完成。
+
+```js
+function add() {
+  var request = db.transaction(['person'], 'readwrite')
+    .objectStore('person')
+    .add({ id: 1, name: '张三', age: 24, email: 'zhangsan@example.com' });
+
+  request.onsuccess = function (event) {
+    console.log('数据写入成功');
+  };
+
+  request.onerror = function (event) {
+    console.log('数据写入失败');
+  }
+}
+
+add();
+```
+
+上面代码中，写入数据需要新建一个事务。新建时必须指定表格名称和操作模式（“只读”或“读写”）。
+
+新建事务以后，通过`IDBTransaction.objectStore(name)`方法，拿到 IDBObjectStore 对象，再通过表格对象的`add()`方法，向表格写入一条记录。
+
+写入操作是一个异步操作，通过监听连接对象的`success`事件和`error`事件，了解是否写入成功。
+
+#### 读取数据
+
+读取数据也是通过事务完成。
+
+```js
+function read() {
+   var transaction = db.transaction(['person']);
+   var objectStore = transaction.objectStore('person');
+   var request = objectStore.get(1);
+
+   request.onerror = function(event) {
+     console.log('事务失败');
+   };
+
+   request.onsuccess = function(event) {
+      if (request.result) {
+        console.log('Name: ' + request.result.name);
+        console.log('Age: ' + request.result.age);
+        console.log('Email: ' + request.result.email);
+      } else {
+        console.log('未获得数据记录');
+      }
+   };
+}
+
+read();
+```
+
+上面代码中，`objectStore.get()`方法用于读取数据，参数是主键的值。
+
+#### 遍历数据
+
+遍历数据表格的所有记录，要使用指针对象 IDBCursor。
+
+```js
+function readAll() {
+  var objectStore = db.transaction('person').objectStore('person');
+
+   objectStore.openCursor().onsuccess = function (event) {
+     var cursor = event.target.result;
+
+     if (cursor) {
+       console.log('Id: ' + cursor.key);
+       console.log('Name: ' + cursor.value.name);
+       console.log('Age: ' + cursor.value.age);
+       console.log('Email: ' + cursor.value.email);
+       cursor.continue();
+    } else {
+      console.log('没有更多数据了！');
+    }
+  };
+}
+
+readAll();
+```
+
+上面代码中，新建指针对象的`openCursor()`方法是一个异步操作，所以要监听`success`事件。
+
+#### 更新数据
+
+更新数据要使用`IDBObject.put()`方法。
+
+```js
+function update() {
+  var request = db.transaction(['person'], 'readwrite')
+    .objectStore('person')
+    .put({ id: 1, name: '李四', age: 35, email: 'lisi@example.com' });
+
+  request.onsuccess = function (event) {
+    console.log('数据更新成功');
+  };
+
+  request.onerror = function (event) {
+    console.log('数据更新失败');
+  }
+}
+
+update();
+```
+
+上面代码中，`put()`方法自动更新了主键为`1`的记录。
+
+#### 删除数据
+
+`IDBObjectStore.delete()`方法用于删除记录。
+
+```js
+function remove() {
+  var request = db.transaction(['person'], 'readwrite')
+    .objectStore('person')
+    .delete(1);
+
+  request.onsuccess = function (event) {
+    console.log('数据删除成功');
+  };
+}
+
+remove();
+```
+
+#### 使用索引
+
+索引的意义在于，可以让你搜索任意字段，也就是说从任意字段拿到数据记录。如果不建立索引，默认只能搜索主键（即从主键取值）。
+
+假定新建表格的时候，对`name`字段建立了索引。
+
+```js
+objectStore.createIndex('name', 'name', { unique: false });
+```
+
+现在，就可以从`name`找到对应的数据记录了。
+
+```js
+var transaction = db.transaction(['person'], 'readonly');
+var store = transaction.objectStore('person');
+var index = store.index('name');
+var request = index.get('李四');
+
+request.onsuccess = function (e) {
+  var result = e.target.result;
+  if (result) {
+    // ...
+  } else {
+    // ...
+  }
+}
+```
+
+### indexedDB 对象
+
+浏览器原生提供`indexedDB`对象，作为开发者的操作接口。
+
+#### indexedDB.open()
+
+`indexedDB.open()`方法用于打开数据库。这是一个异步操作，但是会立刻返回一个 IDBOpenDBRequest 对象。
+
+```js
+var openRequest = window.indexedDB.open('test', 1);
+```
+
+上面代码表示，打开一个名为`test`、版本为`1`的数据库。如果该数据库不存在，则会新建该数据库。
+
+`open()`方法的第一个参数是数据库名称，格式为字符串，不可省略；第二个参数是数据库版本，是一个大于`0`的正整数（`0`将报错），如果该参数大于当前版本，会触发数据库升级。第二个参数可省略，如果数据库已存在，将打开当前版本的数据库；如果数据库不存在，将创建该版本的数据库，默认版本为`1`。
+
+打开数据库是异步操作，通过各种事件通知客户端。下面是有可能触发的4种事件。
+
+- **success**：打开成功。
+- **error**：打开失败。
+- **upgradeneeded**：第一次打开该数据库，或者数据库版本发生变化。
+- **blocked**：上一次的数据库连接还未关闭。
+
+第一次打开数据库时，会先触发`upgradeneeded`事件，然后触发`success`事件。
+
+#### indexedDB.deleteDatabase()
+
+`indexedDB.deleteDatabase()`方法用于删除一个数据库，参数为数据库的名字。它会立刻返回一个`IDBOpenDBRequest`对象，然后对数据库执行异步删除。删除操作的结果会通过事件通知，`IDBOpenDBRequest`对象可以监听以下事件。
+
+- `success`：删除成功
+- `error`：删除报错
+
+调用`deleteDatabase()`方法以后，当前数据库的其他已经打开的连接都会接收到`versionchange`事件。
+
+注意，删除不存在的数据库并不会报错。
+
+#### indexedDB.cmp()
+
+`indexedDB.cmp()`方法比较两个值是否为 indexedDB 的相同的主键。它返回一个整数，表示比较的结果：`0`表示相同，`1`表示第一个主键大于第二个主键，`-1`表示第一个主键小于第二个主键。
+
+```js
+window.indexedDB.cmp(1, 2) // -1
+```
+
+### IDBRequest 对象
+
+IDBRequest 对象表示打开的数据库连接，`indexedDB.open()`方法和`indexedDB.deleteDatabase()`方法会返回这个对象。数据库的操作都是通过这个对象完成的。
+
+这个对象的所有操作都是异步操作，要通过`readyState`属性判断是否完成，如果为`pending`就表示操作正在进行，如果为`done`就表示操作完成，可能成功也可能失败。
+
+操作完成以后，触发`success`事件或`error`事件，这时可以通过`result`属性和`error`属性拿到操作结果。如果在`pending`阶段，就去读取这两个属性，是会报错的。
+
+IDBRequest 对象有以下属性。
+
+- `IDBRequest.readyState`：等于`pending`表示操作正在进行，等于`done`表示操作正在完成。
+- `IDBRequest.result`：返回请求的结果。如果请求失败、结果不可用，读取该属性会报错。
+- `IDBRequest.error`：请求失败时，返回错误对象。
+- `IDBRequest.source`：返回请求的来源（比如索引对象或 ObjectStore）。
+- `IDBRequest.transaction`：返回当前请求正在进行的事务，如果不包含事务，返回`null`。
+- `IDBRequest.onsuccess`：指定`success`事件的监听函数。
+- `IDBRequest.onerror`：指定`error`事件的监听函数。
+
+IDBOpenDBRequest 对象继承了 IDBRequest 对象，提供了两个额外的事件监听属性。
+
+- `IDBOpenDBRequest.onblocked`：指定`blocked`事件（`upgradeneeded`事件触发时，数据库仍然在使用）的监听函数。
+- `IDBOpenDBRequest.onupgradeneeded`：`upgradeneeded`事件的监听函数。
+
+### IDBDatabase 对象
+
+打开数据成功以后，可以从`IDBOpenDBRequest`对象的`result`属性上面，拿到一个`IDBDatabase`对象，它表示连接的数据库。后面对数据库的操作，都通过这个对象完成。
+
+#### 属性
+
+IDBDatabase 对象有以下属性。
+
+- `IDBDatabase.name`：字符串，数据库名称。
+- `IDBDatabase.version`：整数，数据库版本。数据库第一次创建时，该属性为空字符串。
+- `IDBDatabase.objectStoreNames`：DOMStringList 对象（字符串的集合），包含当前数据的所有 object store 的名字。
+- `IDBDatabase.onabort`：指定 abort 事件（事务中止）的监听函数。
+- `IDBDatabase.onclose`：指定 close 事件（数据库意外关闭）的监听函数。
+- `IDBDatabase.onerror`：指定 error 事件（访问数据库失败）的监听函数。
+- `IDBDatabase.onversionchange`：数据库版本变化时触发（发生`upgradeneeded`事件，或调用`indexedDB.deleteDatabase()`）。
+
+下面是`objectStoreNames`属性的例子。该属性返回一个 DOMStringList 对象，包含了当前数据库所有对象仓库的名称（即表名），可以使用 DOMStringList 对象的`contains`方法，检查数据库是否包含某个对象仓库。
+
+```js
+if (!db.objectStoreNames.contains('firstOS')) {
+  db.createObjectStore('firstOS');
+}
+```
+
+上面代码先判断某个对象仓库是否存在，如果不存在就创建该对象仓库。
+
+#### 方法
+
+IDBDatabase 对象有以下方法。
+
+- `IDBDatabase.close()`：关闭数据库连接，实际会等所有事务完成后再关闭。
+- `IDBDatabase.createObjectStore()`：创建存放数据的对象仓库，类似于传统关系型数据库的表格，返回一个 IDBObjectStore 对象。该方法只能在`versionchange`事件监听函数中调用。
+- `IDBDatabase.deleteObjectStore()`：删除指定的对象仓库。该方法只能在`versionchange`事件监听函数中调用。
+- `IDBDatabase.transaction()`：返回一个 IDBTransaction 事务对象。
+
+`createObjectStore()`方法还可以接受第二个对象参数，用来设置对象仓库的属性。
+
+```js
+db.createObjectStore('test', { keyPath: 'email' });
+db.createObjectStore('test2', { autoIncrement: true });
+```
+
+上面代码中，`keyPath`属性表示主键（由于主键的值不能重复，所以上例存入之前，必须保证数据的`email`属性值都是不一样的），默认值为`null`；`autoIncrement`属性表示，是否使用自动递增的整数作为主键（第一个数据记录为1，第二个数据记录为2，以此类推），默认为`false`。一般来说，`keyPath`和`autoIncrement`属性只要使用一个就够了，如果两个同时使用，表示主键为递增的整数，且对象不得缺少`keyPath`指定的属性。
+
+下面是`transaction()`方法的例子，该方法用于创建一个数据库事务，返回一个 IDBTransaction 对象。向数据库添加数据之前，必须先创建数据库事务。
+
+```js
+var t = db.transaction(['items'], 'readwrite');
+```
+
+`transaction()`方法接受两个参数：第一个参数是一个数组，里面是所涉及的对象仓库，通常是只有一个；第二个参数是一个表示操作类型的字符串。目前，操作类型只有两种：`readonly`（只读）和`readwrite`（读写）。添加数据使用`readwrite`，读取数据使用`readonly`。第二个参数是可选的，省略时默认为`readonly`模式。
+
+### IDBObjectStore 对象
+
+IDBObjectStore 对象对应一个对象仓库（object store）。`IDBDatabase.createObjectStore()`方法返回的就是一个 IDBObjectStore 对象。
+
+IDBDatabase 对象的`transaction()`返回一个事务对象，该对象的`objectStore()`方法返回 IDBObjectStore 对象，因此可以采用下面的链式写法。
+
+```js
+db.transaction(['test'], 'readonly')
+  .objectStore('test')
+  .get(X)
+  .onsuccess = function (e) {}
+```
+
+#### 属性
+
+IDBObjectStore 对象有以下属性。
+
+- `IDBObjectStore.indexNames`：返回一个类似数组的对象（DOMStringList），包含了当前对象仓库的所有索引。
+- `IDBObjectStore.keyPath`：返回当前对象仓库的主键。
+- `IDBObjectStore.name`：返回当前对象仓库的名称。
+- `IDBObjectStore.transaction`：返回当前对象仓库所属的事务对象。
+- `IDBObjectStore.autoIncrement`：布尔值，表示主键是否会自动递增。
+
+#### 方法
+
+IDBObjectStore 对象有以下方法。
+
+**（1）IDBObjectStore.add()**
+
+`IDBObjectStore.add()`用于向对象仓库添加数据，返回一个 IDBRequest 对象。该方法只用于添加数据，如果主键相同会报错，因此更新数据必须使用`put()`方法。
+
+```js
+objectStore.add(value, key)
+```
+
+该方法接受两个参数，第一个参数是键值，第二个参数是主键，该参数可选，如果省略默认为`null`。
+
+创建事务以后，就可以获取对象仓库，然后使用`add()`方法往里面添加数据了。
+
+```js
+var db;
+var DBOpenRequest = window.indexedDB.open('demo', 1);
+
+DBOpenRequest.onsuccess = function (event) {
+  db = DBOpenRequest.result;
+  var transaction = db.transaction(['items'], 'readwrite');
+
+  transaction.oncomplete = function (event) {
+    console.log('transaction success');
+  };
+
+  transaction.onerror = function (event) {
+    console.log('transaction error: ' + transaction.error);
+  };
+
+  var objectStore = transaction.objectStore('items');
+  var objectStoreRequest = objectStore.add({ foo: 1 });
+
+  objectStoreRequest.onsuccess = function (event) {
+    console.log('add data success');
+  };
+
+};
+```
+
+**（2）IDBObjectStore.put()**
+
+`IDBObjectStore.put()`方法用于更新某个主键对应的数据记录，如果对应的键值不存在，则插入一条新的记录。该方法返回一个 IDBRequest 对象。
+
+```js
+objectStore.put(item, key)
+```
+
+该方法接受两个参数，第一个参数为新数据，第二个参数为主键，该参数可选，且只在自动递增时才有必要提供，因为那时主键不包含在数据值里面。
+
+**（3）IDBObjectStore.clear()**
+
+`IDBObjectStore.clear()`删除当前对象仓库的所有记录。该方法返回一个 IDBRequest 对象。
+
+```js
+objectStore.clear()
+```
+
+该方法不需要参数。
+
+**（4）IDBObjectStore.delete()**
+
+`IDBObjectStore.delete()`方法用于删除指定主键的记录。该方法返回一个 IDBRequest 对象。
+
+```js
+objectStore.delete(Key)
+```
+
+该方法的参数为主键的值。
+
+**（5）IDBObjectStore.count()**
+
+`IDBObjectStore.count()`方法用于计算记录的数量。该方法返回一个 IDBRequest 对象。
+
+```js
+IDBObjectStore.count(key)
+```
+
+不带参数时，该方法返回当前对象仓库的所有记录数量。如果主键或 IDBKeyRange 对象作为参数，则返回对应的记录数量。
+
+**（6）IDBObjectStore.getKey()**
+
+`IDBObjectStore.getKey()`用于获取主键。该方法返回一个 IDBRequest 对象。
+
+```js
+objectStore.getKey(key)
+```
+
+该方法的参数可以是主键值或 IDBKeyRange 对象。
+
+**（7）IDBObjectStore.get()**
+
+`IDBObjectStore.get()`用于获取主键对应的数据记录。该方法返回一个 IDBRequest 对象。
+
+```js
+objectStore.get(key)
+```
+
+**（8）IDBObjectStore.getAll()**
+
+`DBObjectStore.getAll()`用于获取对象仓库的记录。该方法返回一个 IDBRequest 对象。
+
+```js
+// 获取所有记录
+objectStore.getAll()
+
+// 获取所有符合指定主键或 IDBKeyRange 的记录
+objectStore.getAll(query)
+
+// 指定获取记录的数量
+objectStore.getAll(query, count)
+```
+
+**（9）IDBObjectStore.getAllKeys()**
+
+`IDBObjectStore.getAllKeys()`用于获取所有符合条件的主键。该方法返回一个 IDBRequest 对象。
+
+```js
+// 获取所有记录的主键
+objectStore.getAllKeys()
+
+// 获取所有符合条件的主键
+objectStore.getAllKeys(query)
+
+// 指定获取主键的数量
+objectStore.getAllKeys(query, count)
+```
+
+**（10）IDBObjectStore.index()**
+
+`IDBObjectStore.index()`方法返回指定名称的索引对象 IDBIndex。
+
+```js
+objectStore.index(name)
+```
+
+有了索引以后，就可以针对索引所在的属性读取数据。
+
+```js
+var t = db.transaction(['people'], 'readonly');
+var store = t.objectStore('people');
+var index = store.index('name');
+
+var request = index.get('foo');
+```
+
+上面代码打开对象仓库以后，先用`index()`方法指定获取`name`属性的索引，然后用`get()`方法读取某个`name`属性(`foo`)对应的数据。如果`name`属性不是对应唯一值，这时`get()`方法有可能取回多个数据对象。另外，`get()`是异步方法，读取成功以后，只能在`success`事件的监听函数中处理数据。
+
+**（11）IDBObjectStore.createIndex()**
+
+`IDBObjectStore.createIndex()`方法用于新建当前数据库的一个索引。该方法只能在`VersionChange`监听函数里面调用。
+
+```js
+objectStore.createIndex(indexName, keyPath, objectParameters)
+```
+
+该方法可以接受三个参数。
+
+- indexName：索引名
+- keyPath：主键
+- objectParameters：配置对象（可选）
+
+第三个参数可以配置以下属性。
+
+- unique：如果设为`true`，将不允许重复的值
+- multiEntry：如果设为`true`，对于有多个值的主键数组，每个值将在索引里面新建一个条目，否则主键数组对应一个条目。
+
+假定对象仓库中的数据记录都是如下的`person`类型。
+
+```js
+var person = {
+  name: name,
+  email: email,
+  created: new Date()
+};
+```
+
+可以指定这个对象的某个属性来建立索引。
+
+```js
+var store = db.createObjectStore('people', { autoIncrement: true });
+
+store.createIndex('name', 'name', { unique: false });
+store.createIndex('email', 'email', { unique: true });
+```
+
+上面代码告诉索引对象，`name`属性不是唯一值，`email`属性是唯一值。
+
+**（12）IDBObjectStore.deleteIndex()**
+
+`IDBObjectStore.deleteIndex()`方法用于删除指定的索引。该方法只能在`VersionChange`监听函数里面调用。
+
+```js
+objectStore.deleteIndex(indexName)
+```
+
+**（13）IDBObjectStore.openCursor()**
+
+`IDBObjectStore.openCursor()`用于获取一个指针对象。
+
+```js
+IDBObjectStore.openCursor()
+```
+
+指针对象可以用来遍历数据。该对象也是异步的，有自己的`success`和`error`事件，可以对它们指定监听函数。
+
+```js
+var t = db.transaction(['test'], 'readonly');
+var store = t.objectStore('test');
+
+var cursor = store.openCursor();
+
+cursor.onsuccess = function (event) {
+  var res = event.target.result;
+  if (res) {
+    console.log('Key', res.key);
+    console.dir('Data', res.value);
+    res.continue();
+  }
+}
+```
+
+监听函数接受一个事件对象作为参数，该对象的`target.result`属性指向当前数据记录。该记录的`key`和`value`分别返回主键和键值（即实际存入的数据）。`continue()`方法将光标移到下一个数据对象，如果当前数据对象已经是最后一个数据了，则光标指向`null`。
+
+`openCursor()`方法的第一个参数是主键值，或者一个 IDBKeyRange 对象。如果指定该参数，将只处理包含指定主键的记录；如果省略，将处理所有的记录。该方法还可以接受第二个参数，表示遍历方向，默认值为`next`，其他可能的值为`prev`、`nextunique`和`prevunique`。后两个值表示如果遇到重复值，会自动跳过。
+
+**（14）IDBObjectStore.openKeyCursor()**
+
+`IDBObjectStore.openKeyCursor()`用于获取一个主键指针对象。
+
+```js
+IDBObjectStore.openKeyCursor()
+```
+
+### IDBTransaction 对象
+
+IDBTransaction 对象用来异步操作数据库事务，所有的读写操作都要通过这个对象进行。
+
+`IDBDatabase.transaction()`方法返回的就是一个 IDBTransaction 对象。
+
+```js
+var db;
+var DBOpenRequest = window.indexedDB.open('demo', 1);
+
+DBOpenRequest.onsuccess = function(event) {
+  db = DBOpenRequest.result;
+  var transaction = db.transaction(['demo'], 'readwrite');
+
+  transaction.oncomplete = function (event) {
+    console.log('transaction success');
+  };
+
+  transaction.onerror = function (event) {
+    console.log('transaction error: ' + transaction.error);
+  };
+
+  var objectStore = transaction.objectStore('demo');
+  var objectStoreRequest = objectStore.add({ foo: 1 });
+
+  objectStoreRequest.onsuccess = function (event) {
+    console.log('add data success');
+  };
+
+};
+```
+
+事务的执行顺序是按照**创建的顺序**，而不是发出请求的顺序。
+
+```js
+var trans1 = db.transaction('foo', 'readwrite');
+var trans2 = db.transaction('foo', 'readwrite');
+var objectStore2 = trans2.objectStore('foo')
+var objectStore1 = trans1.objectStore('foo')
+objectStore2.put('2', 'key');
+objectStore1.put('1', 'key');
+```
+
+上面代码中，`key`对应的键值最终是`2`，而不是`1`。因为事务`trans1`先于`trans2`创建，所以首先执行。
+
+注意，事务有可能失败，只有监听到事务的`complete`事件，才能保证事务操作成功。
+
+IDBTransaction 对象有以下属性。
+
+- `IDBTransaction.db`：返回当前事务所在的数据库对象 IDBDatabase。
+- `IDBTransaction.error`：返回当前事务的错误。如果事务没有结束，或者事务成功结束，或者被手动终止，该方法返回`null`。
+- `IDBTransaction.mode`：返回当前事务的模式，默认是`readonly`（只读），另一个值是`readwrite`。
+- `IDBTransaction.objectStoreNames`：返回一个类似数组的对象 DOMStringList，成员是当前事务涉及的对象仓库的名字。
+- `IDBTransaction.onabort`：指定`abort`事件（事务中断）的监听函数。
+- `IDBTransaction.oncomplete`：指定`complete`事件（事务成功）的监听函数。
+- `IDBTransaction.onerror`：指定`error`事件（事务失败）的监听函数。
+
+IDBTransaction 对象有以下方法。
+
+- `IDBTransaction.abort()`：终止当前事务，回滚所有已经进行的变更。
+- `IDBTransaction.objectStore(name)`：返回指定名称的对象仓库 IDBObjectStore。
+
+### IDBIndex 对象
+
+IDBIndex 对象代表数据库的索引，通过这个对象可以获取数据库里面的记录。
+
+数据记录的主键默认就是带有索引，IDBIndex 对象主要用于通过除主键以外的其他键，建立索引获取对象。
+
+IDBIndex 是持久性的键值对存储。只要插入、更新或删除数据记录，引用的对象库中的记录，索引就会自动更新。
+
+`IDBObjectStore.index()`方法可以获取 IDBIndex 对象。
+
+```js
+var transaction = db.transaction(['contactsList'], 'readonly');
+var objectStore = transaction.objectStore('contactsList');
+var myIndex = objectStore.index('lName');
+
+myIndex.openCursor().onsuccess = function (event) {
+  var cursor = event.target.result;
+  if (cursor) {
+    var tableRow = document.createElement('tr');
+    tableRow.innerHTML =   '<td>' + cursor.value.id + '</td>'
+                         + '<td>' + cursor.value.lName + '</td>'
+                         + '<td>' + cursor.value.fName + '</td>'
+                         + '<td>' + cursor.value.jTitle + '</td>'
+                         + '<td>' + cursor.value.company + '</td>'
+                         + '<td>' + cursor.value.eMail + '</td>'
+                         + '<td>' + cursor.value.phone + '</td>'
+                         + '<td>' + cursor.value.age + '</td>';
+    tableEntry.appendChild(tableRow);
+
+    cursor.continue();
+  } else {
+    console.log('Entries all displayed.');
+  }
+};
+```
+
+IDBIndex 对象有以下属性。
+
+- `IDBIndex.name`：字符串，索引的名称。
+- `IDBIndex.objectStore`：索引所在的对象仓库。
+- `IDBIndex.keyPath`：索引的主键。
+- `IDBIndex.multiEntry`：布尔值，针对`keyPath`为数组的情况，如果设为`true`，创建数组时，每个数组成员都会有一个条目，否则每个数组都只有一个条目。
+- `IDBIndex.unique`：布尔值，表示创建索引时是否允许相同的主键。
+
+IDBIndex 对象有以下方法，它们都是异步的，立即返回的都是一个 IDBRequest 对象。
+
+- `IDBIndex.count()`：用来获取记录的数量。它可以接受主键或 IDBKeyRange 对象作为参数，这时只返回符合主键的记录数量，否则返回所有记录的数量。
+- `IDBIndex.get(key)`：用来获取符合指定主键的数据记录。
+- `IDBIndex.getKey(key)`：用来获取指定的主键。
+- `IDBIndex.getAll()`：用来获取所有的数据记录。它可以接受两个参数，都是可选的，第一个参数用来指定主键，第二个参数用来指定返回记录的数量。如果省略这两个参数，则返回所有记录。由于获取成功时，浏览器必须生成所有对象，所以对性能有影响。如果数据集比较大，建议使用 IDBCursor 对象。
+- `IDBIndex.getAllKeys()`：该方法与`IDBIndex.getAll()`方法相似，区别是获取所有主键。
+- `IDBIndex.openCursor()`：用来获取一个 IDBCursor 对象，用来遍历索引里面的所有条目。
+- `IDBIndex.openKeyCursor()`：该方法与`IDBIndex.openCursor()`方法相似，区别是遍历所有条目的主键。
+
+### IDBCursor 对象
+
+IDBCursor 对象代表指针对象，用来遍历数据仓库（IDBObjectStore）或索引（IDBIndex）的记录。
+
+IDBCursor 对象一般通过`IDBObjectStore.openCursor()`方法获得。
+
+```js
+var transaction = db.transaction(['rushAlbumList'], 'readonly');
+var objectStore = transaction.objectStore('rushAlbumList');
+
+objectStore.openCursor(null, 'next').onsuccess = function(event) {
+  var cursor = event.target.result;
+  if (cursor) {
+    var listItem = document.createElement('li');
+    listItem.innerHTML = cursor.value.albumTitle + ', ' + cursor.value.year;
+    list.appendChild(listItem);
+
+    console.log(cursor.source);
+    cursor.continue();
+  } else {
+    console.log('Entries all displayed.');
+  }
+};
+```
+
+IDBCursor 对象的属性。
+
+- `IDBCursor.source`：返回正在遍历的对象仓库或索引。
+- `IDBCursor.direction`：字符串，表示指针遍历的方向。共有四个可能的值：next（从头开始向后遍历）、nextunique（从头开始向后遍历，重复的值只遍历一次）、prev（从尾部开始向前遍历）、prevunique（从尾部开始向前遍历，重复的值只遍历一次）。该属性通过`IDBObjectStore.openCursor()`方法的第二个参数指定，一旦指定就不能改变了。
+- `IDBCursor.key`：返回当前记录的主键。
+- `IDBCursor.value`：返回当前记录的数据值。
+- `IDBCursor.primaryKey`：返回当前记录的主键。对于数据仓库（objectStore）来说，这个属性等同于 IDBCursor.key；对于索引，IDBCursor.key 返回索引的位置值，该属性返回数据记录的主键。
+
+IDBCursor 对象有如下方法。
+
+- `IDBCursor.advance(n)`：指针向前移动 n 个位置。
+- `IDBCursor.continue()`：指针向前移动一个位置。它可以接受一个主键作为参数，这时会跳转到这个主键。
+- `IDBCursor.continuePrimaryKey()`：该方法需要两个参数，第一个是`key`，第二个是`primaryKey`，将指针移到符合这两个参数的位置。
+- `IDBCursor.delete()`：用来删除当前位置的记录，返回一个 IDBRequest 对象。该方法不会改变指针的位置。
+- `IDBCursor.update()`：用来更新当前位置的记录，返回一个 IDBRequest 对象。它的参数是要写入数据库的新的值。
+
+### IDBKeyRange 对象
+
+IDBKeyRange 对象代表数据仓库（object store）里面的一组主键。根据这组主键，可以获取数据仓库或索引里面的一组记录。
+
+IDBKeyRange 可以只包含一个值，也可以指定上限和下限。它有四个静态方法，用来指定主键的范围。
+
+- `IDBKeyRange.lowerBound()`：指定下限。
+- `IDBKeyRange.upperBound()`：指定上限。
+- `IDBKeyRange.bound()`：同时指定上下限。
+- `IDBKeyRange.only()`：指定只包含一个值。
+
+下面是一些代码实例。
+
+```js
+// All keys ≤ x
+var r1 = IDBKeyRange.upperBound(x);
+
+// All keys < x
+var r2 = IDBKeyRange.upperBound(x, true);
+
+// All keys ≥ y
+var r3 = IDBKeyRange.lowerBound(y);
+
+// All keys > y
+var r4 = IDBKeyRange.lowerBound(y, true);
+
+// All keys ≥ x && ≤ y
+var r5 = IDBKeyRange.bound(x, y);
+
+// All keys > x &&< y
+var r6 = IDBKeyRange.bound(x, y, true, true);
+
+// All keys > x && ≤ y
+var r7 = IDBKeyRange.bound(x, y, true, false);
+
+// All keys ≥ x &&< y
+var r8 = IDBKeyRange.bound(x, y, false, true);
+
+// The key = z
+var r9 = IDBKeyRange.only(z);
+```
+
+`IDBKeyRange.lowerBound()`、`IDBKeyRange.upperBound()`、`IDBKeyRange.bound()`这三个方法默认包括端点值，可以传入一个布尔值，修改这个属性。
+
+与之对应，IDBKeyRange 对象有四个只读属性。
+
+- `IDBKeyRange.lower`：返回下限
+- `IDBKeyRange.lowerOpen`：布尔值，表示下限是否为开区间（即下限是否排除在范围之外）
+- `IDBKeyRange.upper`：返回上限
+- `IDBKeyRange.upperOpen`：布尔值，表示上限是否为开区间（即上限是否排除在范围之外）
+
+IDBKeyRange 实例对象生成以后，将它作为参数输入 IDBObjectStore 或 IDBIndex 对象的`openCursor()`方法，就可以在所设定的范围内读取数据。
+
+```js
+var t = db.transaction(['people'], 'readonly');
+var store = t.objectStore('people');
+var index = store.index('name');
+
+var range = IDBKeyRange.bound('B', 'D');
+
+index.openCursor(range).onsuccess = function (e) {
+  var cursor = e.target.result;
+  if (cursor) {
+    console.log(cursor.key + ':');
+
+    for (var field in cursor.value) {
+      console.log(cursor.value[field]);
+    }
+    cursor.continue();
+  }
+}
+```
+
+IDBKeyRange 有一个实例方法`includes(key)`，返回一个布尔值，表示某个主键是否包含在当前这个主键组之内。
+
+```js
+var keyRangeValue = IDBKeyRange.bound('A', 'K', false, false);
+
+keyRangeValue.includes('F') // true
+keyRangeValue.includes('W') // false
+```
+
+## Web Worker
+
+### 概述
+
+JavaScript 语言采用的是单线程模型，也就是说，所有任务只能在一个线程上完成，一次只能做一件事。
+
+前面的任务没做完，后面的任务只能等着。随着电脑计算能力的增强，尤其是多核 CPU 的出现，单线程带来很大的不便，无法充分发挥计算机的计算能力。
+
+Web Worker 的作用，就是为 JavaScript 创造多线程环境，允许主线程创建 Worker 线程，将一些任务分配给后者运行。在主线程运行的同时，Worker 线程在后台运行，两者互不干扰。等到 Worker 线程完成计算任务，再把结果返回给主线程。
+
+这样的好处是，一些计算密集型或高延迟的任务可以交由 Worker 线程执行，主线程（通常负责 UI 交互）能够保持流畅，不会被阻塞或拖慢。
+
+Worker 线程一旦新建成功，就会始终运行，不会被主线程上的活动（比如用户点击按钮、提交表单）打断。这样有利于随时响应主线程的通信。但是，这也造成了 Worker 比较耗费资源，不应该过度使用，而且一旦使用完毕，就应该关闭。
+
+Web Worker 的注意点：
+
+（1）**同源限制**
+
+分配给 Worker 线程运行的脚本文件，必须与主线程的脚本文件同源。
+
+（2）**DOM 限制**
+
+Worker 线程所在的全局对象，与主线程不一样，无法读取主线程所在网页的 DOM 对象，也无法使用`document`、`window`、`parent`这些对象。但是，Worker 线程可以使用`navigator`对象和`location`对象。
+
+（3）**全局对象限制**
+
+Worker 的全局对象`WorkerGlobalScope`，不同于网页的全局对象`Window`，很多接口拿不到。比如，理论上 Worker 线程不能使用`console.log`，因为标准里面没有提到 Worker 的全局对象存在`console`接口，只定义了`Navigator`接口和`Location`接口。不过，浏览器实际上支持 Worker 线程使用`console.log`，保险的做法还是不使用这个方法。
+
+（4）**通信联系**
+
+Worker 线程和主线程不在同一个上下文环境，它们不能直接通信，必须通过消息完成。
+
+（5）**脚本限制**
+
+Worker 线程不能执行`alert()`方法和`confirm()`方法，但可以使用 XMLHttpRequest 对象发出 AJAX 请求。
+
+（6）**文件限制**
+
+Worker 线程无法读取本地文件，即不能打开本机的文件系统（`file://`），它所加载的脚本，必须来自网络。
+
+### 基本用法
+
+#### 主线程
+
+主线程采用`new`命令，调用`Worker()`构造函数，新建一个 Worker 线程。
+
+```js
+var worker = new Worker('work.js');
+```
+
+`Worker()`构造函数的参数是一个脚本文件，该文件就是 Worker 线程所要执行的任务。由于 Worker 不能读取本地文件，所以这个脚本必须来自网络。如果下载没有成功（比如404错误），Worker 就会默默地失败。
+
+然后，主线程调用`worker.postMessage()`方法，向 Worker 发消息。
+
+```js
+worker.postMessage('Hello World');
+worker.postMessage({method: 'echo', args: ['Work']});
+```
+
+`worker.postMessage()`方法的参数，就是主线程传给 Worker 的数据。它可以是各种数据类型，包括二进制数据。
+
+接着，主线程通过`worker.onmessage`指定监听函数，接收子线程发回来的消息。
+
+```js
+worker.onmessage = function (event) {
+  doSomething(event.data);
+}
+
+function doSomething() {
+  // 执行任务
+  worker.postMessage('Work done!');
+}
+```
+
+上面代码中，事件对象的`data`属性可以获取 Worker 发来的数据。
+
+Worker 完成任务以后，主线程就可以把它关掉。
+
+```js
+worker.terminate();
+```
+
+#### Worker 线程
+
+Worker 线程内部需要有一个监听函数，监听`message`事件。
+
+```js
+self.addEventListener('message', function (e) {
+  self.postMessage('You said: ' + e.data);
+}, false);
+```
+
+上面代码中，`self`代表子线程自身，即子线程的全局对象。因此，等同于下面两种写法。	
+
+```js
+// 写法一
+this.addEventListener('message', function (e) {
+  this.postMessage('You said: ' + e.data);
+}, false);
+
+// 写法二
+addEventListener('message', function (e) {
+  postMessage('You said: ' + e.data);
+}, false);
+```
+
+除了使用`self.addEventListener()`指定监听函数，也可以使用`self.onmessage`指定。
+
+监听函数的参数是一个事件对象，它的`data`属性包含主线程发来的数据。`self.postMessage()`方法用来向主线程发送消息。
+
+根据主线程发来的数据，Worker 线程可以调用不同的方法，下面是一个例子。
+
+```js
+self.addEventListener('message', function (e) {
+  var data = e.data;
+  switch (data.cmd) {
+    case 'start':
+      self.postMessage('WORKER STARTED: ' + data.msg);
+      break;
+    case 'stop':
+      self.postMessage('WORKER STOPPED: ' + data.msg);
+      self.close(); // Terminates the worker.
+      break;
+    default:
+      self.postMessage('Unknown command: ' + data.msg);
+  };
+}, false);
+```
+
+上面代码中，`self.close()`用于在 Worker 内部关闭自身。
+
+#### Worker 加载脚本
+
+Worker 内部如果要加载其他脚本，有一个专门的方法`importScripts()`。
+
+```js
+importScripts('script1.js');
+```
+
+该方法可以同时加载多个脚本。
+
+```js
+importScripts('script1.js', 'script2.js');
+```
+
+#### 错误处理
+
+主线程可以监听 Worker 是否发生错误。如果发生错误，Worker 会触发主线程的`error`事件。
+
+```js
+worker.onerror = function (event) {
+  console.log(
+    'ERROR: Line ', event.lineno, ' in ', event.filename, ': ', event.message
+  );
+};
+
+// 或者
+worker.addEventListener('error', function (event) {
+  // ...
+});
+```
+
+Worker 内部也可以监听`error`事件。
+
+#### 关闭 Worker
+
+使用完毕，为了节省系统资源，必须关闭 Worker。
+
+```js
+// 主线程
+worker.terminate();
+
+// Worker 线程
+self.close();
+```
+
+### 数据通信
+
+前面说过，主线程与 Worker 之间的通信内容，可以是文本，也可以是对象。需要注意的是，这种通信是拷贝关系，即是传值而不是传址，Worker 对通信内容的修改，不会影响到主线程。
+
+事实上，浏览器内部的运行机制是，先将通信内容串行化，然后把串行化后的字符串发给 Worker，后者再将它还原。
+
+主线程与 Worker 之间也可以交换二进制数据，比如 File、Blob、ArrayBuffer 等类型，也可以在线程之间发送。下面是一个例子。
+
+```js
+// 主线程
+var uInt8Array = new Uint8Array(new ArrayBuffer(10));
+for (var i = 0; i < uInt8Array.length; ++i) {
+  uInt8Array[i] = i * 2; // [0, 2, 4, 6, 8,...]
+}
+worker.postMessage(uInt8Array);
+
+// Worker 线程
+self.onmessage = function (e) {
+  var uInt8Array = e.data;
+  postMessage('Inside worker.js: uInt8Array.toString() = ' + uInt8Array.toString());
+  postMessage('Inside worker.js: uInt8Array.byteLength = ' + uInt8Array.byteLength);
+};
+```
+
+但是，拷贝方式发送二进制数据，会造成性能问题。比如，主线程向 Worker 发送一个 500MB 文件，默认情况下浏览器会生成一个原文件的拷贝。为了解决这个问题，JavaScript 允许主线程把二进制数据直接转移给子线程，但是一旦转移，主线程就无法再使用这些二进制数据了，这是为了防止出现多个线程同时修改数据的麻烦局面。
+
+这种转移数据的方法，叫做[Transferable Objects](http://www.w3.org/html/wg/drafts/html/master/infrastructure.html#transferable-objects)。这使得主线程可以快速把数据交给 Worker，对于影像处理、声音处理、3D 运算等就非常方便了，不会产生性能负担。
+
+如果要直接转移数据的控制权，就要使用下面的写法。
+
+```js
+// Transferable Objects 格式
+worker.postMessage(arrayBuffer, [arrayBuffer]);
+
+// 例子
+var ab = new ArrayBuffer(1);
+worker.postMessage(ab, [ab]);
+```
+
+### 同页面的 Web Worker
+
+通常情况下，Worker 载入的是一个单独的 JavaScript 脚本文件，但是也可以载入与主线程在同一个网页的代码。
+
+```html
+<!DOCTYPE html>
+  <body>
+    <script id="worker" type="app/worker">
+      addEventListener('message', function () {
+        postMessage('some message');
+      }, false);
+    </script>
+  </body>
+</html>
+```
+
+上面是一段嵌入网页的脚本，注意必须指定`<script>`标签的`type`属性是一个浏览器不认识的值，上例是`app/worker`。
+
+然后，读取这一段嵌入页面的脚本，用 Worker 来处理。
+
+```js
+var blob = new Blob([document.querySelector('#worker').textContent]);
+var url = window.URL.createObjectURL(blob);
+var worker = new Worker(url);
+
+worker.onmessage = function (e) {
+  // e.data === 'some message'
+};
+```
+
+上面代码中，先将嵌入网页的脚本代码，转成一个二进制对象，然后为这个二进制对象生成 URL，再让 Worker 加载这个 URL。这样就做到了，主线程和 Worker 的代码都在同一个网页上面。
+
+### 实例：Worker 线程完成轮询
+
+有时，浏览器需要轮询服务器状态，以便第一时间得知状态改变。这个工作可以放在 Worker 里面。
+
+```js
+function createWorker(f) {
+  var blob = new Blob(['(' + f.toString() + ')()']);
+  var url = window.URL.createObjectURL(blob);
+  var worker = new Worker(url);
+  return worker;
+}
+
+var pollingWorker = createWorker(function (e) {
+  var cache;
+
+  function compare(new, old) { ... };
+
+  setInterval(function () {
+    fetch('/my-api-endpoint').then(function (res) {
+      var data = res.json();
+
+      if (!compare(data, cache)) {
+        cache = data;
+        self.postMessage(data);
+      }
+    })
+  }, 1000)
+});
+
+pollingWorker.onmessage = function () {
+  // render data
+}
+
+pollingWorker.postMessage('init');
+```
+
+上面代码中，Worker 每秒钟轮询一次数据，然后跟缓存做比较。如果不一致，就说明服务端有了新的变化，因此就要通知主线程。
+
+### 实例： Worker 新建 Worker
+
+Worker 线程内部还能再新建 Worker 线程（目前只有 Firefox 浏览器支持）。下面的例子是将一个计算密集的任务，分配到10个 Worker。
+
+主线程代码如下。
+
+```js
+var worker = new Worker('worker.js');
+worker.onmessage = function (event) {
+  document.getElementById('result').textContent = event.data;
+}
+```
+
+Worker 线程代码如下。
+
+```js
+// worker.js
+
+// settings
+var num_workers = 10;
+var items_per_worker = 1000000;
+
+// start the workers
+var result = 0;
+var pending_workers = num_workers;
+for (var i = 0; i < num_workers; i += 1) {
+  var worker = new Worker('core.js');
+  worker.postMessage(i * items_per_worker);
+  worker.postMessage((i + 1) * items_per_worker);
+  worker.onmessage = storeResult;
+}
+
+// handle the results
+function storeResult(event) {
+  result += event.data;
+  pending_workers -= 1;
+  if (pending_workers <= 0)
+    postMessage(result); // finished!
+}
+```
+
+上面代码中，Worker 线程内部新建了10个 Worker 线程，并且依次向这10个 Worker 发送消息，告知了计算的起点和终点。计算任务脚本的代码如下。
+
+```js
+// core.js
+var start;
+onmessage = getStart;
+function getStart(event) {
+  start = event.data;
+  onmessage = getEnd;
+}
+
+var end;
+function getEnd(event) {
+  end = event.data;
+  onmessage = null;
+  work();
+}
+
+function work() {
+  var result = 0;
+  for (var i = start; i < end; i += 1) {
+    // perform some complex calculation here
+    result += 1;
+  }
+  postMessage(result);
+  close();
+}
+```
+
+### API
+
+#### 主线程
+
+浏览器原生提供`Worker()`构造函数，用来供主线程生成 Worker 线程。
+
+```js
+var myWorker = new Worker(jsUrl, options);
+```
+
+`Worker()`构造函数，可以接受两个参数。第一个参数是脚本的网址（必须遵守同源政策），该参数是必需的，且只能加载 JS 脚本，否则会报错。第二个参数是配置对象，该对象可选。它的一个作用就是指定 Worker 的名称，用来区分多个 Worker 线程。
+
+```js
+// 主线程
+var myWorker = new Worker('worker.js', { name : 'myWorker' });
+
+// Worker 线程
+self.name // myWorker
+```
+
+`Worker()`构造函数返回一个 Worker 线程对象，用来供主线程操作 Worker。Worker 线程对象的属性和方法如下。
+
+- Worker.onerror：指定 error 事件的监听函数。
+- Worker.onmessage：指定 message 事件的监听函数，发送过来的数据在`Event.data`属性中。
+- Worker.onmessageerror：指定 messageerror 事件的监听函数。发送的数据无法序列化成字符串时，会触发这个事件。
+- Worker.postMessage()：向 Worker 线程发送消息。
+- Worker.terminate()：立即终止 Worker 线程。
+
+#### Worker 线程
+
+Web Worker 有自己的全局对象，不是主线程的`window`，而是一个专门为 Worker 定制的全局对象。因此定义在`window`上面的对象和方法不是全部都可以使用。
+
+Worker 线程有一些自己的全局属性和方法。
+
+- self.name： Worker 的名字。该属性只读，由构造函数指定。
+- self.onmessage：指定`message`事件的监听函数。
+- self.onmessageerror：指定 messageerror 事件的监听函数。发送的数据无法序列化成字符串时，会触发这个事件。
+- self.close()：关闭 Worker 线程。
+- self.postMessage()：向产生这个 Worker 的线程发送消息。
+- self.importScripts()：加载 JS 脚本。

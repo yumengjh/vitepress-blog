@@ -373,7 +373,7 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 }
 
 @media (max-width: 767px) {
-    .DocSearch-Button {
+    .blog-search>.nav-search-btn-wait {
         border: none !important;
     }
 }
