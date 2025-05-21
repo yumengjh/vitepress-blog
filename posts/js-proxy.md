@@ -332,3 +332,181 @@ p()
 ```
 
 ### has()
+
+`has()`方法用来拦截`HasProperty`操作，即判断对象是否具有某个属性时，这个方法会生效。典型的操作就是`in`运算符。	
+
+`has()`方法可以接受两个参数，分别是目标对象、需查询的属性名。
+
+下面的例子使用`has()`方法隐藏某些属性，不被`in`运算符发现。
+
+```js
+var handler = {
+  has (target, key) {
+    if (key[0] === '_') {
+      return false;
+    }
+    return key in target;
+  }
+};
+var target = { _prop: 'foo', prop: 'foo' };
+var proxy = new Proxy(target, handler);
+'_prop' in proxy // false
+```
+
+如果原对象不可配置或者禁止扩展，这时`has()`拦截会报错。
+
+`has()`方法拦截的是`HasProperty`操作，而不是`HasOwnProperty`操作，即`has()`方法不判断一个属性是对象自身的属性，还是继承的属性。
+
+另外，虽然`for...in`循环也用到了`in`运算符，但是`has()`拦截对`for...in`循环**不生效**。
+
+### construct()
+
+`construct()`方法用于拦截`new`命令，下面是拦截对象的写法。
+
+`construct()`方法可以接受三个参数。
+
+- `target`：目标对象。
+- `args`：构造函数的参数数组。
+- `newTarget`：创造实例对象时，`new`命令作用的构造函数（下面例子的`p`）。
+
+```js
+const p = new Proxy(function () {}, {
+  construct: function(target, args) {
+    console.log('called: ' + args.join(', '));
+    return { value: args[0] * 10 };
+  }
+});
+
+(new p(1)).value
+// "called: 1"
+// 10
+```
+
+`construct()`方法返回的必须是一个对象，否则会报错，另外，由于`construct()`拦截的是构造函数，所以它的目标对象必须是函数，否则就会报错。
+
+### deleteProperty()
+
+`deleteProperty`方法用于拦截`delete`操作，如果这个方法抛出错误或者返回`false`，当前属性就无法被`delete`命令删除。
+
+```js
+var handler = {
+  deleteProperty (target, key) {
+    invariant(key, 'delete');
+    delete target[key];
+    return true;
+  }
+};
+function invariant (key, action) {
+  if (key[0] === '_') {
+    throw new Error(`Invalid attempt to ${action} private "${key}" property`);
+  }
+}
+
+var target = { _prop: 'foo' };
+var proxy = new Proxy(target, handler);
+delete proxy._prop
+// Error: Invalid attempt to delete private "_prop" property
+```
+
+上面代码中，`deleteProperty`方法拦截了`delete`操作符，删除第一个字符为下划线的属性会报错。
+
+注意，目标对象自身的不可配置（configurable）的属性，不能被`deleteProperty`方法删除，否则报错。
+
+### defineProperty()
+
+`defineProperty()`方法拦截了`Object.defineProperty()`操作。
+
+```js
+var handler = {
+  defineProperty (target, key, descriptor) {
+    return false;
+  }
+};
+var target = {};
+var proxy = new Proxy(target, handler);
+proxy.foo = 'bar' // 不会生效
+```
+
+上面代码中，`defineProperty()`方法内部没有任何操作，只返回`false`，导致添加新属性总是无效。注意，这里的`false`只是用来提示操作失败，本身并不能阻止添加新属性。
+
+注意，如果目标对象不可扩展（non-extensible），则`defineProperty()`不能增加目标对象上不存在的属性，否则会报错。
+
+另外，如果目标对象的某个属性不可写（writable）或不可配置（configurable），则`defineProperty()`方法不得改变这两个设置。
+
+### getOwnPropertyDescriptor() 
+
+`getOwnPropertyDescriptor()`方法拦截`Object.getOwnPropertyDescriptor()`，返回一个属性描述对象或者`undefined`。
+
+### getPrototypeOf()
+
+`getPrototypeOf()`方法主要用来拦截获取对象原型。具体来说，拦截下面这些操作。
+
+- `Object.prototype.__proto__`
+- `Object.prototype.isPrototypeOf()`
+- `Object.getPrototypeOf()`
+- `Reflect.getPrototypeOf()`
+- `instanceof`
+
+注意，`getPrototypeOf()`方法的返回值必须是对象或者`null`，否则报错。另外，如果目标对象不可扩展（non-extensible）， `getPrototypeOf()`方法必须返回目标对象的原型对象。
+
+### isExtensible()
+
+`isExtensible()`方法拦截`Object.isExtensible()`操作。
+
+### ownKeys() 
+
+`ownKeys()`方法用来拦截对象自身属性的读取操作。具体来说，拦截以下操作。
+
+- `Object.getOwnPropertyNames()`
+- `Object.getOwnPropertySymbols()`
+- `Object.keys()`
+- `for...in`循环
+
+### preventExtensions()
+
+`preventExtensions()`方法拦截`Object.preventExtensions()`。该方法必须返回一个布尔值，否则会被自动转为布尔值。
+
+### setPrototypeOf()
+
+`setPrototypeOf()`方法主要用来拦截`Object.setPrototypeOf()`方法。
+
+## Proxy.revocable()
+
+`Proxy.revocable()`方法返回一个可取消的 Proxy 实例。
+
+```js
+let target = {};
+let handler = {};
+
+let {proxy, revoke} = Proxy.revocable(target, handler);
+
+proxy.foo = 123;
+proxy.foo // 123
+
+revoke();
+proxy.foo // TypeError: Revoked
+```
+
+`Proxy.revocable()`方法返回一个对象，该对象的`proxy`属性是`Proxy`实例，`revoke`属性是一个函数，可以取消`Proxy`实例。
+
+`Proxy.revocable()`的一个使用场景是，目标对象不允许直接访问，必须通过代理访问，一旦访问结束，就收回代理权，不允许再次访问。
+
+## this 问题
+
+在 Proxy 代理的情况下，目标对象内部的`this`关键字会指向 Proxy 代理。
+
+```js
+const target = {
+  m: function () {
+    console.log(this === proxy);
+  }
+};
+const handler = {};
+
+const proxy = new Proxy(target, handler);
+
+target.m() // false
+proxy.m()  // true
+```
+
+# Reflect

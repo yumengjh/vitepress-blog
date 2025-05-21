@@ -306,12 +306,18 @@ HTML 内容。
 <div v-cloak>{{ message }}</div>
 ```
 
-### v-ref
+### ref
 
 引用元素。
 
 ```html
-<div v-ref="myRef"></div>
+<div ref="el"></div>
+```
+
+ 在组件中访问 ref，可以通过 this.$refs.el 在代码中访问这个 DOM 元素
+
+```js
+console.log(this.$refs.el)
 ```
 
 ### v-effect
