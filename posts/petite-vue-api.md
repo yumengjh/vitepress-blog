@@ -371,7 +371,7 @@ $nextTick(() => {
 引用集合。
 
 ```html
-<div v-ref="myRef"></div>
+<div ref="myRef"></div>
 <script>
 console.log($refs.myRef)
 </script>

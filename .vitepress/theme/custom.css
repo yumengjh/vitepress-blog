@@ -7,7 +7,7 @@
     --yu-theme-title: #000;
     /* --vp-font-family-base: 'PingFang SC', 'Microsoft Yahei', sans-serif; */
     --vp-font-family-base: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
-    --vp-font-family-mono: "Fira Code", monospace;
+    /* --vp-font-family-mono: "Fira Code", monospace; */
     /* 容器自定义 */
     --vp-custom-block-tip-border: #747bff;
     --vp-custom-block-warning-border: #b36b00;
@@ -376,6 +376,10 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
     .blog-search>.nav-search-btn-wait {
         border: none !important;
     }
+}
+
+:not(pre) > code {
+    font-family: "Fira Code", monospace;
 }
 
 /* #endregion 其他配置 */
