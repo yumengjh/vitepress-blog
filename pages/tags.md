@@ -1,7 +1,7 @@
 ---
 page: true
-title: 标签
-description: 标签
+title: Tags
+description: Tags
 aside: false
 lastUpdated: false
 comments: false

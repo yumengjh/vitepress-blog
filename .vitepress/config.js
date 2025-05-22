@@ -85,16 +85,16 @@ export default defineConfig({
         },
         posts: await getPosts(pageSize),
         nav: [
-            { text: '首页', link: '/' },
-            { text: '标签', link: '/pages/tags' },
-            { text: '工具', link: '/pages/site' },
+            { text: 'Home', link: '/' },
+            { text: 'Tags', link: '/pages/tags' },
+            { text: 'Tools', link: '/pages/site' },
             // {
             //     text: '回顾', items: [
             //         { text: '2024', link: '/pages/review/2024' },
             //         { text: '2023', link: '/pages/review/2023' },
             //     ]
             // },
-            { text: '关于我', link: '/pages/about' },
+            { text: 'Me', link: '/pages/about' },
         ],
         // footer: {
         //     message: 'Released under the MIT License',

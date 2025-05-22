@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="head">
-      <h2 class="title">近期文章</h2>
+      <h2 class="title">Recent Posts</h2>
       <div @click="getSentence" class="sentence">{{ sentence }}</div>
     </div>
     <div v-for="(article, index) in posts" :key="index" class="post-row">
@@ -13,12 +13,12 @@
       <template v-if="theme.website.showPrevNextBtn">
         <a v-if="pageCurrent > 1" class="page-btn" :class="{ disabled: pageCurrent <= 1 }"
           :href="pageCurrent > 2 ? withBase(`/page_${pageCurrent - 1}.html`) : withBase('/index.html')">
-          ← 上一页
+          ← Previous Page
         </a>
         <span v-else></span>
         <a v-if="pageCurrent < pagesNum" class="page-btn" :class="{ disabled: pageCurrent >= pagesNum }"
           :href="withBase(`/page_${pageCurrent + 1}.html`)">
-          下一页 →
+          → Next Page
         </a>
       </template>
     </div>

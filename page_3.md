@@ -1,6 +1,6 @@
 ---
 page: true
-title: 第 3 页
+title: Page 3
 aside: false
 lastUpdated: false
 comments: false

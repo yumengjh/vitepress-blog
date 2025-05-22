@@ -1,6 +1,6 @@
 ---
 page: true
-title: 鱼梦江湖
+title: YuMeng
 aside: false
 lastUpdated: false
 comments: false
