@@ -28,10 +28,10 @@
 <script setup>
 import { withBase, useData } from 'vitepress'
 import { ref, onMounted } from 'vue'
-let sentence = ref('(¬‿¬)今天也要加油鸭');
+let sentence = ref('Come on!');
 
 const getSentence = () => {
-  const defaultSentence = '(¬‿¬)今天也要加油鸭';
+  const defaultSentence = 'Come on!';
   fetch('https://blog.yumeng.icu/api/sentence')
     .then(response => {
       if (!response.ok) {
