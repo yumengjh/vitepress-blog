@@ -141,7 +141,7 @@ h3 {
 
 .aside {
     position: fixed !important;
-    right: 24px;
+    right: 200px;
 }
 
 .VPDoc {
@@ -382,12 +382,25 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
     font-family: "Fira Code", monospace;
 }
 
-.outline-link {
+.aside-container {
+    top: -30px !important;
+}
+
+.outline-title {
     padding-left: 16px;
+    font-weight: bold;
+}
+
+.outline-link {
+    padding: 0 16px;
 }
 
 .outline-link.active {
-    /* font-weight: bold !important; */
+    background-color: var(--vp-c-bg-soft) !important;
+    border-radius: 4px !important;
+}
+
+.outline-link:hover {
     background-color: var(--vp-c-bg-soft) !important;
     border-radius: 4px !important;
 }

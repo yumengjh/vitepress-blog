@@ -101,7 +101,7 @@ export default defineConfig({
         //     copyright: 'Copyright © 2024-present <a style="text-decoration: none !important;" href="/pages/about">YuMeng</a>'
         // },
         outline: {
-            label: 'Outline',
+            label: 'Table of contents',
             level: [2, 3]
         },
         socialLinks: [
