@@ -378,8 +378,26 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
     }
 }
 
-:not(pre) > code {
+:not(pre)>code {
     font-family: "Fira Code", monospace;
+}
+
+.outline-link {
+    padding-left: 16px;
+}
+
+.outline-link.active {
+    /* font-weight: bold !important; */
+    background-color: var(--vp-c-bg-soft) !important;
+    border-radius: 4px !important;
+}
+
+.content {
+    border-left: none !important;
+}
+
+.outline-marker {
+    background-color: transparent !important;
 }
 
 /* #endregion 其他配置 */

@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="head">
-      <h2 class="title">Recent Posts</h2>
+      <h2 class="title">Blogs</h2>
       <div @click="getSentence" class="sentence">{{ sentence }}</div>
     </div>
     <div v-for="(article, index) in posts" :key="index" class="post-row">

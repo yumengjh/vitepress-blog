@@ -5,7 +5,7 @@ import { RssPlugin } from 'vitepress-plugin-rss'
 import { fileURLToPath } from 'url'
 import { pagefindPlugin } from 'vitepress-plugin-pagefind'
 //每页的文章数量
-const pageSize = 19
+const pageSize = 10
 
 // RSS 配置
 const baseUrl = 'https://yumeng.icu'
@@ -65,19 +65,19 @@ export default defineConfig({
         ['meta', { name: 'keywords', content: '博客,前端,JavaScript' }],
     ],
     themeConfig: {
-        darkModeSwitchLabel: '主题',
-        lightModeSwitchTitle: '浅色模式',
-        darkModeSwitchTitle: '深色模式',
-        returnToTopLabel: '返回顶部',
-        notFound: {
-            code: 404,
-            title: '页面不存在',
-            quote: '迷路了吗？让我们回到首页吧',
-            linkText: '返回首页',
-        },
+        // darkModeSwitchLabel: '主题',
+        // lightModeSwitchTitle: '浅色模式',
+        // darkModeSwitchTitle: '深色模式',
+        // returnToTopLabel: '返回顶部',
+        // notFound: {
+        //     code: 404,
+        //     title: '页面不存在',
+        //     quote: '迷路了吗？让我们回到首页吧',
+        //     linkText: '返回首页',
+        // },
         externalLinkIcon: false,
         lastUpdated: {
-            text: '最后更新时间',
+            // text: '最后更新时间',
             formatOptions: {
                 dateStyle: 'short', // full, long, medium, short
                 timeStyle: 'medium'
@@ -101,7 +101,7 @@ export default defineConfig({
         //     copyright: 'Copyright © 2024-present <a style="text-decoration: none !important;" href="/pages/about">YuMeng</a>'
         // },
         outline: {
-            label: '本页目录',
+            label: 'Outline',
             level: [2, 3]
         },
         socialLinks: [
