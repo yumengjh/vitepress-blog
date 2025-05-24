@@ -3,7 +3,7 @@ title: 认知偏差与情绪放大：如何正确看待自我成长
 date: 2025-04-06
 category: Life
 tags:
-    - 心理
+    - heart
 description: 现在的我，是否比1年前的我更强？
 ---
 

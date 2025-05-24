@@ -3,6 +3,36 @@
   "defaultExpanded": false,
   "items": [
     {
+      "title": "ChatGPT",
+      "desc": "ChatGPT 是 OpenAI 推出的新一代大模型。",
+      "link": "https://chatgpt.com/",
+      "linktxt": "chatgpt.com"
+    },
+    {
+      "title": "DuckDuckGo",
+      "desc": "Duck.ai",
+      "link": "https://duckduckgo.com/",
+      "linktxt": "duckduckgo.com"
+    },
+    {
+      "title": "Gemini",
+      "desc": "Gemini 是 Google 推出的新一代大模型，支持多种语言，包括中文",
+      "link": "https://gemini.google.com/",
+      "linktxt": "gemini.google.com"
+    },
+    {
+      "title": "Claude",
+      "desc": "Claude大模型对话工具",
+      "link": "https://www.anthropic.com/claude",
+      "linktxt": "anthropic.com"
+    },
+    {
+      "title": "Google Al Studio",
+      "desc": "Google大模型对话工具",
+      "link": "https://aistudio.google.com/",
+      "linktxt": "aistudio.google.com"
+    },
+    {
       "title": "DeepSeek",
       "desc": "深度求索大模型对话工具",
       "link": "https://chat.deepseek.com/",
@@ -56,4 +86,4 @@
       "linktxt": "lingma.aliyun.com"
     }
   ]
-} 
+}

@@ -339,8 +339,6 @@ for (let a of arr) {
 这三个方法调用后生成的遍历器对象，所遍历的都是计算生成的数据结构。
 
 ```js
-这三个方法调用后生成的遍历器对象，所遍历的都是计算生成的数据结构。
-
 let arr = ['a', 'b', 'c'];
 for (let pair of arr.entries()) {
   console.log(pair);
