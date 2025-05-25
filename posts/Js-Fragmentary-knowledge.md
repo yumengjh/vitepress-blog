@@ -409,6 +409,8 @@ JavaScript规定，每一个构造函数都有一个**prototype属性**，指向
 
 基于原型对象的继承使得不同构造函数的原型对象关联在一起，并且这种关联的关系是一种链状的结构，我们将原型对象的链状结构关系称为原型链
 
+![原型链](https://image.yumeng.icu/2025-05-25%2F212644.png){width="70%"}
+
 ![](https://raw.githubusercontent.com/fish81/typora-uploads-images/main/image/1744109347_0.png)
 
 ```javascript
