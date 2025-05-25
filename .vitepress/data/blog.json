@@ -31,7 +31,18 @@
             "desc": " Internet freely",
             "link": "https://gitlab.com/zhifan999/fq/-/wikis/home",
             "linktxt": "gitlab.com"
+        },
+        {
+            "link":"https://goflybit.pages.dev/",
+            "title":"GoFlyBit",
+            "desc":"GoFlyBit",
+            "linktxt":"goflybit.pages.dev"
+        },
+        {
+            "link":"https://flybit.my/",
+            "title":"flybit",
+            "desc":"flybit",
+            "linktxt":"flybit.my/"
         }
-
     ]
 }
