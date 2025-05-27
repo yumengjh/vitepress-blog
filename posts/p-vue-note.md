@@ -1,10 +1,10 @@
 ---
-title: Reactivity在petite-vue中的相关API
+title: 阅读Petite-vue时的一些函数解析
 date: 2025-05-26
 category: Note
 tags: 
     - Vue
-description: 读petite-vue源码时遇到Reactivity的一些记录
+description: 阅读Petite-vue时的一些函数解析。
 outline: [2,3]
 draft: false
 sticky: false
@@ -17,7 +17,7 @@ publish: true
 AutoAnchor: false
 ---
 
-# Reactivity
+# 源码解析
 
 ## reactive
 
@@ -239,4 +239,172 @@ const megaEffect = rawEffect(() => {
   // 其他不相关的逻辑...
 })
 ```
+
+## createScopedContext
+
+用于创建**作用域上下文**的核心函数，组件作用域继承机制
+
+创建一个新的上下文环境，该环境：
+
+- **继承父作用域**：可以访问父上下文的所有属性
+- **拥有本地数据**：可以添加新的响应式属性
+- **智能属性分配**：自动判断属性应该存在父级还是当前作用域
+
+```javascript
+const parent = createContext({ count: 1 })
+const child = createScopedContext(parent, { message: 'hello' })
+
+// child 可以访问 parent.count
+// 新增属性会根据规则自动确定存放位置
+```
+
+ **原型链继承**
+
+```javascript
+const parentScope = ctx.scope
+const mergedScope = Object.create(parentScope) // 原型链继承
+```
+
+- 使用 `Object.create` 建立原型链，新作用域 `__proto__` 指向父作用域
+- 实现属性查找的向上委托（类似 JavaScript 的原型链查找）
+
+**本地属性合并**
+
+```javascript
+Object.defineProperties(mergedScope, Object.getOwnPropertyDescriptors(data))
+```
+
+- 将传入的 `data` 对象的所有属性（包括 getter/setter）复制到新作用域
+- 保持属性描述符（如 `configurable`, `enumerable` 等）不变
+
+ **特殊属性处理**
+
+```javascript
+mergedScope.$refs = Object.create(parentScope.$refs)
+```
+
+- 单独处理 `$refs` 属性，确保每个作用域有独立的 refs 存储
+- 仍然保持原型链继承关系
+
+**响应式代理**
+
+```javascript
+const reactiveProxy = reactive(
+  new Proxy(mergedScope, {
+    set(target, key, val, receiver) {
+      if (receiver === reactiveProxy && !target.hasOwnProperty(key)) {
+        return Reflect.set(parentScope, key, val)
+      }
+      return Reflect.set(target, key, val, receiver)
+    }
+  })
+)
+```
+
+**关键点**：
+
+- 双层代理：外层的 `reactive()` 处理响应式，内层的 `Proxy` 处理作用域逻辑
+- 智能属性设置规则：
+  - 当设置的属性**不存在于当前作用域**时，写入父作用域
+  - 通过 `receiver === reactiveProxy` 确保是直接操作当前代理对象
+  - 通过 `target.hasOwnProperty(key)` 检查属性归属
+
+**方法绑定**
+
+```javascript
+bindContextMethods(reactiveProxy)
+```
+
+确保作用域中的方法具有正确的 `this` 上下文
+
+**返回新上下文**
+
+```javascript
+return {
+  ...ctx,          // 复制原有上下文配置
+  scope: reactiveProxy // 替换为新的作用域
+}
+```
+
+![image-20250527182842769](https://image.yumeng.icu/2025-05-27%2F182847.png)
+
+**属性访问规则**
+
+| 操作类型             | 处理方式       |
+| :------------------- | :------------- |
+| 读取已有属性         | 沿原型链查找   |
+| 设置已有属性         | 修改所属作用域 |
+| 设置新属性           | 写入当前作用域 |
+| 设置继承属性(非自有) | 写入父作用域   |
+
+**性能优化**
+
+- 使用 `Object.getOwnPropertyDescriptors` 一次性复制所有属性
+- 通过 `hasOwnProperty` 快速判断属性归属
+- 响应式系统只在最外层包装一次
+
+## bindContextMethods
+
+这个函数的作用是确保作用域(scope)中所有方法的 `this` 指向正确。
+
+一句话就是：绑定之后能够确保方法被赋值后其中的`this`依然指向其原始的作用域，而不是被赋值后所在的作用域。
+
+不绑定`this`的情况：
+
+```javascript
+const scope = {
+  name: 'JSS',
+  greet() {
+    console.log(`Hello from ${this.name}`)
+  }
+}
+
+const greetFn = scope.greet
+greetFn() // 输出: "Hello from undefined" (this指向全局或undefined)
+```
+
+绑定后：
+
+```javascript
+bindContextMethods(scope)
+const greetFn = scope.greet
+greetFn() // 输出: "Hello from JSS" (this正确指向scope)
+```
+
+`this` 的默认指向规则：
+
+| 调用方式     | `this` 指向        | 示例                          |
+| :----------- | :----------------- | :---------------------------- |
+| 直接方法调用 | 所属对象           | `obj.method()`                |
+| 函数引用调用 | 全局对象/undefined | `const fn = obj.method; fn()` |
+| 作为回调传递 | 取决于调用方       | `setTimeout(obj.method, 100)` |
+| 构造函数调用 | 新创建的对象       | `new Constructor()`           |
+
+在Petite-vue中的场景：
+
+```html
+<button @click="increment">Count: {{ count }}</button>
+```
+
+- 当点击事件发生时，`increment` 方法会被作为回调调用
+- 没有绑定则 `this` 会丢失原始上下文
+
+```javascript
+const runner = effect(() => {
+  console.log(this.count)
+})
+```
+
+上述代码中的this需要**始终**指向scope
+
+**实现原理分析**
+
+```javascript
+scope[key] = scope[key].bind(scope)
+```
+
+- 创建一个新函数，其 `this` 永久绑定到 `scope`
+- 保证无论以何种方式调用，`this` 始终一致
+
+
 

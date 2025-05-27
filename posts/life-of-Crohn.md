@@ -8,7 +8,7 @@ tags:
 description: Crohn's disease is a chronic inflammatory bowel disease (IBD) that can affect any part of the gastrointestinal tract, from mouth to anus, though it most commonly impacts the end of the small intestine and the colon.
 outline: [2,3]
 draft: false
-sticky: true
+sticky: false
 gridPaper: true
 handwriting: true
 cbf: false
