@@ -406,5 +406,130 @@ scope[key] = scope[key].bind(scope)
 - 创建一个新函数，其 `this` 永久绑定到 `scope`
 - 保证无论以何种方式调用，`this` 始终一致
 
+## with语句
 
+在`toFunction`函数中使用到了with相关语法，回顾一下相关知识
 
+with 语句会将指定对象添加到作用域链的前端，这样在 with 块内部可以直接访问该对象的属性，而不需要使用对象名前缀。
+
+- with($data) 将 $data 对象的所有属性提升到当前作用域
+
+- 在 with 块内部，可以直接使用 $data 的属性名，而不需要 $data. 前缀
+
+```javascript
+// 数据对象
+const data = {
+    name: '张三',
+    age: 25,
+    message: 'Hello World'
+}
+
+// 生成的函数示例
+function anonymous($data, $el) {
+    with($data) {
+        return name;  // 等价于 $data.name
+    }
+}
+
+function anonymous($data, $el) {
+    with($data) {
+        return age + 1;  // 等价于 $data.age + 1
+    }
+}
+
+function anonymous($data, $el) {
+    with($data) {
+        return message.toUpperCase();  // 等价于 $data.message.toUpperCase()
+    }
+}
+```
+
+## evaluate
+
+传入**数据对象，表达式，元素**，返回**表达式计算后的值**
+
+```javascript
+scope: Proxy(Object) {$delimiters: Array(2), str: 'hello world', message: 'hello world'...}
+
+exp: return("局部状态："+$s( str ))
+                      
+el：#text	// 文本节点
+                      
+result：局部状态：hello world
+```
+
+**toFunction**函数，上述代码的返回值
+
+```javascript
+fn ƒ anonymous($data,$el
+) {
+with($data){return("局部状态："+$s( str ))}
+}
+```
+
+通过执行这个函数将数据进行替换后返回
+
+原本的函数中，`el`值并没有用到，后续我进行扩展后：
+
+```javascript
+const toFunction = (exp: string): Function => {
+    try {
+        return new Function(`$data`, `$el`, `with($data){${exp}}`)	// [!code --]
+        // [!code ++]
+        return new Function(`$data`, `$el`, `
+    // [!code ++]
+      with($data){
+      // [!code ++]
+        const el = $el;
+        // [!code ++]
+        ${exp}
+        // [!code ++]
+      }
+      // [!code ++]
+    `)
+    } catch (e) {
+        console.error(`表达式 ${exp} 中出错：${(e as Error).message}`)
+        return () => {}
+    }
+}
+```
+
+可以在表达式中使用
+
+**访问元素属性：**
+
+```html
+<div v-text="el.tagName">元素标签名</div>
+<div v-text="el.id">元素ID</div>
+<div v-text="el.className">元素类名</div>
+```
+
+**操作元素样式：**
+
+```html
+<button @click="el.style.color = 'red'">变红</button>
+<button @click="el.classList.add('active')">添加类</button>
+```
+
+**访问元素数据**：
+
+```html
+<div v-text="el.dataset.message">数据属性</div>
+```
+
+**DOM 操作：**
+
+```html
+<button @click="el.parentNode.removeChild(el)">删除自己</button>
+<button @click="el.innerHTML = '已更新'">更新内容</button>
+```
+
+**事件处理：**
+
+```html
+<button @click="el.dispatchEvent(new Event('custom'))">触发自定义事件</button>
+```
+
+**其他操作**
+
+...

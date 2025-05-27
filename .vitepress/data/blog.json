@@ -33,21 +33,28 @@
             "linktxt": "gitlab.com"
         },
         {
-            "link":"https://goflybit.pages.dev/",
-            "title":"GoFlyBit",
-            "desc":"GoFlyBit",
-            "linktxt":"goflybit.pages.dev"
+            "link": "https://goflybit.pages.dev/",
+            "title": "GoFlyBit",
+            "desc": "GoFlyBit",
+            "linktxt": "goflybit.pages.dev"
         },
         {
-            "link":"https://flybit.my/",
-            "title":"flybit",
-            "desc":"flybit",
-            "linktxt":"flybit.my/"
-        },{
-            "link":"https://www.nuts00.com/",
-            "title":"Nuts00",
-            "desc":"Nuts00",
-            "linktxt":"www.nuts00.com"
+            "link": "https://flybit.my/",
+            "title": "flybit",
+            "desc": "flybit",
+            "linktxt": "flybit.my/"
+        },
+        {
+            "link": "https://www.nuts01.com/",
+            "title": "Nuts01",
+            "desc": "Nuts01",
+            "linktxt": "www.nuts01.com"
+        },
+        {
+            "link": "https://www.nutsfind.com/",
+            "title": "NutsFind",
+            "desc": "NutsFind",
+            "linktxt": "www.nutsfind.com"
         }
     ]
 }
