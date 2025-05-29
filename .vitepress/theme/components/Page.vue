@@ -12,7 +12,8 @@
           <div v-if="article.frontMatter.tags" class="post-tags">
             <a v-for="tag in article.frontMatter.tags" :key="tag" class="post-tag"
               :href="withBase(`/pages/tags?tag=${tag}`)" :title="`查看 ${tag} 相关文章`">
-              {{ tag }}
+             <span style="margin-right: -5px;">#</span>
+             {{ tag }}
             </a>
           </div>
         </div>
@@ -121,9 +122,11 @@ onMounted(() => {
 }
 
 .post-tag {
-  padding: 0.1rem 0.5rem;
-  border-radius: 4px;
-  background-color: var(--vp-c-bg-soft);
+  padding: 0rem 0.5rem;
+  font-weight: bold;
+  border-radius: 9999px;
+  /* background-color: var(--vp-c-bg-soft); */
+  border: 1px solid var(--vp-c-divider);
   font-size: 0.8rem;
   color: var(--vp-c-text-1);
   text-decoration: none;
@@ -142,7 +145,7 @@ onMounted(() => {
 }
 
 .pagination {
-  margin-top: 2em;
+  margin-top: 3em;
   display: flex;
   align-items: center;
 }
