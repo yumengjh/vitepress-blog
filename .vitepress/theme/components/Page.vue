@@ -1,14 +1,27 @@
 <template>
   <div>
-    <div class="head">
-      <h2 class="title">Blogs</h2>
-      <div @click="getSentence" class="sentence">{{ sentence }}</div>
+    <div v-for="(article, index) in posts" :key="index" class="post-item">
+      <div class="post-header">
+        <h2 class="post-title">
+          <a :href="withBase(article.regularPath)" :title="article.frontMatter.description">
+            {{ article.frontMatter.title }}
+          </a>
+        </h2>
+        <div class="post-meta">
+          <time>{{ article.frontMatter.date }}</time>
+          <div v-if="article.frontMatter.tags" class="post-tags">
+            <a v-for="tag in article.frontMatter.tags" :key="tag" class="post-tag"
+              :href="withBase(`/pages/tags?tag=${tag}`)" :title="`查看 ${tag} 相关文章`">
+              {{ tag }}
+            </a>
+          </div>
+        </div>
+      </div>
+      <div class="post-excerpt" v-if="article.frontMatter.description">
+        {{ article.frontMatter.description }}
+      </div>
     </div>
-    <div v-for="(article, index) in posts" :key="index" class="post-row">
-      <a class="post-title-link" :href="withBase(article.regularPath)" :title="article.frontMatter.description">{{
-        article.frontMatter.title }}</a>
-      <span class="post-date">{{ article.frontMatter.date }}</span>
-    </div>
+
     <div class="pagination" :class="{ 'pagination-center': pageCurrent === 1, 'pagination-between': pageCurrent > 1 }">
       <template v-if="theme.website.showPrevNextBtn">
         <a v-if="pageCurrent > 1" class="page-btn" :class="{ disabled: pageCurrent <= 1 }"
@@ -58,57 +71,74 @@ const props = defineProps({
   pagesNum: Number
 })
 onMounted(() => {
-  getSentence();
+  // getSentence();
 })
 </script>
 
 <style scoped>
-.head {
-  margin-bottom: 10px !important;
+.post-item {
+  padding: 1.5rem 0;
   border-bottom: 1px solid var(--vp-c-divider);
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-
-  .title {
-    font-weight: bold !important;
-  }
-
-  h2 {
-    border-bottom: none !important;
-    padding-top: 0px !important;
-    padding-bottom: 0px !important;
-  }
 }
 
-.post-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 6px 0;
-  font-size: 1.05rem;
+.post-item:first-child {
+  padding-top: 0;
 }
 
-.post-title-link {
-  color: var(--yu-theme-title);
+.post-header {
+  margin-bottom: 1rem;
+}
+
+.post-title {
+  margin: 0;
+  font-size: 1.4rem;
+  line-height: 1.4;
+  border: none;
+}
+
+.post-title a {
+  color: var(--vp-c-text-1);
   text-decoration: none;
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-size: 1rem;
+  transition: color 0.2s;
 }
 
-.post-title-link:hover {
+.post-title a:hover {
   color: var(--vp-c-text-2);
 }
 
-.post-date {
+.post-meta {
+  font-size: 0.9rem;
+  color: var(--vp-c-text-2);
+  margin-top: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.post-tags {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.post-tag {
+  padding: 0.1rem 0.5rem;
+  border-radius: 4px;
+  background-color: var(--vp-c-bg-soft);
+  font-size: 0.8rem;
+  color: var(--vp-c-text-1);
+  text-decoration: none;
+  transition: all 0.2s ease;
+}
+
+.post-tag:hover {
+  color: var(--vp-c-text-2);
+}
+
+.post-excerpt {
   color: var(--vp-c-text-2);
   font-size: 0.95rem;
-  white-space: nowrap;
-  margin-left: 2em;
+  line-height: 1.6;
+  margin-top: 0.5rem;
 }
 
 .pagination {
@@ -145,26 +175,30 @@ onMounted(() => {
 }
 
 @media (max-width: 768px) {
-  .post-row {
-    font-size: 0.95rem;
-    padding: 4px 0;
+  .post-title {
+    font-size: 1.2rem;
   }
 
-  .post-title-link {
-    font-size: 0.95rem;
+  .post-meta {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
   }
 
-  .post-date {
-    font-size: 0.85rem;
-    margin-left: 1em;
+  .post-excerpt {
+    font-size: 0.9rem;
   }
 
-  .head {
-    font-size: 0.8rem;
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
   }
 
-  .sentence {
-    display: none;
+  .post-tag {
+    font-size: 0.75rem;
+    padding: 0rem 0.4rem;
   }
 }
 </style>

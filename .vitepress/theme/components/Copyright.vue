@@ -1,5 +1,5 @@
 <template>
-    <div class="site-footer" :class="{ 'home-footer': isHome }">
+    <div class="site-footer">
         MIT Licensed | Copyright © 2024-2025 <a class="vitepress title" style="font-size: 1rem!important;" :href="website">{{ webTitle }}</a><br />
         Powered by <a class="vitepress" target="_blank" href="//vitepress.vuejs.org/">VitePress - 1.6.3</a>
         <!-- Theme by <a class="vitepress" target="_blank" href="https://github.com/yumengjh/vitepress-blog">Vitepress-Theme</a> -->
@@ -7,15 +7,10 @@
     </div>
 </template>
 <script setup>
-import { useData, useRoute } from 'vitepress'
-import { computed } from 'vue'
-
+import { useData } from 'vitepress'
 const { site, theme } = useData()
-const route = useRoute()
 const website = theme.value.website.copyrightLink
 const webTitle = site.value.title
-
-const isHome = computed(() => route.path === '/' || route.path.startsWith('/page'))
 </script>
 
 <style>
@@ -26,11 +21,10 @@ const isHome = computed(() => route.path === '/' || route.path.startsWith('/page
     width: 100%;
     overflow: auto;
     margin: 50px 0 20px;
+    border-top: 1px solid var(--vp-c-divider);
+    padding-top: 20px;
 }
 
-.home-footer {
-    margin-top: -60px;
-}
 
 .vitepress {
     color: var(--vp-c-text-1);
