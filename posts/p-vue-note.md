@@ -127,7 +127,7 @@ state.count++  // 修改1
 state.count++  // 修改2
 ```
 
-#### 执行时序：
+**执行时序：**
 
 1. **同步阶段**：
 
@@ -655,4 +655,38 @@ v-on:click.prevent.stop
 - 提取修饰符名称（如 prevent）
 - 将这个修饰符标记为 true
 - 从原始字符串中删除这个修饰符（替换为空）
+
+## shared
+
+| 函数名           | 作用                                                   | 示例                                                 |
+| :--------------- | :----------------------------------------------------- | :--------------------------------------------------- |
+| `normalizeClass` | 规范化 class 绑定（支持字符串/数组/对象格式 → 字符串） | `normalizeClass(['a', { b: true })` → `"a b"`        |
+| `normalizeStyle` | 规范化 style 绑定（支持字符串/对象格式 → 字符串）      | `normalizeStyle({ color: 'red' })` → `"color: red;"` |
+| `isString`       | 判断是否为字符串                                       | `isString('vue')` → `true`                           |
+| `isArray`        | 判断是否为数组                                         | `isArray([1,2])` → `true`                            |
+| `hyphenate`      | 驼峰转连字符（常用于 DOM 属性处理）                    | `hyphenate('fontSize')` → `"font-size"`              |
+| `camelize`       | 连字符转驼峰（常用于 JS 属性访问）                     | `camelize('data-value')` → `"dataValue"`             |
+
+**片段解析**
+
+```js
+ if (arg === 'class') {
+    el._class = el.className
+  }
+```
+
+保存原始className到`el._class`，**实现静态class与动态class的合并**
+
+**setProp**
+
+```js
+el.setAttribute(
+    'class',
+    normalizeClass(el._class ? [el._class, value] : value) || ''
+)
+```
+
+- 当`el._class`存在（即有静态class）时，将静态class和动态value合并为数组
+- 否则直接使用动态value
+- 通过`normalizeClass`统一处理各种格式（字符串/数组/对象）
 
