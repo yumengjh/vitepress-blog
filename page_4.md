@@ -1,6 +1,6 @@
 ---
 page: true
-title: Page 4
+title: 第 4 页
 aside: false
 lastUpdated: false
 comments: false

@@ -4,7 +4,7 @@ date: 2025-05-22
 category: Note
 tags: 
     - JavaScript
-description: 记录学了什么？
+description: Something learned
 outline: [2,3]
 draft: false
 sticky: false
@@ -34,5 +34,3 @@ dns:
 ```
 
 ![](https://image.yumeng.icu/2025-05-25%2F222215.png)
-
-![](https://image.yumeng.icu/images/aiCode.jpg)

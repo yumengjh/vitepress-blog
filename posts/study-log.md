@@ -7,7 +7,7 @@ tags:
 description: 记录学了什么？
 outline: [2,3]
 draft: false
-sticky: false
+sticky: true
 done: false
 gridPaper: false
 handwriting: false
@@ -35,5 +35,3 @@ dns:
 ```
 
 ![](https://image.yumeng.icu/2025-05-25%2F222215.png)
-
-![](https://image.yumeng.icu/images/aiCode.jpg)

@@ -55,7 +55,7 @@ async function generatePaginationPages(total, pageSize) {
             const page = `
 ---
 page: true
-title: ${i === 1 ? 'YuMeng' : 'Page ' + i}
+title: ${i === 1 ? '鱼梦江湖' : '第 ' + i + ' 页'}
 aside: false
 lastUpdated: false
 comments: false
