@@ -30,9 +30,7 @@
       "title": "商用免费字体",
       "desc": "Free Font 收录商用免费字体，已收录 861 个全部字体",
       "link": "https://font.ittools.cc/handwriting.html",
-      "linktxt": "font.ittools.cc",
-      "badge": "已失效",
-      "badgeType": "hot"
+      "linktxt": "font.ittools.cc"
     },
     {
       "title": "iconfont",
@@ -46,15 +44,6 @@
       "desc": "提供多种UI设计模板",
       "link": "https://uiverse.io/",
       "linktxt": "uiverse.io",
-      "badge": "HOT",
-      "badgeType": "hot"
-    },
-    {
-      "icon": "https://image.baidu.com/search/down?url=https://fc.sinaimg.cn/large/6364aa43gy1hl1ksv896vj2040040gld.jpg",
-      "title": "fococlipping",
-      "desc": "去除图片背景，透明背景",
-      "link": "https://www.fococlipping.com/clip",
-      "linktxt": "fococlipping.com",
       "badge": "HOT",
       "badgeType": "hot"
     },

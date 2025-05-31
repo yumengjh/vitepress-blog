@@ -1,5 +1,5 @@
 ---
-title: 学习日志
+title: Study Log
 date: 2025-05-22
 category: Note
 tags: 
@@ -17,10 +17,9 @@ publish: true
 AutoAnchor: false
 ---
 
-# 学习日志
+# Study Log
 
-
-clash-verge 默认全局扩展覆写配置
+clash-verge default global extension overwrite configuration
 
 ```yaml
 # Profile Enhancement Merge Template for Clash Verge

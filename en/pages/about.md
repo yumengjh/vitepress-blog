@@ -1,25 +1,25 @@
 ---
 page: true
-title: 关于我
-description: 关于我
+title: About Me
+description: About Me
 aside: false
 lastUpdated: false
 comments: false
 zoomable: false
 ---
 
-## 关于我
+## About Me
 
-我是 **鱼梦江湖**。
+我是 **YuMengJiangHu**。
 
 
 
 ```txt
-鱼梦江湖
-─ 累了就歇，醒了再走，迷迷糊糊的走不如不走。
+YuMengJiangHu
+─ Rest when you're tired, walk again when you're awake, and it's better not to walk in a daze。
 ```
 
-## 技术栈
+## Tech Stack
 
 <p>
   <img src="https://img.shields.io/badge/-Node.js-D3D3D3?logo=Node.js&logoColor=339933" alt="Node.js" style="display: inline-block;" />&nbsp;
