@@ -78,7 +78,7 @@ export default defineConfig({
                 ]
             }
         },
-        'en': { 
+        en: {
             label: 'English',
             lang: 'en-US',
             themeConfig: {
@@ -89,6 +89,19 @@ export default defineConfig({
                     { text: 'Tools', link: '/en/pages/site' },
                     { text: 'About', link: '/en/pages/about' },
                 ],
+                website: {
+                    updateText: 'Update',
+                    RelativeTimeText: {
+                        now: ' Just now',
+                        minute: ' Minute',
+                        hour: ' Hour',
+                        day: ' Day'
+                    },
+                    UpdateTextsuffix: {
+                        front: ' Before',
+                        back: ' After'
+                    },
+                }
                 // 其他英文相关的主题配置...
             }
         }
@@ -144,6 +157,17 @@ export default defineConfig({
         website: {
             copyrightLink: '/pages/about',
             showPrevNextBtn: true,     // 上一頁/下一页按钮是否显示
+            updateText: '更新',
+            UpdateTextsuffix: {
+                front: '前',
+                back: '后'
+            },
+            RelativeTimeText: {
+                now: '刚刚',
+                minute: '分钟',
+                hour: '小时',
+                day: '天'
+            }
         }
     },
     srcExclude: ['README.md'], // 排除README.md文件，不需要编译

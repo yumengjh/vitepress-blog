@@ -1,3 +1,5 @@
+
+
 // 导入模块
 import mediumZoom from 'medium-zoom';
 
@@ -490,7 +492,7 @@ export function getRelativeTime(date, options = {}) {
 
     // 添加后缀
     if (opts.suffix) {
-        relativeTime += isPast ? '前' : '后';
+        relativeTime += isPast ? opts.texts.front : opts.texts.back;
     }
 
     return relativeTime;

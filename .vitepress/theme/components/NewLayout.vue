@@ -2,31 +2,29 @@
     <Layout>
         <template #nav-bar-content-after>
             <!-- 导航栏内容后 -->
-             <!-- <CustomNavbar /> -->
+            <!-- <CustomNavbar /> -->
         </template>
         <template #doc-before>
             <!-- 文档内容前 - 文章日期、标签和更新时间 -->
             <div class="post-info" v-if="!$frontmatter.page">
                 <div class="post-info-left">
                     <span class="post-date meta-bg">
-                        {{ $frontmatter.date?.substring(0,10) }}
+                        {{ $frontmatter.date?.substring(0, 10) }}
                     </span>
                     <div class="post-tags">
-                        <a v-for="item in $frontmatter.tags" 
-                           :key="item"
-                           class="post-tag meta-bg"
-                           :href="withBase(`/pages/tags.html?tag=${item}`)">
+                        <a v-for="item in $frontmatter.tags" :key="item" class="post-tag meta-bg"
+                            :href="withBase(`/pages/tags.html?tag=${item}`)">
                             {{ item }}
                         </a>
                     </div>
                 </div>
                 <div class="post-info-right" v-if="lastUpdated && $frontmatter.date">
                     <span class="post-updated meta-bg" :title="formatDate(lastUpdated, 'YYYY-MM-DD HH:mm:ss')">
-                        更新: {{ displayUpdatedTime }}
+                        {{ updateText }}: {{ displayUpdatedTime }}
                     </span>
                 </div>
             </div>
-            
+
             <!-- 文章简介 -->
             <div class="post-description" v-if="$frontmatter.description && $frontmatter.date">
                 <p>{{ $frontmatter.description }}</p>
@@ -56,24 +54,34 @@ import { getRelativeTime, formatDate } from '../functions'
 const { Layout } = DefaultTheme
 
 // 获取页面数据，包括最后更新时间
-const { page } = useData()
+const { page, theme } = useData()
+
+const updateText = computed(() => theme.value.website.updateText)
+const RelativeTimeTextNow = computed(() => theme.value.website.RelativeTimeText.now)
+const RelativeTimeTextMinute = computed(() => theme.value.website.RelativeTimeText.minute)
+const RelativeTimeTextHour = computed(() => theme.value.website.RelativeTimeText.hour)
+const RelativeTimeTextDay = computed(() => theme.value.website.RelativeTimeText.day)
+const RelativeTimeTextFront = computed(() => theme.value.website.UpdateTextsuffix.front)
+const RelativeTimeTextBack = computed(() => theme.value.website.UpdateTextsuffix.back)
 
 // 计算最后更新时间
 const lastUpdated = computed(() => page.value.lastUpdated)
 // 计算显示的更新时间（相对或绝对）
 const displayUpdatedTime = computed(() => {
     if (!lastUpdated.value) return ''
-    
+
     // 使用相对时间函数，3天内显示相对时间，否则显示绝对日期
     return getRelativeTime(lastUpdated.value, {
         maxDays: 3,  // 3天以内使用相对时间
         format: 'YYYY-MM-DD', // 超过时显示月日
         suffix: true,  // 显示"前"后缀
         texts: {
-            now: '刚刚',
-            minute: '分钟',
-            hour: '小时',
-            day: '天'
+            now: RelativeTimeTextNow.value,
+            minute: RelativeTimeTextMinute.value,
+            hour: RelativeTimeTextHour.value,
+            day: RelativeTimeTextDay.value,
+            front: RelativeTimeTextFront.value,
+            back: RelativeTimeTextBack.value
         }
     })
 })
@@ -102,7 +110,7 @@ const displayUpdatedTime = computed(() => {
     flex-shrink: 0;
 }
 
-.meta-bg{
+.meta-bg {
     background: var(--vp-c-bg-alt);
     padding: 1px 5px;
     border-radius: 5px;
@@ -160,7 +168,7 @@ const displayUpdatedTime = computed(() => {
         margin: 0.75rem 0 1.5rem;
         gap: 10px;
     }
-    
+
     .post-info-left {
         gap: 12px;
     }
