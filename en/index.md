@@ -12,4 +12,4 @@ comments: false
 ## Only important articles are available in English, so please translate them yourself, thank you! 
 
 
-- [Study Log](./posts/study-log.md)
+- [Some things that are temporarily](./posts/study-log.md) - 2025-05-22
