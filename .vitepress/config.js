@@ -68,7 +68,7 @@ export default defineConfig({
         root: {
             label: '简体中文',
             lang: 'zh-CN',
-            title: '鱼梦江湖',
+            title: '鱼',
             themeConfig: {
                 nav: [
                     { text: '首页', link: '/' },
@@ -81,8 +81,8 @@ export default defineConfig({
         en: {
             label: 'English',
             lang: 'en-US',
+            title: 'YuMeng',
             themeConfig: {
-                title: 'YuMeng',
                 nav: [
                     { text: 'Home', link: '/en/' },
                     { text: 'Tags', link: '/en/pages/tags' },
