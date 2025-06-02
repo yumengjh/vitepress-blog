@@ -5,11 +5,20 @@ aside: false
 lastUpdated: false
 comments: false
 ---
-# YuMeng
 
-## The English version is under construction
+<script setup>
+import Page from "../.vitepress/theme/components/Page.vue";
 
-## Only important articles are available in English, so please translate them yourself, thank you! 
+const posts = [{
+    frontMatter: {
+        title: "Some things that are temporarily",
+        description: "This note is used to temporarily record various contents of the learning process, including learning logs, code snippets, and personal notes, etc., for subsequent reference and summary.",
+        date: "2025-05-22",
+        category: "Note",
+        tags: ["Error", "Chrome", "Tool"]
+    },
+    regularPath: "/en/posts/study-log"
+}]
+</script>
 
-
-- [Some things that are temporarily](./posts/study-log.md) - 2025-05-22
+<Page :posts="posts" :pageCurrent="1" :pagesNum="1" />

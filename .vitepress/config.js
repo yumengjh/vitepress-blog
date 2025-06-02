@@ -73,7 +73,7 @@ export default defineConfig({
                 nav: [
                     { text: '首页', link: '/' },
                     { text: '标签', link: '/pages/tags' },
-                    { text: '工具', link: '/pages/site' },
+                    { text: '书签', link: '/pages/site' },
                     { text: '关于', link: '/pages/about' },
                 ]
             }
