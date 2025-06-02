@@ -1,6 +1,7 @@
 :root {
     /* 覆盖配置 */
     --vp-code-color: #3451b2;
+    --vp-c-bg:#fdfdfd;
     /* --vp-c-gutter: transparent; */
     /* 主题配置 */
     --date-font-family: Georgia, sans-serif;
@@ -28,6 +29,7 @@
 }
 
 .dark {
+    --vp-c-bg: #1b1b1f;
     --vp-c-gutter: var(--vp-c-divider);
     --vp-code-color: #a8b1ff;
     --yu-theme-title: #fff;
@@ -434,3 +436,25 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 }
 
 /* #endregion 其他配置 */
+
+/* #region 文字选中样式 */
+::selection {
+    background: rgba(51, 102, 255, 0.1);
+    color: var(--vp-c-text-1);
+}
+
+::-moz-selection {
+    background: rgba(51, 102, 255, 0.1);
+    color: var(--vp-c-text-1);
+}
+
+.dark ::selection {
+    background: rgba(77, 128, 255, 0.2);
+    color: var(--vp-c-text-1);
+}
+
+.dark ::-moz-selection {
+    background: rgba(77, 128, 255, 0.2);
+    color: var(--vp-c-text-1);
+}
+/* #endregion 文字选中样式 */
