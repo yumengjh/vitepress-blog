@@ -690,3 +690,10 @@ el.setAttribute(
 - 否则直接使用动态value
 - 通过`normalizeClass`统一处理各种格式（字符串/数组/对象）
 
+## 短路逻辑
+
+短路逻辑： `A && B` 的执行逻辑是：
+
+如果 `A` 是 false（例如 `null`、`undefined`、`0`、`false`、`''` 等），**整个表达式返回 A**，不会执行 `B`；
+
+如果 `A` 是 true，**才会继续执行 B** 并返回 B 的结果。
