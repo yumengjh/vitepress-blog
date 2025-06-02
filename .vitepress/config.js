@@ -86,7 +86,7 @@ export default defineConfig({
                 nav: [
                     { text: 'Home', link: '/en/' },
                     { text: 'Tags', link: '/en/pages/tags' },
-                    { text: 'Tools', link: '/en/pages/site' },
+                    { text: 'Bookmarks', link: '/en/pages/site' },
                     { text: 'About', link: '/en/pages/about' },
                 ],
                 website: {

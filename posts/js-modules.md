@@ -719,3 +719,24 @@ Deno 现在还支持`import.meta.filename`和`import.meta.dirname`属性，对�
 这两个属性都提供当前平台的正确的路径分隔符，比如 Linux 系统返回`/dev/my_module.ts`，Windows 系统返回`C:\dev\my_module.ts`。
 
 本地模块可以使用这两个属性，远程模块也可以使用。
+
+## 浏览器加载
+
+传统方法是通过`<script>`标签加载 JavaScript 脚本，浏览器也支持加载ES6模块，但是要在`<script>`中加入`type="module"`属性
+
+```html
+<script type="module" src="./foo.js"></script>
+```
+
+浏览器对于带有`type="module"`的`<script>`，都是异步加载，不会造成堵塞浏览器，即等到整个页面渲染完，再执行模块脚本，等同于打开了`<script>`标签的`defer`属性。
+
+ES6 模块也允许内嵌在网页中，语法行为与加载外部脚本完全一致。
+
+```html
+<script type="module">
+  import utils from "./utils.js";
+
+  // other code
+</script>
+```
+

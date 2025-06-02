@@ -58,10 +58,10 @@ onMounted(() => {
         selectTag.value = tagFromUrl
     } else {
         // 否则选择第一个标签
-        const defaultDisplayTag = Object.keys(data.value)[0]
-        if (defaultDisplayTag) {
-            toggleTag(defaultDisplayTag)
-        }
+        // const defaultDisplayTag = Object.keys(data.value)[0]
+        // if (defaultDisplayTag) {
+        //     toggleTag(defaultDisplayTag)
+        // }
     }
 })
 </script>
@@ -77,7 +77,7 @@ onMounted(() => {
     justify-content: space-between;
     align-items: center;
     text-decoration: none;
-    border-bottom: 1px solid var(--vp-c-divider);
+    /* border-bottom: 1px solid var(--vp-c-divider); */
     transition: all 0.2s ease;
 }
 
@@ -124,12 +124,11 @@ onMounted(() => {
     cursor: pointer;
     transition: all 0.1s ease;
     border: 1px solid var(--vp-c-divider);
+    border-radius: 9999px;
 }
 
 .tag:hover {
-    opacity: 0.9;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transform: scale(1.1);
+    background-color: var(--vp-c-bg-soft);
 }
 
 .tag sup {
@@ -154,8 +153,6 @@ onMounted(() => {
     padding-bottom: 1rem;
     font-size: 1.75rem;
     font-weight: 600;
-    border-bottom: 3px solid var(--vp-c-divider);
-    transition: all 0.3s ease;
 }
 
 @media screen and (max-width: 768px) {

@@ -1,7 +1,7 @@
 :root {
     /* 覆盖配置 */
     --vp-code-color: #3451b2;
-    --vp-c-bg:#fdfdfd;
+    --vp-c-bg: #fdfdfd;
     /* --vp-c-gutter: transparent; */
     /* 主题配置 */
     --date-font-family: Georgia, sans-serif;
@@ -361,7 +361,7 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
     height: 1px;
     width: 0;
     background: var(--vp-c-text-2);
-    transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     pointer-events: none;
 }
 
@@ -457,4 +457,10 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
     background: rgba(77, 128, 255, 0.2);
     color: var(--vp-c-text-1);
 }
+
+/* 防止滚动条闪烁 */
+html {
+    scrollbar-gutter: stable;
+}
+
 /* #endregion 文字选中样式 */
