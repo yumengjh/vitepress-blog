@@ -252,7 +252,8 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 }
 
 #nprogress .bar {
-    background: linear-gradient(120deg, #2d60ec, #3ccfda) !important;
+    /* background: linear-gradient(120deg, #2d60ec, #3ccfda) !important; */
+    background: linear-gradient(120deg, var(--vp-c-text-2), var(--vp-c-text-3)) !important;
     position: fixed;
     z-index: 1031;
     top: 0;

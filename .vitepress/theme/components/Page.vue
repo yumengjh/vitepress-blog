@@ -116,7 +116,7 @@ onMounted(() => {
   background: var(--vp-c-text-2);
   transform: scaleX(0);
   transform-origin: left;
-  transition: transform 0.3s;
+  transition: transform 0.6s;
 }
 
 .post-title a:hover {
