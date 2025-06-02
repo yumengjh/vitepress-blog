@@ -379,13 +379,13 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 
 /* 顶部导航模糊背景 */
 .VPNav {
-    border: none;
-    background-color: transparent !important;
+    /* border: none; */
+    /* background-color: transparent !important; */
 }
 
 .VPNavBar {
-    background-color: transparent !important;
-    backdrop-filter: blur(12px);
+    /* background-color: transparent !important; */
+    /* backdrop-filter: blur(12px); */
 }
 
 /* 搜索框透明 */

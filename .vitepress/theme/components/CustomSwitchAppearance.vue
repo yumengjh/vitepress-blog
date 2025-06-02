@@ -70,7 +70,8 @@ const toggleAppearance = inject('toggle-appearance', async (e) => {
 })
 
 function toggle(e) {
-  toggleAppearance(e)
+  // toggleAppearance(e)
+    isDark.value = !isDark.value
 }
 </script>
 
