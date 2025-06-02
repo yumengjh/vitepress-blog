@@ -3,7 +3,7 @@
     <div v-for="(article, index) in posts" :key="index" class="post-item">
       <div class="post-header">
         <h2 class="post-title">
-          <a :href="withBase(article.regularPath)" :title="article.frontMatter.description">
+          <a :href="withBase(article.regularPath)">
             {{ article.frontMatter.title }}
           </a>
         </h2>
@@ -12,7 +12,7 @@
           <div v-if="article.frontMatter.tags" class="post-tags">
             <a v-for="tag in article.frontMatter.tags" :key="tag" class="post-tag"
               :href="withBase(`/pages/tags?tag=${tag}`)" :title="`查看 ${tag} 相关文章`">
-             <span style="margin-right: -5px;">#</span>
+             <!-- <span style="margin-right: -5px;">#</span> -->
              {{ tag }}
             </a>
           </div>
@@ -79,7 +79,7 @@ onMounted(() => {
 <style scoped>
 .post-item {
   padding: 1.5rem 0;
-  border-bottom: 1px solid var(--vp-c-divider);
+  /* border-bottom: 1px solid var(--vp-c-divider); */
 }
 
 .post-item:first-child {
@@ -92,7 +92,7 @@ onMounted(() => {
 
 .post-title {
   margin: 0;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   line-height: 1.4;
   border: none;
 }
@@ -101,10 +101,30 @@ onMounted(() => {
   color: var(--vp-c-text-1);
   text-decoration: none;
   transition: color 0.2s;
+  font-weight: bold;
+  position: relative;
+}
+
+.post-title a::after {
+  content: "";
+  display: block;
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 100%;
+  height: 2px;
+  background: var(--vp-c-text-2);
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.3s;
 }
 
 .post-title a:hover {
   color: var(--vp-c-text-2);
+}
+
+.post-title a:hover::after {
+  transform: scaleX(1);
 }
 
 .post-meta {
@@ -127,7 +147,7 @@ onMounted(() => {
   border-radius: 9999px;
   /* background-color: var(--vp-c-bg-soft); */
   border: 1px solid var(--vp-c-divider);
-  font-size: 0.8rem;
+  font-size: 0.7rem;
   color: var(--vp-c-text-1);
   text-decoration: none;
   transition: all 0.2s ease;
@@ -139,7 +159,7 @@ onMounted(() => {
 
 .post-excerpt {
   color: var(--vp-c-text-2);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   line-height: 1.6;
   margin-top: 0.5rem;
 }

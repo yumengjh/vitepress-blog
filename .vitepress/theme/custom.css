@@ -336,24 +336,36 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 }
 
 /* 导航栏菜单链接 */
-.VPNavBarMenuLink,
-.content-body {
+.VPNavBarMenuLink {
     /* font-weight: bold !important; */
     /* font-family: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji'; */
+        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important; */
     /* font-size: 1rem !important; */
+    color: var(--vp-c-text-2) !important;
+    /* margin: 0 3px; */
 }
 
-.VPNavBarMenuLink.active {
-    /* font-weight: bold !important; */
-    color: inherit !important;
-    border-bottom: 1px solid var(--vp-c-text-1) !important;
-
+.VPNavBarMenuLink {
+    position: relative;
+    overflow: hidden;
 }
 
-.VPNavBarMenuLink:hover {
-    color: inherit !important;
-    /* border-bottom: 1px solid var(--vp-c-text-1) !important; */
+.VPNavBarMenuLink::after {
+    content: "";
+    display: block;
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 1px;
+    width: 0;
+    background: var(--vp-c-text-2);
+    transition: width 0.3s cubic-bezier(0.4,0,0.2,1);
+    pointer-events: none;
+}
+
+.VPNavBarMenuLink:hover::after,
+.VPNavBarMenuLink.active::after {
+    width: 100%;
 }
 
 /* 移动端导航 */
