@@ -740,3 +740,288 @@ ES6 模块也允许内嵌在网页中，语法行为与加载外部脚本完全�
 </script>
 ```
 
+对于外部的模块脚本，有几点需要注意：
+
+- 代码是在**模块作用域之中运行**，而不是在全局作用域运行。模块内部的顶层变量，外部不可见。
+- 模块脚本自动采用严格模式，不管有没有声明`use strict`。
+- 模块之中，可以使用`import`命令加载其他模块（`.js`后缀不可省略，需要提供绝对 URL 或相对 URL），也可以使用`export`命令输出对外接口。
+- 模块之中，顶层的`this`关键字返回`undefined`，而不是指向`window`。也就是说，在模块顶层使用`this`关键字，是无意义的。
+- 同一个模块如果加载多次，将只执行一次。
+
+利用顶层的`this`等于`undefined`这个语法点，可以侦测当前代码是否在 ES6 模块之中。
+
+```js
+const isNotModuleScript = this !== undefined;
+```
+
+## ES6 模块与 CommonJS 模块的差异 
+
+ES5模块和CommonJs模块有三个重大的差异：
+
+- CommonJs模块输出的是一个值的拷贝，ES6输出的则是值的引用。
+- CommonJs是运行时加载，ES6是编译时输出接口
+- CommonJS 模块的require()是同步加载模块，ES6 模块的import命令是异步加载，有一个独立的模块依赖的解析阶段。
+
+CJS 加载的是一个对象，即`module.exports`属性，该对象只有在脚本运行完成后才会生成，而ES6不是对象，它的对外接口是一种静态定义，在代码静态解析阶段就会生成。
+
+CJS输出的是一个拷贝的值的，即模块内部的变化不会影响这个值。
+
+例子：
+```js
+// lib.js
+var counter = 3;
+function incCounter() {
+  counter++;
+}
+module.exports = {
+  counter: counter,
+  incCounter: incCounter,
+};
+```
+
+```js
+// main.js
+var mod = require('./lib');
+
+console.log(mod.counter);  // 3
+mod.incCounter();
+console.log(mod.counter); // 3
+```
+
+上面的代码可以看出，模块内部的变化不会影响输出的值，因为`mod.counter`是一个原始类型的值，会被缓存，解决方法就是写成一个函数，才能得到内部变动后的值。
+
+```js
+// lib.js
+var counter = 3;
+function incCounter() {
+  counter++;
+}
+module.exports = {
+  get counter() {
+    return counter
+  },
+  incCounter: incCounter,
+};
+```
+
+在ES6模块中，引擎在对代码进行静态解析的时候，遇到模块加载命令`import`，就会生成一个只读的引用。等到真正执行的时候，再根据这个只读引用，到被加载的模块中去取值。
+
+ES6是动态绑定的，即模块内部的变化会影响输出的值。
+
+```js
+// lib.js
+export let counter = 3;
+export function incCounter() {
+  counter++;
+}
+
+// main.js
+import { counter, incCounter } from './lib';
+console.log(counter); // 3
+incCounter();
+console.log(counter); // 4
+```
+
+## Node.js 的模块加载方法
+
+CommonJS 模块是 Node.js 专用的，与 ES6 模块不兼容。语法上面，两者最明显的差异是，CommonJS 模块使用`require()`和`module.exports`，ES6 模块使用`import`和`export`。
+
+在nodejs后来的版本中，开放了ESM模块的支持，使用`import`和`export`语法。
+
+Node.js 要求ES6模块必须采用`.mjs`后缀，也就是说，只要脚本文件中使用了`import`或`export`语句，就必须使用`.mjs`后缀，并且`node.js`中的ESM模块默认是严格模式。
+
+有一个简单的办法就是在 package.json 中添加一个`type`字段，值为`module`，这样就可以使用`.js`后缀。
+
+```json
+{
+  "type": "module"
+}
+```
+
+一旦设置了以后，该项目的 JS 脚本，就被解释成 ES6 模块。
+
+如果这时还要使用 CommonJS 模块，那么需要将 CommonJS 脚本的后缀名都改成.cjs。如果没有type字段，或者type字段为commonjs，则.js脚本会被解释成 CommonJS 模块。
+
+总结为一句话：`.mjs`文件总是以 ES6 模块加载，`.cjs`文件总是以 CommonJS 模块加载，`.js`文件的加载取决于`package.json`里面`type`字段的设置。
+
+注意：两种模块的加载命令不能混用，CommonJS 模块只能使用`require()`和`module.exports`，ES6 模块只能使用`import`和`export`。
+
+## ackage.json 的 main 字段
+
+`package.json`文件有两个字段可以指定模块的入口文件：`main`和`exports`。比较简单的模块，可以只使用`main`字段，指定模块加载的入口文件。
+
+```js
+// ./node_modules/es-module-package/package.json
+{
+  "type": "module",
+  "main": "./src/index.js"
+}
+```
+
+上面代码指定项目的入口脚本为`./src/index.js`，它的格式为 ES6 模块。如果没有`type`字段，`index.js`就会被解释为 CommonJS 模块。
+
+然后，`import`命令就可以加载这个模块。
+
+```js
+// ./my-app.mjs
+
+import { something } from 'es-module-package';
+// 实际加载的是 ./node_modules/es-module-package/src/index.js
+```
+
+上面代码中，运行该脚本以后，Node.js 就会到`./node_modules`目录下面，寻找`es-module-package`模块，然后根据该模块`package.json`的`main`字段去执行入口文件。
+
+## package.json 的 exports 字段
+
+`exports`字段的优先级高于`main`字段。它有多种用法。
+
+**（1）子目录别名**
+
+`package.json`文件的`exports`字段可以指定脚本或子目录的别名。
+
+```js
+// ./node_modules/es-module-package/package.json
+{
+  "exports": {
+    "./submodule": "./src/submodule.js"
+  }
+}
+```
+
+上面的代码指定`src/submodule.js`别名为`submodule`，然后就可以从别名加载这个文件。
+
+```js
+import submodule from 'es-module-package/submodule';
+// 加载 ./node_modules/es-module-package/src/submodule.js
+```
+
+例子:
+
+```js
+// ./node_modules/es-module-package/package.json
+{
+  "exports": {
+    "./features/": "./src/features/"
+  }
+}
+
+import feature from 'es-module-package/features/x.js';
+// 加载 ./node_modules/es-module-package/src/features/x.js
+```
+
+如果没有指定别名，就不能用“模块+脚本名”这种形式加载脚本。
+
+**（2）main 的别名**
+
+`exports`字段的别名如果是`.`，就代表模块的主入口，优先级高于`main`字段，并且可以直接简写成`exports`字段的值。
+
+```js
+{
+  "exports": {
+    ".": "./main.js"
+  }
+}
+
+// 等同于
+{
+  "exports": "./main.js"
+}
+```
+
+由于`exports`字段只有支持 ES6 的 Node.js 才认识，所以可以搭配`main`字段，来兼容旧版本的 Node.js。
+
+```js
+{
+  "main": "./main-legacy.cjs",
+  "exports": {
+    ".": "./main-modern.cjs"
+  }
+}
+```
+
+上面代码中，老版本的 Node.js （不支持 ES6 模块）的入口文件是`main-legacy.cjs`，新版本的 Node.js 的入口文件是`main-modern.cjs`。
+
+**（3）条件加载**
+
+利用`.`这个别名，可以为 ES6 模块和 CommonJS 指定不同的入口。
+
+```js
+{
+  "type": "module",
+  "exports": {
+    ".": {
+      "require": "./main.cjs",
+      "default": "./main.js"
+    }
+  }
+}
+```
+
+上面代码中，别名`.`的`require`条件指定`require()`命令的入口文件（即 CommonJS 的入口），`default`条件指定其他情况的入口（即 ES6 的入口）。
+
+上面的写法可以简写如下。
+
+```js
+{
+  "exports": {
+    "require": "./main.cjs",
+    "default": "./main.js"
+  }
+}
+
+```
+
+注意，如果同时还有其他别名，就不能采用简写，否则会报错。
+
+```js
+{
+  // 报错
+  "exports": {
+    "./feature": "./lib/feature.js",
+    "require": "./main.cjs",
+    "default": "./main.js"
+  }
+}
+```
+
+## CommonJS 模块加载 ES6 模块 
+
+CommonJS 的`require()`命令不能加载 ES6 模块，会报错，只能使用`import()`这个方法加载。
+
+## ES6 模块加载 CommonJS 模块
+
+ES6 模块的`import`命令可以加载 CommonJS 模块，但是只能整体加载，不能只加载单一的输出项。
+
+```js
+// 正确
+import packageMain from 'commonjs-package';
+
+// 报错
+import { method } from 'commonjs-package';
+```
+
+这是因为 ES6 模块需要支持静态代码分析，而 CommonJS 模块的输出接口是`module.exports`，是一个对象，无法被静态分析，所以只能整体加载。
+
+加载单一的输出项，可以写成下面这样。
+
+```js
+import packageMain from 'commonjs-package';
+const { method } = packageMain;
+```
+
+还有一种变通的加载方法，就是使用 Node.js 内置的`module.createRequire()`方法。
+
+```js
+// cjs.cjs
+module.exports = 'cjs';
+
+// esm.mjs
+import { createRequire } from 'module';
+
+const require = createRequire(import.meta.url);
+
+const cjs = require('./cjs.cjs');
+cjs === 'cjs'; // true
+```
+
+上面代码中，ES6 模块通过`module.createRequire()`方法可以加载 CommonJS 模块。但是，这种写法等于将 ES6 和 CommonJS 混在一起了，所以不建议使用。
