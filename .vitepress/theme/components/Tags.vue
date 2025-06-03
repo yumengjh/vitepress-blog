@@ -131,6 +131,10 @@ onMounted(() => {
     background-color: var(--vp-c-bg-soft);
 }
 
+.tag-active {
+    background-color: var(--vp-c-bg-soft);
+}
+
 .tag sup {
     margin-left: 6px;
     font-weight: 600;
