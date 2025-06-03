@@ -15,8 +15,6 @@ const website = theme.value.website.copyrightLink
 const route = useRoute()
 const webTitle = computed(() => site.value.title)
 const isHome = computed(() => route.path === '/en/' || route.path === '/en/pages/about' || route.path === '/pages/about')
-console.log(isHome.value);
-
 </script>
 
 <style>

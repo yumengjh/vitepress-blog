@@ -90,6 +90,7 @@ export default defineConfig({
                     { text: 'About', link: '/en/pages/about' },
                 ],
                 website: {
+                    showPrevNextBtn: false,     
                     updateText: 'Update',
                     RelativeTimeText: {
                         now: ' Just now',
