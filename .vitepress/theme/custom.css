@@ -262,6 +262,10 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
     height: 2px;
 }
 
+#nprogress .peg {
+    box-shadow: none;
+}
+
 .grid-paper-bg {
     background-color: var(--vp-c-bg);
     background-image:
