@@ -697,3 +697,14 @@ el.setAttribute(
 如果 `A` 是 false（例如 `null`、`undefined`、`0`、`false`、`''` 等），**整个表达式返回 A**，不会执行 `B`；
 
 如果 `A` 是 true，**才会继续执行 B** 并返回 B 的结果。
+
+| 字段           | 类型       | 说明                                                         |
+| -------------- | ---------- | ------------------------------------------------------------ |
+| `delimiters`   | `Array`    | 用于模板语法的定界符，默认值为 `['{{', '}}']`，表示模板的起始和结束标记。 |
+| `delimitersRE` | `RegExp`   | 正则表达式，用于匹配模板语法的内容。默认值为 `/\{\{([^]+?)\}\}/g`。 |
+| `scope`        | `Object`   | 当前的作用域对象，存储数据，使用 `reactive({})` 创建。如果存在 `parent`，则继承自 `parent.scope`。 |
+| `dirs`         | `Object`   | 存储指令相关的配置或处理逻辑。继承自 `parent.dirs`（如果 `parent` 存在）。 |
+| `effects`      | `Array`    | 存储副作用函数（`ReactiveEffectRunner`），用于追踪响应式更新。 |
+| `blocks`       | `Array`    | 存储模板中的代码块，用于处理模板的结构或内容。               |
+| `cleanups`     | `Array`    | 存储清理函数，用于在生命周期结束时清理资源。                 |
+| `effect`       | `Function` | 注册副作用函数。如果 `inOnce` 为真，则立即将函数加入队列；否则，创建一个 `ReactiveEffectRunner` 实例，并将其推入 `effects` 数组。 |
