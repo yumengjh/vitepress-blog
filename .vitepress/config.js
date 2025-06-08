@@ -5,10 +5,10 @@ import { RssPlugin } from 'vitepress-plugin-rss'
 import { fileURLToPath } from 'url'
 import { pagefindPlugin } from 'vitepress-plugin-pagefind'
 //每页的文章数量
-const pageSize = 15
+const pageSize = 3
 
 // RSS 配置
-const baseUrl = 'https://yumeng.icu'
+const baseUrl = 'https://blog.yumeng.icu'
 const RSS = {
     title: 'YuMeng',
     baseUrl,
@@ -176,7 +176,7 @@ export default defineConfig({
     vite: {
         server: { port: 5000 },
         plugins: [
-            // RssPlugin(RSS),
+            RssPlugin(RSS),
             pagefindPlugin({
                 showDate: true,
                 pageResultCount: 4,
