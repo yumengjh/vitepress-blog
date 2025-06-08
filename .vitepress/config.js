@@ -66,7 +66,7 @@ export default defineConfig({
     ],
     locales: {
         root: {
-            label: '简体中文',
+            label: 'Chinese',
             lang: 'zh-CN',
             title: '鱼',
             themeConfig: {
