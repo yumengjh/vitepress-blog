@@ -5,7 +5,7 @@ import { RssPlugin } from 'vitepress-plugin-rss'
 import { fileURLToPath } from 'url'
 import { pagefindPlugin } from 'vitepress-plugin-pagefind'
 //每页的文章数量
-const pageSize = 3
+const pageSize = 15
 
 // RSS 配置
 const baseUrl = 'https://blog.yumeng.icu'
@@ -70,6 +70,10 @@ export default defineConfig({
             lang: 'zh-CN',
             title: '鱼',
             themeConfig: {
+                outline: {
+                    label: '文章摘要',
+                    level: [2, 3]
+                },
                 nav: [
                     { text: '首页', link: '/' },
                     { text: '标签', link: '/pages/tags' },
@@ -83,6 +87,10 @@ export default defineConfig({
             lang: 'en-US',
             title: 'YuMeng',
             themeConfig: {
+                outline: {
+                    label: 'Table of Contents',
+                    level: [2, 3]
+                },
                 nav: [
                     { text: 'Home', link: '/en/' },
                     { text: 'Tags', link: '/en/pages/tags' },
@@ -90,7 +98,7 @@ export default defineConfig({
                     { text: 'About', link: '/en/pages/about' },
                 ],
                 website: {
-                    showPrevNextBtn: false,     
+                    showPrevNextBtn: false,
                     updateText: 'Update',
                     RelativeTimeText: {
                         now: ' Just now',

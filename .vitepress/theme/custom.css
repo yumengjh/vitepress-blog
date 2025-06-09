@@ -144,7 +144,7 @@ h3 {
 
 .aside {
     position: fixed !important;
-    right: 200px;
+    right: 24px;
 }
 
 .VPDoc {
@@ -184,6 +184,10 @@ h3 {
     }
 }
 
+.outline-marker{
+    background-color: var(--vp-c-text-1) !important;
+}
+
 /* #endregion 主题 */
 
 
@@ -191,7 +195,7 @@ h3 {
 
 img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
     border-radius: 10px;
-    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+    box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0);
 }
 
 .medium-zoom-overlay {
