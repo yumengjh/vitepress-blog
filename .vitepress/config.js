@@ -66,10 +66,24 @@ export default defineConfig({
     ],
     locales: {
         root: {
-            label: 'Chinese',
+            label: '简体中文',
             lang: 'zh-CN',
             title: '鱼',
             themeConfig: {
+                darkModeSwitchLabel: '主题',
+                lightModeSwitchTitle: '浅色模式',
+                darkModeSwitchTitle: '深色模式',
+                returnToTopLabel: '返回顶部',
+                footer: {
+                    message: '基于 MIT 许可发布',
+                    copyright: '版权所有 © 2024-2025 <a style="text-decoration: none !important;" href="/pages/about">鱼梦江湖</a>'
+                },
+                notFound: {
+                    code: 404,
+                    title: '页面不存在',
+                    quote: '但是，如果你不改变方向，如果你继续寻找，你最终可能会到达你要去的地方。',
+                    linkText: '返回首页',
+                },
                 outline: {
                     label: '文章摘要',
                     level: [2, 3]
@@ -79,7 +93,25 @@ export default defineConfig({
                     { text: '标签', link: '/pages/tags' },
                     { text: '书签', link: '/pages/site' },
                     { text: '关于', link: '/pages/about' },
-                ]
+                ],
+                lastUpdated: {
+                    text: '最后更新时间'
+                },
+                website: {
+                    // copyrightLink: '/pages/about',
+                    showPrevNextBtn: true,
+                    updateText: '更新',
+                    UpdateTextsuffix: {
+                        front: '前',
+                        back: '后'
+                    },
+                    RelativeTimeText: {
+                        now: '刚刚',
+                        minute: '分钟',
+                        hour: '小时',
+                        day: '天'
+                    }
+                }
             }
         },
         en: {
@@ -87,6 +119,16 @@ export default defineConfig({
             lang: 'en-US',
             title: 'YuMeng',
             themeConfig: {
+                footer: {
+                    message: 'Released under the MIT License',
+                    copyright: 'Copyright © 2024-2025 <a style="text-decoration: none !important;" href="/pages/about">YuMeng</a>'
+                },
+                notFound: {
+                    code: 404,
+                    title: 'PAGE NOT FOUND',
+                    quote: "But if you don't change your direction, and if you keep looking, you may end up where you are heading.",
+                    linkText: 'Take me home',
+                },
                 outline: {
                     label: 'Table of Contents',
                     level: [2, 3]
@@ -98,6 +140,7 @@ export default defineConfig({
                     { text: 'About', link: '/en/pages/about' },
                 ],
                 website: {
+                    // copyrightLink: 'en/pages/about',
                     showPrevNextBtn: false,
                     updateText: 'Update',
                     RelativeTimeText: {
@@ -110,51 +153,22 @@ export default defineConfig({
                         front: ' Before',
                         back: ' After'
                     },
+                },
+                lastUpdated: {
+                    text: 'Last updated'
                 }
-                // 其他英文相关的主题配置...
             }
         }
     },
     themeConfig: {
-        // darkModeSwitchLabel: '主题',
-        // lightModeSwitchTitle: '浅色模式',
-        // darkModeSwitchTitle: '深色模式',
-        // returnToTopLabel: '返回顶部',
-        // notFound: {
-        //     code: 404,
-        //     title: '页面不存在',
-        //     quote: '迷路了吗？让我们回到首页吧',
-        //     linkText: '返回首页',
-        // },
         externalLinkIcon: false,
         lastUpdated: {
-            // text: '最后更新时间',
             formatOptions: {
                 dateStyle: 'short', // full, long, medium, short
                 timeStyle: 'medium'
             }
         },
         posts: await getPosts(pageSize),
-        nav: [
-            { text: 'Home', link: '/' },
-            { text: 'Tags', link: '/pages/tags' },
-            { text: 'Tools', link: '/pages/site' },
-            // {
-            //     text: '回顾', items: [
-            //         { text: '2024', link: '/pages/review/2024' },
-            //         { text: '2023', link: '/pages/review/2023' },
-            //     ]
-            // },
-            { text: 'Me', link: '/pages/about' },
-        ],
-        // footer: {
-        //     message: 'Released under the MIT License',
-        //     copyright: 'Copyright © 2024-present <a style="text-decoration: none !important;" href="/pages/about">YuMeng</a>'
-        // },
-        outline: {
-            label: 'Table of contents',
-            level: [2, 3]
-        },
         socialLinks: [
             {
                 icon: {
@@ -163,28 +177,13 @@ export default defineConfig({
                 link: 'https://github.com/yumengjh'
             },
         ],
-        website: {
-            copyrightLink: '/pages/about',
-            showPrevNextBtn: true,     // 上一頁/下一页按钮是否显示
-            updateText: '更新',
-            UpdateTextsuffix: {
-                front: '前',
-                back: '后'
-            },
-            RelativeTimeText: {
-                now: '刚刚',
-                minute: '分钟',
-                hour: '小时',
-                day: '天'
-            }
-        }
     },
     srcExclude: ['README.md'], // 排除README.md文件，不需要编译
 
     vite: {
         server: { port: 5000 },
         plugins: [
-            RssPlugin(RSS),
+            // RssPlugin(RSS),
             pagefindPlugin({
                 showDate: true,
                 pageResultCount: 4,

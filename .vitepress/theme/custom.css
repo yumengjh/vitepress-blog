@@ -188,6 +188,10 @@ h3 {
     background-color: var(--vp-c-text-1) !important;
 }
 
+.VPFooter{
+    border-top: none !important;
+}
+
 /* #endregion 主题 */
 
 

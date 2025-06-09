@@ -39,7 +39,7 @@
             <!-- <NotFound /> -->
         </template>
     </Layout>
-    <Copyright />
+    <!-- <Copyright /> -->
 </template>
 
 <script setup>
