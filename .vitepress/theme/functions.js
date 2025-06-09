@@ -92,7 +92,7 @@ export function initZoom(frontmatter) {
     // 判断是否禁用了缩放功能
     if (frontmatter.zoomable !== false) {
         // 使用medium-zoom库为图片添加缩放功能
-        mediumZoom('.main img:not([no-zoomable])', { background: 'rgba(0,0,0,0.2)' });
+        mediumZoom('.main img:not([no-zoom])', { background: 'rgba(0,0,0,0.2)' });
     }
 }
 

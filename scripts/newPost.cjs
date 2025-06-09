@@ -21,9 +21,6 @@ description: ${description}
 outline: [2,3]
 draft: false
 sticky: false
-done: false
-gridPaper: false
-handwriting: false
 cbf: false
 zoomable: true
 publish: true
@@ -42,13 +39,13 @@ try {
     // 创建文件
     const filePath = path.join(postsDir, `${fileName}.md`)
     fs.writeFileSync(filePath, frontmatter)
-    
+
     console.log(`\n✨ 文章创建成功！`)
     console.log(`📝 文件路径: ${filePath}`)
     console.log(`\n使用方法：`)
     console.log(`npm run new [文件名] [标题] [描述] [标签(逗号分隔)]`)
     console.log(`示例：npm run new my-post "我的文章" "这是描述" "标签1,标签2"`)
-    
+
 } catch (error) {
     console.error('❌ 创建文章失败:', error)
 } 

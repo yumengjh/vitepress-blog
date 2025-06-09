@@ -202,25 +202,12 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
     z-index: 21;
 }
 
-.medium-zoom-overlay~.medium-zoom-image {
+.medium-zoom-overlay~.medium-zoom-image:not([no-style]) {
     border-radius: 10px !important;
 }
 
-@keyframes timeline-dot-animate {
-
-    0%,
-    100% {
-        filter: hue-rotate(0deg);
-    }
-
-    50% {
-        filter: hue-rotate(360deg);
-    }
-}
-
 .timeline-dot::before {
-    border: solid 2px #0571c4;
-    animation: timeline-dot-animate 15s linear infinite;
+    border: solid 2px var(--vp-c-gutter);
 }
 
 #nprogress {

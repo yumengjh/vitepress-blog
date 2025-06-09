@@ -55,7 +55,7 @@ title: 更新历史
 - **图片缩放**
 - 添加图片缩放功能
 - 在 Markdown 文件的 frontmatter 中添加 `zoomable: false` 即可禁用当前文档所有图片缩放功能
-- 单个图片使用`![alt](path/to/file.jpg){no-zoomable}`即可禁用图片**样式**和**缩放**功能
+- 单个图片使用`![alt](path/to/file.jpg){no-zoom}`即可禁用图片**样式**和**缩放**功能
 - 单个图片使用`![alt](path/to/file.jpg){no-style}`即可禁用图片**样式**但是保留**缩放**功能
 :::
 
