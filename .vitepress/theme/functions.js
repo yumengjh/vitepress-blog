@@ -109,152 +109,6 @@ export function updateErrorImages(isDark) {
     });
 }
 
-// 格子纸背景相关功能
-// ---------------------------------------------
-
-/**
- * 设置格子纸背景效果
- * @param {Object} frontmatter - 页面的frontmatter数据
- * @param {boolean} isDark - 是否为深色模式
- */
-export function setupGridPaperBg(frontmatter, isDark) {
-    const mainElement = document.querySelector('.VPContent');
-    if (!mainElement) return;
-
-    // 检查frontmatter中是否启用格子纸背景
-    const gridPaperEnabled = frontmatter.gridPaper === true;
-    // 检查frontmatter中是否启用手写字体
-    const handwritingEnabled = frontmatter.handwriting === true;
-
-    if (gridPaperEnabled) {
-        mainElement.classList.add('grid-paper-bg');
-        // 设置大纲竖线变量
-        document.documentElement.style.setProperty('--content-border-left', 'transparent');
-        document.documentElement.style.setProperty('--outline-marker-width', '5px');
-
-        // 优化代码块在格子纸背景下的样式
-        setupCodeBlockStyleForGridPaper(isDark);
-
-        // 如果启用了手写字体，则设置手写字体
-        if (handwritingEnabled) {
-            setupHandwritingFont();
-        } else {
-            resetHandwritingFont();
-        }
-    } else {
-        mainElement.classList.remove('grid-paper-bg');
-        document.documentElement.style.setProperty('--content-border-left', 'var(--vp-c-divider)');
-        document.documentElement.style.setProperty('--outline-marker-width', '2px');
-
-        // 恢复默认代码块样式
-        resetCodeBlockStyle();
-
-        // 如果启用了手写字体，则设置手写字体
-        if (handwritingEnabled) {
-            setupHandwritingFont();
-        } else {
-            resetHandwritingFont();
-        }
-    }
-}
-
-/**
- * 为格子纸背景设置代码块样式
- * @param {boolean} isDark - 是否为深色模式
- */
-export function setupCodeBlockStyleForGridPaper(isDark) {
-    if (isDark) {
-        document.documentElement.style.setProperty('--vp-code-block-bg', 'rgba(30, 30, 32, 0.7)');
-        document.documentElement.style.setProperty('--vp-c-bg-alt', 'rgba(30, 30, 32, 0.8)');
-    } else {
-        document.documentElement.style.setProperty('--vp-code-block-bg', 'rgba(245, 245, 245, 0.6)');
-        document.documentElement.style.setProperty('--vp-c-bg-alt', 'rgba(245, 245, 245, 0.8)');
-    }
-
-    // 设置blockquote样式
-    const blockquotes = document.querySelectorAll('.vp-doc blockquote');
-    blockquotes.forEach(blockquote => {
-        blockquote.style.borderLeft = '5px solid var(--vp-c-brand)';
-        blockquote.classList.add('grid-paper-blockquote');
-    });
-
-    // 为代码块添加纸质感和阴影
-    const codeBlocks = document.querySelectorAll('div[class*="language-"]');
-    codeBlocks.forEach(block => {
-        block.style.borderRadius = '6px';
-        block.style.boxShadow = '0 2px 6px rgba(0, 0, 0, 0.15)';
-        block.style.border = '1px solid rgba(0, 0, 0, 0.1)';
-        block.classList.add('grid-paper-code-block');
-    });
-}
-
-/**
- * 重置代码块样式为默认值
- */
-export function resetCodeBlockStyle() {
-    document.documentElement.style.removeProperty('--vp-code-block-bg');
-    document.documentElement.style.removeProperty('--vp-c-bg-alt');
-
-    // 重置blockquote样式
-    const blockquotes = document.querySelectorAll('.vp-doc blockquote');
-    blockquotes.forEach(blockquote => {
-        blockquote.style.borderLeft = '';
-        blockquote.classList.remove('grid-paper-blockquote');
-    });
-
-    // 移除代码块特殊样式
-    const codeBlocks = document.querySelectorAll('div[class*="language-"]');
-    codeBlocks.forEach(block => {
-        block.style.borderRadius = '';
-        block.style.boxShadow = '';
-        block.style.border = '';
-        block.classList.remove('grid-paper-code-block');
-    });
-}
-
-/**
- * 设置手写字体样式
- */
-export function setupHandwritingFont() {
-    // 动态添加字体样式
-    const fontFaceId = 'grid-paper-font-face';
-    if (!document.getElementById(fontFaceId)) {
-        const fontFaceStyle = document.createElement('style');
-        fontFaceStyle.id = fontFaceId;
-        fontFaceStyle.textContent = `
-            @font-face {
-                font-family: 'WriteFont';
-                src: url('/static/font/Handwriting.woff2') format('woff2');
-                font-weight: normal;
-                font-style: normal;
-                font-display: swap;
-            }
-        `;
-        document.head.appendChild(fontFaceStyle);
-    }
-    
-    // 添加手写字体的类：大纲标题、大纲项、文章描述、文章内容、文章标题、文章副标题、文章正文、文章列表、文章块引用
-    // 为文章内容设置手写字体
-    const contentElements = document.querySelectorAll('.outline-title,.VPDocOutlineItem,.post-description,.vp-doc p, .vp-doc li, .vp-doc h1, .vp-doc h2, .vp-doc h3, .vp-doc h4, .vp-doc h5, .vp-doc h6, .vp-doc blockquote');
-    contentElements.forEach(element => {
-        element.style.fontFamily = "'WriteFont', var(--vp-font-family-base)";
-        // 增加字间距使手写字体更易读
-        element.style.letterSpacing = '0.03em';
-    });
-}
-
-/**
- * 重置手写字体样式
- */
-export function resetHandwritingFont() {
-    // 恢复文章内容的默认字体
-    const contentElements = document.querySelectorAll('.outline-title,.VPDocOutlineItem,.post-description,.vp-doc p, .vp-doc li, .vp-doc h1, .vp-doc h2, .vp-doc h3, .vp-doc h4, .vp-doc h5, .vp-doc h6, .vp-doc blockquote');
-    contentElements.forEach(element => {
-        element.style.fontFamily = '';
-        element.style.letterSpacing = '';
-    });
-}
-
 /**
  * 初始化图片标题显示功能，将title属性显示为图片下方的标题
  */
@@ -543,13 +397,13 @@ function throttle(fn, delay) {
  * 只有 frontmatter.AutoAnchor === true 时才启用
  */
 export function setupAutoAnchorOnScroll(frontmatter) {
-    if (typeof window === 'undefined' || frontmatter.AutoAnchor !== true) return () => {};
+    if (typeof window === 'undefined' || frontmatter.AutoAnchor !== true) return () => { };
 
     // 只在PC端生效
     const isPC = () => {
         return !/Android|webOS|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     };
-    if (!isPC()) return () => {};
+    if (!isPC()) return () => { };
     const headingsSelector = '.vp-doc h2[id], .vp-doc h3[id]';
     const offset = 150; // 顶部导航栏高度
 
