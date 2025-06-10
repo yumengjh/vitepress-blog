@@ -159,6 +159,10 @@ h3 {
     border-bottom: 1px solid var(--vp-c-gutter);
 }
 
+.VPNavBarHamburger .container{
+    border: none;
+}
+
 .VPContent .container {
     max-width: 60rem !important;
     display: block !important;
