@@ -60,7 +60,7 @@ export default defineConfig({
     },
     head: [
         ["link", { rel: "alternate", type: "application/rss+xml", title: "RSS Feed", href: "/feed.xml" }],  // 使浏览器能够自动发现 RSS 源
-        ['link', { rel: 'icon', href: 'https://api.iconify.design/game-icons:fish-escape.svg' }],
+        ['link', { rel: 'icon', href: '/favicon.ico' }],
         ['meta', { name: 'author', content: 'YuMeng' }],
         ['meta', { name: 'keywords', content: '博客,前端,JavaScript' }],
     ],
@@ -68,7 +68,7 @@ export default defineConfig({
         root: {
             label: '简体中文',
             lang: 'zh-CN',
-            title: '鱼梦江湖',
+            title: '鱼',
             themeConfig: {
                 darkModeSwitchLabel: '主题',
                 lightModeSwitchTitle: '浅色模式',
@@ -161,10 +161,6 @@ export default defineConfig({
         }
     },
     themeConfig: {
-        logo: {
-            light: 'https://api.iconify.design/game-icons:fish-escape.svg?color=black',
-            dark: 'https://api.iconify.design/game-icons:fish-escape.svg?color=white'
-        },
         externalLinkIcon: false,
         lastUpdated: {
             formatOptions: {
