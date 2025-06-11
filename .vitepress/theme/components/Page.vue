@@ -101,7 +101,7 @@ onMounted(() => {
   color: var(--vp-c-text-1);
   text-decoration: none;
   transition: color 0.2s;
-  font-weight: bold;
+  /* font-weight: bold; */
   position: relative;
 }
 

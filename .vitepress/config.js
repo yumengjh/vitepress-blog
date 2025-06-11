@@ -60,7 +60,8 @@ export default defineConfig({
     },
     head: [
         ["link", { rel: "alternate", type: "application/rss+xml", title: "RSS Feed", href: "/feed.xml" }],  // 使浏览器能够自动发现 RSS 源
-        ['link', { rel: 'icon', href: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg' }],
+        // ['link', { rel: 'icon', href: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg' }],
+        ['link', { rel: 'icon', href: 'favicon.ico' }],
         ['meta', { name: 'author', content: 'YuMeng' }],
         ['meta', { name: 'keywords', content: '博客,前端,JavaScript' }],
     ],
@@ -68,7 +69,7 @@ export default defineConfig({
         root: {
             label: '简体中文',
             lang: 'zh-CN',
-            title: '鱼',
+            title: '鱼梦江湖',
             themeConfig: {
                 darkModeSwitchLabel: '主题',
                 lightModeSwitchTitle: '浅色模式',
@@ -165,6 +166,7 @@ export default defineConfig({
         //     light: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg?color=black',
         //     dark: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg?color=white'
         // },
+        logo:'favicon.ico',
         externalLinkIcon: false,
         lastUpdated: {
             formatOptions: {

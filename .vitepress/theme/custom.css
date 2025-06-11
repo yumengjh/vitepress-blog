@@ -6,8 +6,8 @@
     /* 主题配置 */
     --date-font-family: Georgia, sans-serif;
     --yu-theme-title: #000;
-    /* --vp-font-family-base: 'PingFang SC', 'Microsoft Yahei', sans-serif; */
-    --vp-font-family-base: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    --vp-font-family-base: 'PingFang SC', 'Microsoft Yahei', sans-serif;
+    /* --vp-font-family-base: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; */
     /* --vp-font-family-mono: "Fira Code", monospace; */
     /* 容器自定义 */
     --vp-custom-block-tip-border: #747bff;
@@ -137,9 +137,10 @@ h3 {
 
 .VPNavBarTitle .title,
 .site-footer .title {
-    font-family: "Yuu", Optima, sans-serif !important;
+    /* font-family: "Yuu", Optima, sans-serif !important; */
     color: var(--yu-theme-title) !important;
-    font-size: 1.5rem !important;
+    /* font-size: 1.3rem !important; */
+    font-weight: normal;
 }
 
 .aside {
@@ -156,7 +157,7 @@ h3 {
 }
 
 .VPNav .container {
-    border-bottom: 1px solid var(--vp-c-gutter);
+    /* border-bottom: 1px solid var(--vp-c-gutter); */
 }
 
 .VPNavBarHamburger .container{
@@ -229,8 +230,8 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 }
 
 #nprogress .bar {
-    /* background: linear-gradient(120deg, #2d60ec, #3ccfda) !important; */
-    background: linear-gradient(120deg, var(--vp-c-text-2), var(--vp-c-text-3)) !important;
+    background: linear-gradient(120deg, #2d60ec, #3ccfda) !important;
+    /* background: linear-gradient(120deg, var(--vp-c-text-2), var(--vp-c-text-3)) !important; */
     position: fixed;
     z-index: 1031;
     top: 0;
@@ -344,8 +345,8 @@ html {
     scrollbar-gutter: stable;
 }
 
-.VPDocAside{
-    /* display: none; */
+.vpi-chevron-down{
+    display: none !important;
 }
 
 /* #endregion 文字选中样式 */
