@@ -166,7 +166,7 @@ export default defineConfig({
         //     light: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg?color=black',
         //     dark: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg?color=white'
         // },
-        logo:'https:/image.yumeng.icu/images/logo.png',
+        logo:'https://image.yumeng.icu/images/logo.png',
         externalLinkIcon: false,
         lastUpdated: {
             formatOptions: {
