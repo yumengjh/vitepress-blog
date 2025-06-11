@@ -8,15 +8,15 @@ comments: false
 zoomable: false
 ---
 
-## About Me
+## **Hello**
 
-我是 **YuMengJiangHu**。
+## **My name is YuMeng** .
 
 
 
 ```txt
 YuMengJiangHu
-─ Rest when you're tired, walk again when you're awake, and it's better not to walk in a daze。
+Rest when you're tired, walk again when you're awake, and it's better not to walk in a daze。 -  (●'◡'●)
 ```
 
 ## Tech Stack
@@ -34,3 +34,12 @@ YuMengJiangHu
 </p>
 
 
+<style>
+  h1, h2, h3, h4, h5, h6 {
+    border: none !important;
+  }
+  
+  .language-txt .line:first-child {
+    color:var(--vp-c-indigo-1) !important;
+  }
+</style>

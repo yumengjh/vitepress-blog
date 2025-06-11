@@ -8,15 +8,15 @@ comments: false
 zoomable: false
 ---
 
-## 关于我
+## **你好**
 
-我是 **鱼梦江湖**。
+## **我是鱼梦江湖**。
 
 
 
 ```txt
 鱼梦江湖
-─ 累了就歇，醒了再走，迷迷糊糊的走不如不走。
+累了就歇，醒了再走，迷迷糊糊的走不如不走。 -  (●'◡'●)
 ```
 
 ## 技术栈
@@ -34,3 +34,12 @@ zoomable: false
 </p>
 
 
+<style>
+  h1, h2, h3, h4, h5, h6 {
+    border: none !important;
+  }
+  
+  .language-txt .line:first-child {
+    color:var(--vp-c-indigo-1) !important;
+  }
+</style>
