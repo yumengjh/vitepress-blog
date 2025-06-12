@@ -220,7 +220,7 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 }
 
 .timeline-dot::before {
-    border: solid 2px var(--vp-c-gutter);
+    border-width: 2px ;
 }
 
 #nprogress {
