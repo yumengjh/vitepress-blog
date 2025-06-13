@@ -76,7 +76,7 @@ export default defineConfig({
                 darkModeSwitchTitle: '深色模式',
                 returnToTopLabel: '返回顶部',
                 footer: {
-                    message: '基于 MIT 许可发布',
+                    message: '如有转载或 CV 的请标注本站原文地址',
                     copyright: '版权所有 © 2024-2025 <a style="text-decoration: none !important;" href="/pages/about">鱼梦江湖</a>'
                 },
                 notFound: {
@@ -121,7 +121,7 @@ export default defineConfig({
             title: 'YuMeng',
             themeConfig: {
                 footer: {
-                    message: 'Released under the MIT License',
+                    message: 'If there is a reprint, please mark this site',
                     copyright: 'Copyright © 2024-2025 <a style="text-decoration: none !important;" href="/pages/about">YuMeng</a>'
                 },
                 notFound: {
