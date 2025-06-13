@@ -138,9 +138,9 @@ h3 {
 .VPNavBarTitle .title,
 .site-footer .title {
     /* font-family: "Yuu", Optima, sans-serif !important; */
-    color: var(--yu-theme-title) !important;
+    /* color: var(--yu-theme-title) !important; */
     /* font-size: 1.3rem !important; */
-    font-weight: normal;
+    /* font-weight: normal; */
 }
 
 .aside {
