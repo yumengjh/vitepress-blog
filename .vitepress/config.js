@@ -61,7 +61,7 @@ export default defineConfig({
     head: [
         ["link", { rel: "alternate", type: "application/rss+xml", title: "RSS Feed", href: "/feed.xml" }],  // 使浏览器能够自动发现 RSS 源
         // ['link', { rel: 'icon', href: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg' }],
-        ['link', { rel: 'icon', href: 'https://image.yumeng.icu/images/logo.png' }],
+        // ['link', { rel: 'icon', href: 'https://image.yumeng.icu/images/logo.png' }],
         ['meta', { name: 'author', content: 'YuMeng' }],
         ['meta', { name: 'keywords', content: '博客,前端,JavaScript' }],
     ],
@@ -166,7 +166,7 @@ export default defineConfig({
         //     light: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg?color=black',
         //     dark: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg?color=white'
         // },
-        logo:'https://image.yumeng.icu/images/logo.png',
+        // logo:'https://image.yumeng.icu/images/logo.png',
         externalLinkIcon: false,
         lastUpdated: {
             formatOptions: {
