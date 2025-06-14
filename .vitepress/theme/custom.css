@@ -157,7 +157,7 @@ h3 {
 }
 
 .VPNav .container {
-    /* border-bottom: 1px solid var(--vp-c-gutter); */
+    border-bottom: 1px solid var(--vp-c-gutter);
 }
 
 .VPNavBarHamburger .container{
