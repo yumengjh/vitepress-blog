@@ -3,7 +3,7 @@ title: Generator 函数的语法
 date: 2025-05-24
 category: Note
 tags: 
-    - JavaScrip
+    - JavaScript
 description: Generator 函数的语法
 ---
 

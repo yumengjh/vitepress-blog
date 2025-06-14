@@ -3,7 +3,7 @@ title: JavaScript中的Class，作为对象的模板，只是一个语法糖，E
 date: 2025-05-31
 category: Note
 tags: 
-    - Javascript
+    - JavaScript
 description: 介绍了 JavaScript 中的 Class 语法，说明其本质上是对象的模板，是对原有基于原型的继承方式的语法糖，ES5 也可以实现类似功能。
 cbf: false
 ---

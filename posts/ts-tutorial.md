@@ -1444,7 +1444,7 @@ const y = mul(4, 5); // y 类型为 number
 console.log(x,y)
 ```
 
-# 装饰器
+# 装饰器{#decorators}
 
 **初始化一个TS配置文件**：
 

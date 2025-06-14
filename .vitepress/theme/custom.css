@@ -313,7 +313,7 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 }
 
 :not(pre)>code {
-    font-family: "Fira Code", monospace;
+    /* font-family: "Fira Code", monospace; */
 }
 
 
