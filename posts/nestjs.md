@@ -15,6 +15,12 @@ aside: false
 
 # NestJS
 
+::: details 目录
+
+[[toc]]
+
+:::
+
 **创建新项目**
 
 ```bash
@@ -77,4 +83,21 @@ export class CatsController {
 - 库特定
 
 ​	我们可以使用特定于库的（例如 Express） [响应对象](https://express.nodejs.cn/en/api.html#res)，它可以使用方法处理程序签名中的 `@Res()` 装饰器注入（例如 `findAll(@Res() response)`）。通过	这种方法，你可以使用该对象公开的原生响应处理方法。例如，使用 Express，你可以使用 `response.status(200).send()` 等代码构建响应。
+
+## 请求对象
+
+处理程序通常需要访问客户端的请求详细信息，通过 `@Req()` 装饰器注入请求对象来访问请求对象。
+
+```ts {7}
+import { Controller, Get, Req } from '@nestjs/common';
+import { Request } from 'express';
+
+@Controller('cats')
+export class CatsController {
+  @Get()
+  findAll(@Req() request: Request): string {
+    return 'This action returns all cats';
+  }
+}
+```
 
