@@ -120,3 +120,141 @@ const GLOBALS_ALLOWED =
 动态参数中表达式的值应当是一个**字符串**，或者是 `null`。特殊值 `null` 意为**显式移除该绑定**。其他非字符串的值会触发警告。
 
 ![](https://cn.vuejs.org/assets/directive.DtZKvoAo.png){no-zoom}
+
+## 样式绑定
+
+**样式对象绑定**：
+
+```js
+const classObject = reactive({
+  active: true,
+  'text-danger': false
+})
+```
+
+```vue
+<div :class="classObject"></div>
+```
+
+或者绑定一个返回对象的[计算属性](https://cn.vuejs.org/guide/essentials/computed.html)
+
+**内联样式**：
+
+```js
+const activeColor = ref('red')
+const fontSize = ref(30)
+```
+
+```vue
+<div :style="{ color: activeColor, fontSize: fontSize + 'px' }"></div>
+```
+
+直接绑定一个样式对象
+
+```js
+const styleObject = reactive({
+  color: 'red',
+  fontSize: '30px'
+})
+```
+
+```vue
+<div :style="styleObject"></div>
+```
+
+## v-for中的key
+
+Vue的DOM更新策略是**就地更新**，这意味着当通过V-for渲染元素后，当数据发生顺序变化，但是DOM不会发生变化，只会就地更新每个元素。
+
+如果想让Vue跟踪每个节点的标识，从而重用和重新排序现有的元素，你需要为每个元素对应的块提供一个唯一的 `key` 属性
+
+> **官网的一句话**：默认模式是高效的，但只适用于列表渲染输出的结果不依赖子组件状态或者临时 DOM 状态 (例如表单输入值) 的情况。
+
+ "**不依赖子组件状态**" 的意思是：如果你列表中的每一个子组件实例都有自己独立的、内部维护的状态（比如表单输入值、组件内部的选中状态、展开/收起状态等），那么当列表顺序变化或有增删时，**没有 `key` 会导致这些内部状态被错误地复用，从而出现 Bug**。
+
+ "**临时 DOM 状态**" 的意思是：如果你列表中的元素是表单控件，并且用户可能直接在这些控件上进行输入或操作，那么当列表顺序变化或有增删时，**没有 `key` 会导致 Vue 复用带有旧的临时 DOM 状态的元素，从而出现视图与数据不一致的问题**。
+
+**Key的使用场景**：渲染的列表项是动态的，即会发生增加，删除，重排等事件，并且这些列表项包括：子组件，表单元素等，就应该使用`key`，**并且确保 `key` 是每个列表项独一无二的标识**。
+
+推荐在任何可行的时候为 `v-for` 提供一个 `key` attribute，**除非所迭代的 DOM 内容非常简单** (例如：不包含组件或有状态的 DOM 元素)，或者你想有意采用默认行为来提高性能。
+
+## 事件
+
+关于按钮修饰符可以直接使用 [`KeyboardEvent.key`](https://developer.mozilla.org/zh-CN/docs/Web/API/UI_Events/Keyboard_event_key_values) 暴露的按键名称作为修饰符，但需要转为 kebab-case 形式。
+
+```vue
+<input @keyup.page-down="onPageDown" />
+```
+
+## 侦听器
+
+侦听器可以监听的数据源可以是：ref（包括计算属性），一个响应式对象、一个 [getter 函数](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions/get#description)、或多个数据源组成的数组。
+
+注意，你不能直接侦听**响应式对象的属性值**，需要写成getter函数：
+
+```js
+// 提供一个 getter 函数
+watch(
+  () => obj.count,
+  (count) => {
+    console.log(`Count is: ${count}`)
+  }
+)
+```
+
+**深层侦听器**：直接给 `watch()` 传入一个响应式对象，会隐式地创建一个**深层侦听器**，该回调函数在所有嵌套的变更时都会被触发：
+
+相比之下，一个返回响应式对象的 getter 函数，**只有在返回不同的对象时（比如整个对象被替换）**，才会触发回调，不过可以显式地加上 `deep` 选项，强制转成深层侦听器，`deep` 选项还可以是一个数字，表示最大遍历深度
+
+在 `setup()` 或 `<script setup>` 中用同步语句创建的侦听器，会自动绑定到宿主组件实例上，并且会在宿主组件卸载时自动停止。因此，在大多数情况下，你无需关心怎么停止一个侦听器。如果用异步回调创建一个侦听器，那么它不会绑定到当前组件上，你必须手动停止它，以防内存泄漏。如下方这个例子：
+
+```vue
+<script setup>
+import { watchEffect } from 'vue'
+
+// 它会自动停止
+watchEffect(() => {})
+
+// ...这个则不会！
+setTimeout(() => {
+  watchEffect(() => {})
+}, 100)
+</script>
+```
+
+要手动停止一个侦听器，请调用 `watch` 或 `watchEffect` 返回的函数：
+
+需要异步创建侦听器的情况很少，请尽可能选择同步创建。如果需要等待一些异步数据，你可以使用条件式的侦听逻辑：
+
+```js
+// 需要异步请求得到的数据
+const data = ref(null)
+
+watchEffect(() => {
+  if (data.value) {
+    // 数据加载后执行某些操作...
+  }
+})
+```
+
+## ref
+
+ref允许我们在一个特定的 DOM 元素或子组件实例被**挂载后**，获得对它的直接引用。
+
+```vue
+<script setup>
+import { useTemplateRef, onMounted } from 'vue'
+
+// 第一个参数必须与模板中的 ref 值匹配
+const input = useTemplateRef('my-input')
+
+onMounted(() => {
+  input.value.focus()
+})
+</script>
+
+<template>
+  <input ref="my-input" />
+</template>
+```
+
