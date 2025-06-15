@@ -119,7 +119,7 @@ const GLOBALS_ALLOWED =
 
 动态参数中表达式的值应当是一个**字符串**，或者是 `null`。特殊值 `null` 意为**显式移除该绑定**。其他非字符串的值会触发警告。
 
-![](https://cn.vuejs.org/assets/directive.DtZKvoAo.png){no-zoom}
+![](https://image.yumeng.icu/2025-06-15%2F180020.png){no-zoom}
 
 ## 样式绑定
 
@@ -258,3 +258,95 @@ onMounted(() => {
 </template>
 ```
 
+## 组件
+
+### props
+
+```js
+const props = defineProps({
+    title: {
+        rtype: String,
+        required: false,
+        default: 'Default Title'
+    }
+})
+// <demo title="my title" />
+```
+
+### 监听事件
+
+子组件触发自定义事件，父组件监听对应事件
+
+```vue
+<demo @down="console.log('父组件监听到down事件')"/>
+```
+
+```vue
+<button @click="$emit('down')">Click</button> <!-- 子组件点击触发  -->
+```
+
+用于`<script setup>`中
+
+```js
+const event = defineEmits(['down']);
+const fun = () => {
+    event('down');
+}
+```
+
+### 插槽
+
+```vue
+<demo>
+    <h2>Fly</h2>
+</demo>
+```
+
+```vue
+...
+<slot>Default</slot>
+...
+```
+
+### 动态组件
+
+```vue
+<!-- currentTab 改变时组件也改变 -->
+<component :is="tabs[currentTab]"></component>
+```
+
+## 深入组件
+
+全局注册的组件在生产打包的时候**无法被 tree-shaking 优化掉**。
+
+在组件中**只写key没有value**（**仅写上 prop 但不传值**）会被隐式的转化为true
+
+props遵循单向数据流，父组件向子组件传递数据时，子组件不能直接修改父组件的数据，如果你在子组件中去更改一个 prop，Vue 会在控制台上向你抛出警告：
+
+如果父组件传入一个复合类型的 prop ，比如对象或者数组，那么子组件就可以修改并且不会触发警告，这是因为 JavaScript 的对象和数组是按引用传递，**对 Vue 来说，阻止这种更改需要付出的代价异常昂贵**，这种更改的主要缺陷是它允许了子组件以某种不明显的方式影响父组件的状态，可能会使数据流在将来变得更难以理解。
+
+**最佳实践是子组件抛出一个事件，父组件监听这个事件并在回调中修改数据。**
+
+**$emit** 校验：
+
+```vue
+<script setup>
+const emit = defineEmits({
+  // 校验 submit 事件
+  submit: ({ email, password }) => {
+    if (email && password) {
+      return true
+    } else {
+      console.warn('Invalid submit event payload!')
+      return false
+    }
+  }
+})
+
+function submitForm(email, password) {
+  emit('submit', { email, password })
+}
+</script>
+```
+
+**为组件的 emits 标注类型**（**校验**）https://cn.vuejs.org/guide/typescript/composition-api.html#typing-component-emits
