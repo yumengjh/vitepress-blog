@@ -350,3 +350,119 @@ function submitForm(email, password) {
 ```
 
 **为组件的 emits 标注类型**（**校验**）https://cn.vuejs.org/guide/typescript/composition-api.html#typing-component-emits
+
+
+### 组件 v-model
+
+```js
+const model = defineModel()
+// <Child v-model="countModel" />
+```
+
+`defineModel`的主要应用场景是**开发自定义表单控件或需要双向数据绑定的组件**，功能上和原生的`input`、`select`等表单元素类似。
+
+`defineModel()` 返回的值是一个 ref，它可以像其他 ref 一样被访问以及修改，不过它能起到在**父组件和当前组件中变量之间的双向绑定**的作用：
+
+```vue
+<script setup>
+const model = defineModel()
+</script>
+
+<template>
+  <input v-model="model" />
+</template>
+<!-- <child v-model='count'/> -->
+```
+
+**底层机制**：
+
+组件 `v-model` 本质上是 **`defineProps` 和 `defineEmits` 的语法糖**
+
+```vue
+<!-- Child.vue -->
+<script setup>
+const props = defineProps(['modelValue'])
+const emit = defineEmits(['update:modelValue'])
+</script>
+
+<template>
+  <input
+    :value="props.modelValue"
+    @input="emit('update:modelValue', $event.target.value)"
+  />
+</template>
+```
+
+```vue
+<!-- Parent.vue -->
+<Child
+  :modelValue="foo"
+  @update:modelValue="$event => (foo = $event)"
+/>
+```
+
+还可以通过给 `defineModel` 传递选项，来声明底层 prop 的选项：
+
+```js
+const model = defineModel({ required: true	 })
+const model = defineModel({ default: 0 })
+```
+
+**参数**：
+
+```vue
+<MyComponent v-model:title="bookTitle" />
+```
+
+将字符串作为第一个参数传递给 `defineModel()` 来支持相应的参数，额外的 prop 选项，应该在 model 名称之后传递，同样可以使用 defineModel 原理 的方式的写出。
+
+```js
+const title = defineModel('title',{ required: true })
+```
+
+有了参数对应，就可以有多个`v-model`绑定。
+
+除了内除的修饰符，还可以在自定义组件的`v-model`中自定义修饰符。
+
+在子组件中通过解构`defineModel`的返回值得到使用时的修饰符
+
+```js
+const [model, modifiers] = defineModel()
+```
+
+可以给 `defineModel()` 传入 `get` 和 `set` 这两个选项，这两个选项在从模型引用中读取或设置值时会接收到当前的值
+
+```vue
+<script setup>
+const [model, modifiers] = defineModel({
+  set(value) {
+    if (modifiers.capitalize) {
+      return value.charAt(0).toUpperCase() + value.slice(1)
+    }
+    return value
+  },
+    get(val){
+        ...
+		return val
+    }
+})
+</script>
+
+<template>
+  <input type="text" v-model="model" />
+</template>
+```
+
+上述的例子还能实现多`v-model`，`defineModel`的第一个参数是名称，第二个是处理选项
+
+```js
+const [model, modifiers] = defineModel('...',{...})
+```
+
+prop的安全的默认值创建方式：`default: () => ({ name: 'default' })`
+
+关于为什么默认值要使用**工厂函数**：
+
+如果是一个**原始类型**可以直接写，但是如果是引用类型（对象，数组），需要用**工厂函数返回对象**，才能确保每个实例都会创建新对象，否则所有组件实例共享同一个对象引用。
+
+默认值的工厂函数机制是为了保证**数据实例的独立性**，防止某些操作意外修改数据后影响了所有组件引用的数据（数据污染）。

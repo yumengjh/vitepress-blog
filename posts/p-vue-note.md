@@ -698,6 +698,8 @@ el.setAttribute(
 
 如果 `A` 是 true，**才会继续执行 B** 并返回 B 的结果。
 
+## 参数列表
+
 | 字段           | 类型       | 说明                                                         |
 | -------------- | ---------- | ------------------------------------------------------------ |
 | `delimiters`   | `Array`    | 用于模板语法的定界符，默认值为 `['{{', '}}']`，表示模板的起始和结束标记。 |
@@ -708,3 +710,74 @@ el.setAttribute(
 | `blocks`       | `Array`    | 存储模板中的代码块，用于处理模板的结构或内容。               |
 | `cleanups`     | `Array`    | 存储清理函数，用于在生命周期结束时清理资源。                 |
 | `effect`       | `Function` | 注册副作用函数。如果 `inOnce` 为真，则立即将函数加入队列；否则，创建一个 `ReactiveEffectRunner` 实例，并将其推入 `effects` 数组。 |
+
+
+## 局部上下文分析
+
+```js
+  const reactiveProxy = reactive(
+    new Proxy(mergedScope, {
+      set(target, key, val, receiver) {
+        // 当设置一个在当前作用域中不存在的属性时，
+        // 不要在当前作用域中创建它，而是回退到父作用域。
+        if (receiver === reactiveProxy && !Object.prototype.hasOwnProperty.call(target, key)) {
+          return Reflect.set(parentScope, key, val)
+        }
+        return Reflect.set(target, key, val, receiver)
+      }
+    })
+  )
+```
+
+```js
+if (receiver === reactiveProxy && !Object.prototype.hasOwnProperty.call(target, key))
+```
+
+`receiver === reactiveProxy`：确保 `set` 操作是通过代理对象 `reactiveProxy` 触发的，而不是直接在目标对象 `target` 上触发的，比如`Reflect.set(target, 'name', 'Doe') `，主要为了防止一些边缘情况。
+
+~~`!Object.prototype.hasOwnProperty.call(target, key)`：检查目标对象 `target` 是否自身拥有该属性。使用 `Object.prototype.hasOwnProperty.call(target, key)` 可以避免因 `target` 是响应式对象而触发代理拦截器，导致无限递归调用。~~
+
+~~**避免无限递归的真正原因**：使用 `Object.prototype.hasOwnProperty.call()` 避免递归是因为它不依赖目标对象的方法，它直接使用 `Object.prototype` 上的原始方法~~
+
+
+写成`!Object.prototype.hasOwnProperty.call(target, key)`还有个好处是防止用户自定义的属性覆盖了原型链上的 `hasOwnProperty` 方法，或者边缘情况该对象根本就没有继承 `Object.prototype`，使用`call`能确保使用原生的 `hasOwnProperty` 方法来检查属性是否存在。
+
+```js
+const obj1 = Object.create(null)   // 创建一个没有原型的对象 它的 hasOwnProperty 方法是不存在的
+const obj2 = {
+  hasOwnProperty: () => false, // 自定义的 hasOwnProperty 方法，调用它总是返回 false
+};
+```
+
+> [!tip]
+>
+> ~~`!target.hasOwnProperty(key)`用来判断属性是否存在于当前作用域，当`target` 是一个响应式对象时，`hasOwnProperty` 方法可能会触发响应式代理的拦截器，从而导致无限递归调用，最终栈溢出。~~
+>
+> ~~`Object.prototype.hasOwnProperty.call(target, key)`可以绕过响应式代理的拦截器~~
+
+**回退机制**：
+
+```js
+return Reflect.set(parentScope, key, val);
+```
+
+如果满足上述条件，说明要设置的属性在当前作用域中不存在，此时将属性设置操作回退到父作用域 `parentScope` 中执行。`Reflect.set` 是一个内置方法，用于设置对象的属性值，并返回一个布尔值表示操作是否成功。
+
+```js
+return Reflect.set(target, key, val, receiver);
+```
+
+如果不满足上述条件，说明要设置的属性在当前作用域中存在，**或者 `set` 操作不是通过代理对象触发的，此时直接在当前作用域的目标对象 `target` 上设置属性值**。
+
+## IIFE
+
+```js
+const serverDiv = document.createElement('div');
+serverDiv.id = 'server';
+serverDiv.innerHTML = '{{ title }}';
+document.body.appendChild(serverDiv);
+Mist.createApp({
+            title: 'Hello World'
+        }).mount("#server")
+```
+
