@@ -91,7 +91,7 @@ export default {
                 // 重新初始化图片标题显示
                 initImageTitles();
                 initAutoAnchor();
-                internationalization(theme.value.website.SearchText);
+                // internationalization(theme.value.website.SearchText);
             })
         );
         // frontmatter变化监听
