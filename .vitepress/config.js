@@ -59,6 +59,7 @@ export default defineConfig({
         },
     },
     head: [
+        ['meta', { name: 'algolia-site-verification', content: 'C3C4B925C6B73E9E' }],
         ["link", { rel: "alternate", type: "application/rss+xml", title: "RSS Feed", href: "/feed.xml" }],  // 使浏览器能够自动发现 RSS 源
         // ['link', { rel: 'icon', href: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg' }],
         // ['link', { rel: 'icon', href: 'https://image.yumeng.icu/images/logo.png' }],

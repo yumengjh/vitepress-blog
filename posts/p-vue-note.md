@@ -777,7 +777,7 @@ serverDiv.id = 'server';
 serverDiv.innerHTML = '{{ title }}';
 document.body.appendChild(serverDiv);
 Mist.createApp({
-            title: 'Hello World'
-        }).mount("#server")
+    title: 'Hello World'
+}).mount("#server")
 ```
 

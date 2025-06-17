@@ -30,3 +30,5 @@ http.createServer(function(request, response) {
 
 http 是 node 自带的模块，调用模块上的 createServer 函数，返回一个对象，这个对象上有一个 listen 方法，传入一个数值参数，指定这个服务器监听的端口。
 
+
+

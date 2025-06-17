@@ -466,3 +466,229 @@ prop的安全的默认值创建方式：`default: () => ({ name: 'default' })`
 如果是一个**原始类型**可以直接写，但是如果是引用类型（对象，数组），需要用**工厂函数返回对象**，才能确保每个实例都会创建新对象，否则所有组件实例共享同一个对象引用。
 
 默认值的工厂函数机制是为了保证**数据实例的独立性**，防止某些操作意外修改数据后影响了所有组件引用的数据（数据污染）。
+
+### 透传 Attributes
+
+**Attributes 继承**是指在组件系统中，当父组件将属性（attributes）传递给子组件时，如果子组件没有显式地声明或处理这些属性，那么这些属性就会被“**继承**”到**子组件的根元素上**。
+
+如果一个子组件的根元素已经有了 `class` 或 `style` attribute，它会和从父组件上继承的值合并。
+
+```vue
+<!-- <MyButton> 的模板 -->
+<button>Click Me</button>
+```
+
+```vue
+<MyButton class="large" />
+```
+
+最终渲染：
+
+```vue
+<button class="large">Click Me</button>
+```
+
+同样的规则也适用于 `v-on` 事件监听器。
+
+如果一个组件在根组件上渲染另一个组件，那么它接收的 Attributes 会直接继续传给**嵌套组件**（组件内的组件）
+
+**注意**：透传 Attributes 不会包含声明过的 props 或是针对 `emits` 声明事件的 `v-on` 侦听函数，换句话说，声明过的 props 和侦听函数被 `<MyButton>`“**消费**”了。
+
+如果你**不想要**一个组件自动地继承 attribute，你可以在组件选项中设置 `inheritAttrs: false`，透传进来的 attribute 可以在模板的表达式中直接用 `$attrs` 访问到，除了被"**消费**"了的 attribute
+
+```vue
+<script setup>
+defineOptions({
+  inheritAttrs: false
+})
+// ...setup 逻辑
+</script>
+```
+
+更改透传属性的位置：
+
+```vue
+<div class="btn-wrapper">
+  <button class="btn" v-bind="$attrs">Click Me</button>
+</div>
+```
+
+::: tip 补充
+
+无参数的 `v-bind` 会将一个对象的所有属性都作为 attribute 应用到目标元素上。
+
+:::
+
+**如果一个组件是多根节点，那么自动  attribute 透传行为是没有的**，如果 `$attrs` 没有被显式绑定，将会抛出一个运行时警告。
+
+如果需要在JavaScript中访问透传 attribute ，需要先从`vue`中引入`useAttrs `API。
+
+```vue
+<script setup>
+import { useAttrs } from 'vue'
+const attrs = useAttrs()
+</script>
+```
+
+### Slots
+
+当一个组件同时接收默认插槽和具名插槽时，所有位于**顶级**的非 `<template>` 节点都被隐式地视为默认插槽的内容。
+
+**条件插槽**：
+
+```vue
+<div v-if="$slots.header" class="card-header">
+    <slot name="header" />
+</div>
+```
+
+**动态插槽名**：
+
+```vue
+<template v-slot:[dynamicSlotName]></template>
+```
+
+**作用域插槽**：
+
+子组件将数据交给父组件，父组件进行结构设计后再传入子组件，也就是父组件在使用插槽的时候同时拥有当前组件数据和子组件数据
+
+方法是像对组件传递 props 那样，向一个插槽的出口上传递 attributes：
+
+```vue
+<!-- <MyComponent> 的模板 -->
+<div>
+  <slot :text="greetingMessage" :count="1"></slot>
+</div>
+```
+
+通过子组件标签上的 `v-slot` 指令，直接接收到了一个插槽 props 对象：
+
+```vue
+<MyComponent v-slot="slotProps">
+    {{ slotProps.text }} {{ slotProps.count }}
+</MyComponent>
+```
+
+**具名作用域插槽**：
+
+```vue
+<MyComponent>
+    <template #header="headerProps">
+{{ headerProps }}
+    </template>
+
+    <template #default="defaultProps">
+{{ defaultProps }}
+    </template>
+
+    <template #footer="footerProps">
+{{ footerProps }}
+    </template>
+</MyComponent>
+```
+
+向具名插槽中传入 props：
+
+```vue
+<slot name="header" message="hello"></slot>
+```
+
+**注意**：插槽上的 `name` 是一个 Vue 特别保留的 attribute，不会作为 props 传递给插槽。
+
+### 依赖注入
+
+**依赖注入**：：一个父组件向下“**分发**”数据，它的所有后代（无论隔几代）都可以“**接收**”这些数据。
+
+一个父组件相对于其所有的后代组件，会作为**依赖提供者**。任何后代的组件树，无论层级有多深，都可以**注入**由父组件提供给整条链路的依赖。
+
+要为组件后代提供数据，需要使用到 [`provide()`](https://cn.vuejs.org/api/composition-api-dependency-injection.html#provide) 函数：
+
+```vue
+<script setup>
+import { provide } from 'vue'
+
+provide(/* 注入名 */ 'message', /* 值 */ 'hello!')
+</script>
+```
+
+`provide()` 函数接收两个参数。第一个参数被称为**注入名**，可以是一个字符串或是一个 `Symbol`。后代组件会用注入名来查找期望注入的值。一个组件可以多次调用 `provide()`，使用不同的注入名，注入不同的依赖值。
+
+第二个参数是提供的值，值可以是任意类型，包括响应式的状态，比如一个 ref：
+
+```js
+import { ref, provide } from 'vue'
+
+const count = ref(0)
+provide('key', count)
+```
+
+**提供的响应式状态使后代组件可以由此和提供者建立响应式的联系**。
+
+**应用层 Provide**：除了在一个组件中提供依赖，我们还可以在整个应用层面提供依赖：
+
+```js
+import { createApp } from 'vue'
+
+const app = createApp({})
+
+app.provide(/* 注入名 */ 'message', /* 值 */ 'hello!')
+```
+
+在应用级别提供的数据在该应用内的所有组件中都可以注入。
+
+要注入上层组件提供的数据，需使用 [`inject()`](https://cn.vuejs.org/api/composition-api-dependency-injection.html#inject) 函数：
+
+```vue
+<script setup>
+import { inject } from 'vue'
+
+const message = inject('message')
+</script>
+```
+
+如果有多个父组件提供了**相同键的数据**，注入将解析为组件链上**最近的父组件**所注入的值。
+
+如果注入名在祖先链上没有组件提供，可以声明一个默认值，否则会抛出一个运行时警告。
+
+```js
+// 如果没有祖先组件提供 "message"
+// `value` 会是 "默认值"
+const value = inject('message', '默认值')
+```
+
+在一些场景中，默认值可能需要通过调用一个函数或初始化一个类来取得。为了避免在用不到默认值的情况下进行不必要的计算或产生副作用，我们可以使用工厂函数来创建默认值。第三个参数表示默认值应该被当作一个工厂函数。
+
+```js
+const value = inject('key', () => new ExpensiveClass(), true)
+```
+
+当向后代提供数据时，**建议尽可能将任何对响应式数据的变更都保持在供给方组件中**，即传入数据的同时也传入改变数据的方法。
+
+**使用 Symbol 作注入名**：在大型应用中会有很多的依赖提供者，建议最好使用 Symbol 来作为注入名以避免潜在的冲突。
+
+推荐在一个单独的文件中导出这些注入名 Symbol：
+
+```js
+// keys.js
+export const myInjectionKey = Symbol()
+```
+
+```js
+// 在供给方组件中
+import { provide } from 'vue'
+import { myInjectionKey } from './keys.js'
+
+provide(myInjectionKey, { 
+  /* 要提供的数据 */
+})``
+```
+
+```js
+// 注入方组件
+import { inject } from 'vue'
+import { myInjectionKey } from './keys.js'
+
+const injected = inject(myInjectionKey)
+```
+
+### 异步组件
