@@ -302,7 +302,11 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 
 /* 搜索框透明 */
 .blog-search>.nav-search-btn-wait {
-    background-color: transparent !important;
+    /* background-color: transparent !important; */
+}
+
+.blog-search>.nav-search-btn-wait:hover {
+    /* background-color: transparent !important; */
     border: var(--vp-c-divider) 1px solid !important;
 }
 

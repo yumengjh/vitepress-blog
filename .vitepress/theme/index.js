@@ -20,7 +20,7 @@ import "vitepress-markdown-timeline/dist/theme/index.css";
 // import directives from './utils/directives'
 
 // 自动锚点
-import { setupAutoAnchorOnScroll } from './functions'
+import { setupAutoAnchorOnScroll, internationalization } from './functions'
 import './custom.css'
 
 // 工具函数导入
@@ -45,7 +45,7 @@ export default {
     },
     setup() {
         const route = useRoute();
-        const { isDark, frontmatter } = useData();  // 使用 useData 获取主题状态和frontmatter
+        const { isDark, frontmatter, theme } = useData();  // 使用 useData 获取主题状态和frontmatter
         let removeAutoAnchor = null;    // 自动锚点解绑函数
 
         // 初始化代码块折叠功能
@@ -75,6 +75,9 @@ export default {
 
             // 自动锚点
             initAutoAnchor();
+
+            // 国际化
+            internationalization(theme.value.website.SearchText);
         });
 
         // 路由变化监听
@@ -88,9 +91,9 @@ export default {
                 // 重新初始化图片标题显示
                 initImageTitles();
                 initAutoAnchor();
+                internationalization(theme.value.website.SearchText);
             })
         );
-
         // frontmatter变化监听
         watch(
             () => frontmatter.value,
@@ -98,7 +101,6 @@ export default {
                 initAutoAnchor();
             }
         );
-
         // 离开页面时解绑
         onUnmounted(() => {
             if (removeAutoAnchor) removeAutoAnchor();
