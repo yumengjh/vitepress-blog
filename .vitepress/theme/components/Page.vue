@@ -12,8 +12,8 @@
           <div v-if="article.frontMatter.tags" class="post-tags">
             <a v-for="tag in article.frontMatter.tags" :key="tag" class="post-tag"
               :href="withBase(`/pages/tags?tag=${tag}`)" :title="`查看 ${tag} 相关文章`">
-             <!-- <span style="margin-right: -5px;">#</span> -->
-             {{ tag }}
+              <!-- <span style="margin-right: -5px;">#</span> -->
+              {{ tag }}
             </a>
           </div>
         </div>
@@ -27,12 +27,19 @@
       <template v-if="theme.website.showPrevNextBtn">
         <a v-if="pageCurrent > 1" class="page-btn" :class="{ disabled: pageCurrent <= 1 }"
           :href="pageCurrent > 2 ? withBase(`/page_${pageCurrent - 1}.html`) : withBase('/index.html')">
-          ← Previous Page
+          <svg style="transform: scaleX(-1)" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
+            <path fill="currentColor"
+              d="M6 14h2q0-1.475 1.075-2.488T11.65 10.5q.9 0 1.675.413T14.6 12H13v2h5V9h-2v1.55q-.8-.95-1.912-1.5T11.65 8.5q-2.375 0-4.012 1.6T6 14m6 8q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22m0-2q3.35 0 5.675-2.325T20 12t-2.325-5.675T12 4T6.325 6.325T4 12t2.325 5.675T12 20m0-8" />
+          </svg>
         </a>
         <span v-else></span>
         <a v-if="pageCurrent < pagesNum" class="page-btn" :class="{ disabled: pageCurrent >= pagesNum }"
           :href="withBase(`/page_${pageCurrent + 1}.html`)">
-          → Next Page
+          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+            viewBox="0 0 24 24">
+            <path fill="currentColor"
+              d="M6 14h2q0-1.475 1.075-2.488T11.65 10.5q.9 0 1.675.413T14.6 12H13v2h5V9h-2v1.55q-.8-.95-1.912-1.5T11.65 8.5q-2.375 0-4.012 1.6T6 14m6 8q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22m0-2q3.35 0 5.675-2.325T20 12t-2.325-5.675T12 4T6.325 6.325T4 12t2.325 5.675T12 20m0-8" />
+          </svg>
         </a>
       </template>
     </div>
