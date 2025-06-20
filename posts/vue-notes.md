@@ -692,3 +692,35 @@ const injected = inject(myInjectionKey)
 ```
 
 ### 异步组件
+
+在大型项目中，**为提高性能和优化加载速度**，可以将应用拆分为更小的模块，并按需从服务器加载所需组件。Vue 提供了 `defineAsyncComponent` 方法，以实现组件的异步加载功能。。
+
+并且在类似Vite这样的打包工具中，异步组件会被自动拆分成独立的代码块。
+
+```js
+import { defineAsyncComponent } from 'vue'
+
+const AsyncComp = defineAsyncComponent(() => {
+  return new Promise((resolve, reject) => {
+    // ...从服务器获取组件
+    resolve(/* 获取到的组件 */)
+  })
+})
+// ... 像使用其他一般组件一样使用 `AsyncComp`
+```
+
+`defineAsyncComponent` 方法接收一个返回 Promise 的加载函数，而ESM 模块的 `import()` 函数正好符合这个要求：
+
+```js
+import { defineAsyncComponent } from 'vue'
+
+const AsyncComp = defineAsyncComponent(() =>
+  import('./components/MyComponent.vue')
+)
+```
+
+`AsyncComp` 是一个被包装过的组件，Vue 会在需要时自动加载它，它会将接收到的 props 和 插槽传递给内部的组件，所以可以使用异步组件去无替换原始组件，并且实现了懒加载。
+
+- [加载配置](https://cn.vuejs.org/guide/components/async.html#loading-and-error-states)
+- [加载时机](https://cn.vuejs.org/guide/components/async.html#lazy-hydration)
+
