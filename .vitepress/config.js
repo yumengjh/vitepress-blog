@@ -35,8 +35,8 @@ export default defineConfig({
     lastUpdated: true,
     cleanUrls: false,
     rewrites: {
-        // 'posts/:name': ':name',
-        // 'pages/:page': ':page',
+        'posts/:name': ':name',
+        'pages/:page': ':page',
     },
     markdown: {
         // theme: {
