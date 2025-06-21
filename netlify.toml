@@ -13,3 +13,8 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+[[redirects]]
+  from = "/posts/*"
+  to = "/:splat"
+  status = 200
+

@@ -724,3 +724,4 @@ const AsyncComp = defineAsyncComponent(() =>
 - [加载配置](https://cn.vuejs.org/guide/components/async.html#loading-and-error-states)
 - [加载时机](https://cn.vuejs.org/guide/components/async.html#lazy-hydration)
 
+## 组合式函数
