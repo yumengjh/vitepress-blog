@@ -725,3 +725,69 @@ const AsyncComp = defineAsyncComponent(() =>
 - [加载时机](https://cn.vuejs.org/guide/components/async.html#lazy-hydration)
 
 ## 组合式函数
+
+组合式函数是一个用组合式API封装的可复用有状态逻辑的函数。
+
+## 自定义指令
+
+https://cn.vuejs.org/guide/reusability/custom-directives
+
+```js
+const myDirective = {
+  // 在绑定元素的 attribute 前
+  // 或事件监听器应用前调用
+  created(el, binding, vnode) {
+    // 下面会介绍各个参数的细节
+  },
+  // 在元素被插入到 DOM 前调用
+  beforeMount(el, binding, vnode) {},
+  // 在绑定元素的父组件
+  // 及他自己的所有子节点都挂载完成后调用
+  mounted(el, binding, vnode) {},
+  // 绑定元素的父组件更新前调用
+  beforeUpdate(el, binding, vnode, prevVnode) {},
+  // 在绑定元素的父组件
+  // 及他自己的所有子节点都更新后调用
+  updated(el, binding, vnode, prevVnode) {},
+  // 绑定元素的父组件卸载前调用
+  beforeUnmount(el, binding, vnode) {},
+  // 绑定元素的父组件卸载后调用
+  unmounted(el, binding, vnode) {}
+}
+```
+
+**钩子参数**
+
+- `el`：指令绑定到的元素。这可以用于直接操作 DOM。
+- `binding`：一个对象，包含以下属性。
+  - `value`：传递给指令的值。例如在 `v-my-directive="1 + 1"` 中，值是 `2`。
+  - `oldValue`：之前的值，仅在 `beforeUpdate` 和 `updated` 中可用。无论值是否更改，它都可用。
+  - `arg`：传递给指令的参数 (如果有的话)。例如在 `v-my-directive:foo` 中，参数是 `"foo"`。
+  - `modifiers`：一个包含修饰符的对象 (如果有的话)。例如在 `v-my-directive.foo.bar` 中，修饰符对象是 `{ foo: true, bar: true }`。
+  - `instance`：使用该指令的组件实例。
+  - `dir`：指令的定义对象。
+- `vnode`：代表绑定元素的底层 VNode。
+- `prevVnode`：代表之前的渲染中指令所绑定元素的 VNode。仅在 `beforeUpdate` 和 `updated` 钩子中可用。
+
+## 插件
+
+https://cn.vuejs.org/guide/reusability/plugins.html
+
+## Transition
+
+在使用Transition组件时候如果没有指定`name`属性，那么默认过渡Class类将以`v` 作为前缀。
+
+![](https://cn.vuejs.org/assets/transition-classes.DYG5-69l.png)
+
+触发条件：
+
+- 由 `v-if` 所触发的切换
+- 由 `v-show` 所触发的切换
+- 由特殊元素 `<component>` 切换的动态组件
+- 改变特殊的 `key` 属性
+
+如果进入和离开的元素都是在同时开始动画的，那么不得不将它们设为 `position: absolute` 以避免二者同时存在时出现的布局问题。
+
+然而，很多情况下这可能并不符合需求。我们可能想要先执行离开动画，然后在其完成**之后**再执行元素的进入动画。手动编排这样的动画是非常复杂的，好在我们可以通过向 `<Transition>` 传入一个 `mode` prop 来实现这个行为。
+
+## TransitionGroup
