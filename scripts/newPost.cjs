@@ -14,7 +14,7 @@ const date = new Date().toISOString().split('T')[0]
 const frontmatter = `---
 title: ${title}
 date: ${date}
-category: other
+category: Note
 tags: 
     - ${tags.split(',').join('\n    - ')}
 description: ${description}
@@ -25,6 +25,7 @@ cbf: false
 zoomable: true
 publish: true
 AutoAnchor: false
+aside: false
 ---
 
 `
@@ -38,6 +39,13 @@ try {
 
     // 创建文件
     const filePath = path.join(postsDir, `${fileName}.md`)
+
+    // 检查同名文件是否已存在
+    if (fs.existsSync(filePath)) {
+        console.error(`❌ 创建失败：文件已存在 -> ${filePath}`)
+        process.exit(1)
+    }
+
     fs.writeFileSync(filePath, frontmatter)
 
     console.log(`\n✨ 文章创建成功！`)
@@ -48,4 +56,4 @@ try {
 
 } catch (error) {
     console.error('❌ 创建文章失败:', error)
-} 
+}

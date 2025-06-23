@@ -4,6 +4,7 @@ date: 2025-06-13
 category: Note
 tags: 
     - Node.js
+    - Nest.js
 description: Nest (NestJS) 是一个用于构建高效、可扩展的 Node.js 服务器端应用的框架。它使用渐进式 JavaScript，构建并完全支持 TypeScript（但仍然允许开发者使用纯 JavaScript 进行编码）并结合了 OOP（面向对象编程）、FP（函数式编程）和 FRP（函数式反应式编程）的元素。
 outline: [2,3]
 draft: false
@@ -322,3 +323,54 @@ getDocs(@Query('version') version) {
 
 ## 路由参数{#route-parameters}
 
+当你需要接受动态数据作为请求的一部分时，要定义带有参数的路由，可以在路由路径中添加路由参数标记以从 URL 中捕获动态值。然后可以使用 `@Param()` 装饰器访问这些路由参数，该装饰器应添加到方法签名中。
+
+```ts
+@Get(':id')
+findOne(@Param() params: any): string {
+  console.log(params.id);
+  return `This action returns a #${params.id} cat`;
+}
+```
+
+`@Param()` 装饰器用于装饰方法参数（在上面的示例中为 `params`），使路由参数可作为方法内部该装饰方法参数的属性访问。如代码所示，你可以通过引用 `params.id` 来访问 `id` 参数。或者，你可以将特定的参数标记传递给装饰器，并在方法主体中直接按名称引用路由参数。
+
+> 从 `@nestjs/common` 包中导入 `Param`。
+
+```ts
+
+@Get(':id')
+findOne(@Param('id') id: string): string {
+  return `This action returns a #${id} cat`;
+}
+```
+
+## 子域路由{#sub-domain-routing}
+
+`@Controller` 装饰器可以采用 `host` 选项来要求传入请求的 HTTP 主机匹配某个特定值。
+
+```ts
+@Controller({ host: 'admin.example.com' })
+export class AdminController {
+  @Get()
+  index(): string {
+    return 'Admin page';
+  }
+}
+```
+
+与路由 `path` 类似，`host` 选项可以使用标记来捕获主机名中该位置的动态值。下面 `@Controller()` 装饰器示例中的主机参数令牌演示了这种用法。可以使用 `@HostParam()` 装饰器访问以这种方式声明的主机参数，应将其添加到方法签名中。
+
+```ts
+@Controller({ host: ':account.example.com' })
+export class AccountController {
+  @Get()
+  getInfo(@HostParam('account') account: string) {
+    return account;
+  }
+}
+```
+
+## 状态共享{#state-sharing}
+
+相关文章：[单例模式和请求级作用域](./singletons-isolation)
