@@ -374,3 +374,302 @@ export class AccountController {
 ## 状态共享{#state-sharing}
 
 相关文章：[单例模式和请求级作用域](./singletons-isolation)
+
+## 异步性{#asynchronicity}
+
+每个 `async` 函数都必须返回一个 `Promise`，Nest 会自动等待它完成（等待这个异步任务完成后再响应请求）。
+
+```js
+ @Get('a3')
+  async getData(): Promise<string> {
+    return new Promise(resolve => {
+      setTimeout(() => resolve('服务器延迟1秒返回'), 1000);
+    });
+  }
+```
+
+**强调 async 函数返回 Promise**
+
+它基于 **异步函数的自动等待机制**，你就可以：
+
+- 用 `await` 写异步数据库、网络请求等逻辑；
+- 返回的 `Promise` 会被 Nest **自动“解析”（await）**，响应才会发送出去；
+- 你不需要自己 `.then()` 或写复杂回调。
+
+Nest 不仅支持 `async/await` 写法，还支持把路由方法直接返回一个 **RxJS 的可观察对象（Observable）**。
+
+Nest 会在内部自动订阅这个 Observable，等它返回值后再发送响应。
+
+**RxJS** 是一个处理异步流的库，核心概念是 **Observable**（可观察对象）。
+
+可以把 `Observable` 类比成：
+
+- 一个 **可以持续发出数据的“异步数据流”**（不像 Promise 只能发一次）；
+- 它就像一个“事件发布者”，你可以“订阅”它；
+- Nest 支持它，是因为很多场景需要**响应式数据流处理**（比如 WebSocket、消息队列、流式文件、连续事件）。
+
+**对比 Promise 和 Observable**
+
+| 特性         | `Promise`            | `Observable`（RxJS）                |
+| ------------ | -------------------- | ----------------------------------- |
+| 触发次数     | 只能触发一次         | 可以触发多次                        |
+| 是否可取消   | 不可取消             | 可取消（unsubscribe）               |
+| 支持组合操作 | 较弱（靠 then 链式） | 强大（map、filter、merge 等操作符） |
+| 常用于       | 单次异步请求（HTTP） | 多次/流式异步任务（事件流、数据流） |
+
+```ts
+import { Controller, Get } from '@nestjs/common';
+import { Observable, of } from 'rxjs';
+
+@Controller('users')
+export class UsersController {
+  @Get()
+  findAll(): Observable<any[]> {
+    return of([
+      { id: 1, name: '张三' },
+      { id: 2, name: '李四' },
+    ]);
+  }
+}
+```
+
+`of(...)` 是 RxJS 提供的一个函数，它返回一个 Observable，里面的内容是你给的数据数组
+
+Nest 检测到你返回的是 Observable，会自动 `.subscribe()` 它，然后把最终数据作为 HTTP 响应返回；
+
+效果跟你写 `async findAll(): Promise<...>` 是一样的。
+
+## 请求负载{#request-payloads}
+
+在使用POST 路由处理程序时，通过添加 `@Body()` 装饰器来接受客户端参数。
+
+> DTO 是一个指定如何通过网络发送数据的对象。
+
+参数的类型需要使用DTO数据传输对象模式，可以使用 TypeScript 接口或简单类来定义 DTO 模式。
+
+建议在此处使用类。而不是 `interface`，因为 class 在编译后仍然存在于运行时，可以被 Nest 用来做校验、转换、依赖注入等高级功能。
+
+```ts
+import { IsString, IsInt } from 'class-validator';
+
+// DTO
+export class CreateCatDto {
+  @IsString() name: string;
+  @IsInt() age: number;
+  @IsString() breed: string;
+}
+// 使用DTO
+@Post()
+async create(@Body() createCatDto: CreateCatDto) {
+  return 'This action adds a new cat';
+}
+```
+
+Nest 的 `ValidationPipe` 可以过滤掉方法处理程序不应接收的属性，将可接受的属性列入白名单，并且白名单中未包含的任何属性都会自动从生成的对象中删除。在 `CreateCatDto` 示例中，我们的白名单是 `name`、`age` 和 `breed` 属性。了解更多 [ValidationPipe（验证管道）](https://nest.nodejs.cn/techniques/validation#stripping-properties)。
+
+**ValidationPipe**：
+
+```bash
+pnpm add class-validator class-transformer	# 如果没有
+```
+
+- class-validator 用于 DTO 的属性校验。
+
+- class-transformer 用于对象转换和自动过滤属性。
+
+这两个包是 NestJS DTO 校验的标准依赖，必须一起安装。
+
+**自动删除非白名单的属性**：
+
+自动删除那些在验证类中没有任何装饰器（如 `@IsString()`、`@IsInt()` 等）标记的属性，需要将 `whitelist` 设置为 `true`。
+
+```ts
+whitelist: true
+```
+
+**存在非白名单属性时终止请求**：
+
+如果请求中包含未在 DTO 中定义或未被装饰器标记的属性，想要直接抛出错误（而不是静默删除），需同时启用：
+
+```ts
+whitelist: true,
+forbidNonWhitelisted: true
+```
+
+ **启用请求数据类型转换**：
+
+若希望将客户端发送的数据（如字符串）自动转换为目标 DTO 中声明的类型（装饰器）（如 `number`、`boolean` 等），需启用：
+
+```ts
+transform: true
+```
+
+**启用隐式类型转换**（配合 `transform`）：
+
+默认情况下，`class-transformer` 只会转换**显式用 `@Type(() => Type)` 装饰器声明的属性**。
+若希望根据 DTO 中的类型推断，自动将字符串转换为 `number`、`boolean` 等，需启用：
+
+```ts
+transformOptions: {
+  enableImplicitConversion: true
+}
+```
+
+启用该选项后，**即使未使用 `@Type()` 装饰器**，也会自动根据类型进行转换。
+例如：`{ age: "18" }` 会被转换为 `age: 18`，前提是 `age` 在类中被定义为 `number` 类型。
+
+**示例配置**：
+
+```ts
+app.useGlobalPipes(new ValidationPipe({
+  whitelist: true,
+  forbidNonWhitelisted: true,
+  transform: true,
+  transformOptions: {
+    enableImplicitConversion: true,
+  },
+}));
+```
+
+**扩展**：
+
+如果担心传入值不是一个对象（例如传进来是 `null`、数组、字符串等非对象），可以再加：
+
+```ts
+forbidUnknownValues: true
+```
+
+Nest 默认是关闭这个的，但在安全场景下你可以启用。
+
+建议在DTO 中字段加 `@Type(() => Number)` ， 显式转换
+
+**尽管开启了 `enableImplicitConversion`，**但在某些复杂结构（如嵌套对象、数组）中，它可能不会自动转换成功**，这时推荐：**
+
+```ts
+import { Type } from 'class-transformer';
+
+export class CreateCatDto {
+  @Type(() => Number)
+  @IsInt()
+  age: number;
+}
+```
+
+显式比隐式更保险，特别是嵌套数组、嵌套对象。
+
+对嵌套对象/数组开启自动验证 `@ValidateNested()` ，否则嵌套对象不会自动校验。
+
+```ts
+export class CreateOwnerDto {
+  @ValidateNested()
+  @Type(() => CreateCatDto)
+  cat: CreateCatDto;
+}
+```
+
+## 查询参数{#query-parameters}
+
+在处理路由中的查询参数时，可以使用 `@Query()` 装饰器从传入请求中提取它们。
+
+```ts
+@Get('a6')
+demo6(@Query('name') name: string, @Query('age') age: number) {
+    return `你的姓名是${name}，年龄是${age}`
+}
+```
+
+`@Query()` 装饰器用于从查询字符串中提取对应的值
+
+```http
+GET /test?name=bill&age=17
+```
+
+如果你的应用需要处理更复杂的查询参数，比如：
+
+```http
+?filter[where][name]=John&filter[where][age]=30
+?item[]=1&item[]=2
+```
+
+实际值：
+
+`filter` 是一个嵌套对象，像这样：
+
+```js
+filter = {
+  where: {
+    name: 'John',
+    age: 30
+  }
+}
+```
+
+`item[]` 是一个数组，等价于 `item = [1, 2]`
+
+Nest 默认的查询参数解析器（基于 Express 或 Fastify）不支持这种复杂结构，如果你直接用默认设置，Nest 无法正确解析这些嵌套对象和数组，它们只会被当成普通字符串处理。
+
+此时需要**配置查询字符串解析器**，让它支持嵌套结构：
+
+如果你用的是 Express（Nest 默认用它）
+
+```ts
+const app = await NestFactory.create<NestExpressApplication>(AppModule);
+app.set('query parser', 'extended');
+```
+
+这样 Express 会用内置的“extended”模式解析器（其实就是依赖 `qs` 库），支持嵌套对象和数组。
+
+如果你用的是 Fastify（另一个更快的框架）
+
+```ts
+import qs from 'qs'; // 确保安装：npm install qs
+
+const app = await NestFactory.create<NestFastifyApplication>(
+  AppModule,
+  new FastifyAdapter({
+    querystringParser: (str) => qs.parse(str),
+  }),
+);
+```
+
+> [`qs`](https://www.npmjs.com/package/qs) 是一个功能强大的查询字符串解析库，可以将嵌套结构、数组等复杂参数从 URL 字符串转换为 JS 对象，安装 `npm install qs`
+
+## 处理错误{#handling-errors}
+
+**TODO**
+
+## 增删改查生成器{#crud-generator}
+
+> `Entity`（实体类）
+>
+> - 用在 ORM（如 TypeORM、Prisma）中
+> - 是后端代码和数据库“表”的映射
+> - 通常用在 `Repository.save()`、`Repository.find()` 这样的数据库操作中
+>
+> Entity 是数据在后端落地的模型，而 DTO 是数据“进门”之前的检查器。
+
+设想一个真实场景：我们需要为两个实体——比如用户（User）和产品（Product）——公开各自的 CRUD 接口。
+
+按照 Nest 的最佳实践，对于每个实体，我们通常需要执行以下多个步骤：
+
+- 使用 `nest g mo` 命令生成模块，以便更好地组织代码、划分清晰边界，并对相关组件进行分组
+- 使用 `nest g co` 生成控制器，定义该资源的 CRUD 路由（或在 GraphQL 中定义查询/变更）
+- 使用 `nest g s` 创建服务，用于实现和封装该实体的业务逻辑
+- 编写一个实体类或接口，用于描述资源的数据结构
+- 编写 DTO（数据传输对象）类，用于定义客户端与服务端之间传递数据的格式（GraphQL 中则为输入类型）
+
+这一整套流程虽然清晰规范，但步骤繁琐、重复性高。
+
+为了简化这一过程，Nest 提供了强大的命令行工具（CLI），其中内置的**生成器（schematics）**可以一键自动生成所有这些样板代码，大幅提升开发效率，改善开发体验。
+
+> 支持生成 HTTP 控制器、微服务控制器、GraphQL 解析器（代码优先和架构优先）和 WebSocket 网关。
+
+```bash
+? What transport layer do you use?
+❯ REST API
+  GraphQL (code first)
+  GraphQL (schema first)
+  Microservice (non-HTTP)
+  WebSockets
+```
+
