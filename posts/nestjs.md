@@ -636,7 +636,117 @@ const app = await NestFactory.create<NestFastifyApplication>(
 
 ## 处理错误{#handling-errors}
 
-**TODO**
+Nest 带有一个内置的异常层，负责处理应用中所有未处理的异常。当你的应用代码未处理异常时，该层会捕获该异常，然后自动发送适当的用户友好响应，此操作由内置的全局异常过滤器执行，该过滤器处理 `HttpException` 类型（及其子类）的异常。当异常无法识别时（既不是 `HttpException` 也不是继承自 `HttpException` 的类），内置异常过滤器会生成以下默认 JSON 响应：
+
+```json
+{
+  "statusCode": 500,
+  "message": "Internal server error"
+}
+```
+
+> NestJS 的全局异常过滤器**部分支持 [`http-errors`](https://github.com/jshttp/http-errors) 这个第三方库**。
+> 只要你抛出的错误对象里**包含 `statusCode` 和 `message` 这两个字段**，Nest 就能识别它，并把它作为一个“合法的 HTTP 异常”返回给前端。
+>
+> 也就是说：**你不一定非得抛 Nest 的 `HttpException`**，只要抛出一个结构像这样的对象：
+>
+> ```js
+> throw { statusCode: 404, message: 'Not Found' };
+> ```
+>
+> NestJS 就会把它当成正常的 HTTP 响应，而**不会默认变成 500 服务器错误（InternalServerError）**
+>
+> ```js
+> // 例子
+> import createError from 'http-errors';
+> 
+> @Get()
+> getSomething() {
+>   throw createError(403, '你无权访问该资源');
+> }
+> ```
+>
+> Nest 能识别这个异常，并返回：
+>
+> ```json
+> {
+>   "statusCode": 403,
+>   "message": "你无权访问该资源"
+> }
+> 
+> ```
+>
+> 你可以不用写 `new HttpException()`，只要你抛出的对象里带有 `statusCode` 和 `message`，Nest 也能当成合法异常来处理和响应。
+>
+> 对于使用 `http-errors`、`Boom` 等库的人来说非常方便
+
+**抛出标准异常**
+
+Nest 提供了一个内置的 `HttpException` 类，位于 `@nestjs/common` 包中。对于典型的基于 HTTP REST 或 GraphQL 的应用来说，最佳实践是在遇到错误时，发送标准的 HTTP 响应给客户端，以明确表示错误状态；
+
+也就是说：当你的接口出错时，不要直接抛出普通错误，而是用 Nest 提供的 `HttpException`，让服务器能返回符合 HTTP 规范的错误状态码和信息，方便客户端处理。
+
+
+
+**自定义异常类**
+
+主要用于**封装常见的状态和逻辑，避免重复代码**
+
+不用每次都写这一堆：
+
+```js
+throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+```
+
+可以直接写：
+
+```js
+throw new ForbiddenException();
+```
+
+更短、更语义化、可读性更强。
+
+形成统一的异常体系（更易维护），比如有这些错误：
+
+- 用户未登录 → `UnauthorizedException`
+- 用户被封禁 → `UserBannedException`
+- 参数错误 → `InvalidParamException`
+
+用自定义异常封装后，代码里就很清晰，异常层次也清楚，**以后要统一处理（日志记录、响应格式）非常方便。**
+
+自定义响应结构：错误码、语言、元数据等
+
+```js
+export class UserBannedException extends HttpException {
+  constructor(reason = '你已被封号') {
+    super(
+      { message: reason, errorCode: 1004 },
+      HttpStatus.FORBIDDEN,
+    );
+  }
+}
+```
+
+返回前端的内容更有业务含义：
+
+```json
+{
+  "message": "你已被封号",
+  "errorCode": 1004,
+  "statusCode": 403
+}
+```
+
+**便于在异常过滤器中按类型分类处理**
+
+```js
+if (exception instanceof UserBannedException) {
+  logger.warn('用户封禁：' + exception.message);
+}	
+```
+
+自定义异常类的核心作用就是：**把常用的异常信息封装成可复用的“状态类”**，
+让你在抛异常时不用重复写、结构统一、可读性高、易于后期扩展。
 
 ## 增删改查生成器{#crud-generator}
 
@@ -662,9 +772,11 @@ const app = await NestFactory.create<NestFastifyApplication>(
 
 为了简化这一过程，Nest 提供了强大的命令行工具（CLI），其中内置的**生成器（schematics）**可以一键自动生成所有这些样板代码，大幅提升开发效率，改善开发体验。
 
-> 支持生成 HTTP 控制器、微服务控制器、GraphQL 解析器（代码优先和架构优先）和 WebSocket 网关。
+> **支持生成 HTTP 控制器、微服务控制器、GraphQL 解析器（代码优先和架构优先）和 WebSocket 网关**。
 
 ```bash
+$ nest g resource [name]
+
 ? What transport layer do you use?
 ❯ REST API
   GraphQL (code first)
@@ -673,3 +785,6 @@ const app = await NestFactory.create<NestFastifyApplication>(
   WebSockets
 ```
 
+`nest g resource` 命令不仅生成所有 NestJS 构建块（**模块、服务、控制器**类），还生成**实体类**、**DTO 类**以及测试 (`.spec`) 文件，并且自动连接它们。
+
+> 为了避免生成测试文件，你可以传递 `--no-spec` 标志，如下所示：`nest g resource users --no-spec`

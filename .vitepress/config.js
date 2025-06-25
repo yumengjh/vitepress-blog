@@ -33,7 +33,7 @@ export default defineConfig({
     description: '鱼梦江湖的个人博客，记录生活，分享技术。',
     ignoreDeadLinks: true,
     lastUpdated: true,
-    cleanUrls: false,
+    cleanUrls: true,
     rewrites: {
         // 'posts/:name': ':name',
         // 'pages/:page': ':page',
