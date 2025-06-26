@@ -686,7 +686,80 @@ Nest 提供了一个内置的 `HttpException` 类，位于 `@nestjs/common` 包�
 
 也就是说：当你的接口出错时，不要直接抛出普通错误，而是用 Nest 提供的 `HttpException`，让服务器能返回符合 HTTP 规范的错误状态码和信息，方便客户端处理。
 
+```ts
+@Get()
+async findAll() {
+  throw new HttpException('Forbidden', HttpStatus.FORBIDDEN);
+}
+```
 
+> `HttpStatus`是一个从 `@nestjs/common` 包导入的辅助枚举。
+
+```json
+{
+  "statusCode": 403,
+  "message": "Forbidden"
+}
+```
+
+`HttpException` 构造函数接收两个必选参数来决定响应内容：
+
+- `response` 参数定义了 JSON 响应体，可以是如下所述的 `string` 或 `object` 类型。
+- `status` 参数定义了 [HTTP 状态码](https://developer.mozilla.org/zh-CN/docs/Web/HTTP/Reference/Status)
+
+默认情况下，JSON 响应体包含两个属性：
+
+- `statusCode`：默认为 `status` 参数中提供的 HTTP 状态码
+- `message`：基于 `status` 的 HTTP 错误简短描述
+
+若要仅覆盖 JSON 响应体中的消息部分，请在 `response` 参数中传入字符串。若要覆盖整个 JSON 响应体，则在 `response` 参数中传入对象。Nest 会将该对象序列化后作为 JSON 响应体返回。
+
+第二个构造参数 `status` 应为有效的 HTTP 状态码。最佳实践是使用从 `@nestjs/common` 导入的 `HttpStatus` 枚举。
+
+`HttpException` 的 **第三个参数 `options`（通常用于 `cause`）** 是为了提供**额外上下文信息**，**不会被序列化进响应体**，仅用于日志、调试或内部传递。
+
+```js
+throw new HttpException(
+  '用户不存在',
+  HttpStatus.NOT_FOUND,
+  {
+    cause: new Error('User ID 123 not found in database')
+  }
+);
+```
+
+实际客户端收到的响应是
+
+```json
+{
+  "statusCode": 404,
+  "message": "用户不存在"
+}
+```
+
+但在服务端你可以通过 `exception.cause` 拿到更多信息。
+
+**异常日志记录**
+
+在 NestJS 中，**默认情况下，异常过滤器不会记录内置异常**，比如：
+
+- `HttpException`（以及继承自它的自定义异常）
+- `WsException`（WebSocket 异常）
+- `RpcException`（微服务异常）
+
+当这类异常被抛出时，它们不会在控制台中自动打印日志。原因是：
+
+**它们被视为“正常的应用流程”**，就像 HTTP 中 404 或 403 是可预期的，不属于程序出错。
+
+异常基础类：`IntrinsicException`，这些内置异常都继承自一个基础类：`IntrinsicException`，它来自 `@nestjs/common` 包。
+
+这个类的存在是为了帮助框架区分：
+
+✅ **正常业务流程中的异常**（如访问受限、参数不合法）
+
+❌ **非预期的程序错误**（如数据库连接失败、空指针）
+
+如果你想记录这些异常，可以通过**编写自定义异常过滤器（Exception Filter）**，你可以在其中手动记录、格式化或扩展这些异常。
 
 **自定义异常类**
 
@@ -747,6 +820,157 @@ if (exception instanceof UserBannedException) {
 
 自定义异常类的核心作用就是：**把常用的异常信息封装成可复用的“状态类”**，
 让你在抛异常时不用重复写、结构统一、可读性高、易于后期扩展。
+
+**内置 HTTP 异常**
+
+Nest 提供了一组继承自基础 `HttpException` 的标准异常。这些异常来自 `@nestjs/common` 包，代表了许多最常见的 HTTP 异常：
+
+| 异常类名称                         | 对应 HTTP 状态码 | 描述                       |
+| ---------------------------------- | ---------------- | -------------------------- |
+| `BadRequestException`              | 400              | 请求无效（参数错误等）     |
+| `UnauthorizedException`            | 401              | 未授权/未登录              |
+| `ForbiddenException`               | 403              | 已登录但无权限             |
+| `NotFoundException`                | 404              | 资源未找到                 |
+| `MethodNotAllowedException`        | 405              | 不支持的请求方法           |
+| `NotAcceptableException`           | 406              | 服务端无法满足请求头的需求 |
+| `RequestTimeoutException`          | 408              | 请求超时                   |
+| `ConflictException`                | 409              | 资源冲突（如用户名已存在） |
+| `GoneException`                    | 410              | 资源已被永久删除           |
+| `PayloadTooLargeException`         | 413              | 请求体太大                 |
+| `UnsupportedMediaTypeException`    | 415              | 不支持的请求内容类型       |
+| `UnprocessableEntityException`     | 422              | 请求格式正确但语义错误     |
+| `PreconditionFailedException`      | 412              | 请求头条件不满足           |
+| `InternalServerErrorException`     | 500              | 服务端内部错误             |
+| `NotImplementedException`          | 501              | 功能未实现                 |
+| `BadGatewayException`              | 502              | 网关错误                   |
+| `ServiceUnavailableException`      | 503              | 服务不可用                 |
+| `GatewayTimeoutException`          | 504              | 网关超时                   |
+| `HttpVersionNotSupportedException` | 505              | 不支持的 HTTP 协议版本     |
+| `ImATeapotException`               | 418              | 🍵 I'm a teapot（彩蛋用）   |
+
+所有内置异常还可以通过 `options` 参数提供错误 `cause` 和错误描述：
+
+```ts
+new NotFoundException('用户不存在', { cause: new Error('DB lookup failed') });
+```
+
+| 参数名     | 类型              | 作用                                     |
+| ---------- | ----------------- | ---------------------------------------- |
+| `response` | `string | object` | 自定义返回消息体（message 字符串或对象） |
+| `options`  | `{ cause?: any }` | 提供内部异常详情（不会返回给前端）       |
+
+> 在**真实开发和日志追踪场景**中，建议总是使用 `new Error(...)`，它提供堆栈信息，对排错非常有帮助。
+
+`HttpException` 构造函数标准（TypeScript 类型定义）：
+
+```ts
+class HttpException extends Error {
+  constructor(
+    response: string | Record<string, any>,
+    status: number,
+    options?: {
+      cause?: unknown;
+      description?: string;
+    }
+  );
+}
+```
+
+| 参数名     | 类型                                        | 是否必须 | 说明                                                         |
+| ---------- | ------------------------------------------- | -------- | ------------------------------------------------------------ |
+| `response` | `string` or `object`                        | ✅ 必需   | 响应体，可以是字符串（作为 message）或对象（完整结构）       |
+| `status`   | `number`                                    | ✅ 必需   | HTTP 状态码（推荐用 `HttpStatus.X` 枚举）                    |
+| `options`  | `{ cause?: unknown, description?: string }` | ❌ 可选   | 附加信息。不会影响响应结构中的 `message`，但会影响 `error` 字段和日志记录 |
+
+```ts
+throw new BadRequestException('Something bad happened', {
+  cause: new Error(),
+  description: 'Some error description',
+});
+
+// 返回
+
+{
+  "message": "Something bad happened",
+  "error": "Some error description",
+  "statusCode": 400
+}
+```
+
+**异常过滤器**
+
+虽然内置异常过滤器能自动处理多数场景，但在需要**完全控制**异常处理时（如动态日志记录或自定义 JSON 响应结构），应使用异常过滤器。它允许精确控制执行流程和客户端响应内容。
+
+让我们创建一个异常过滤器，负责捕获 `HttpException` 类的实例异常，并为它们实现自定义响应逻辑。为此，我们需要访问底层平台的 `Request` 和 `Response` 对象。我们将访问 `Request` 对象以提取原始 `url` 并将其包含在日志信息中。我们将使用 `Response` 对象通过 `response.json()` 方法直接控制发送的响应。
+
+**TODO**
+
+**`@Catch()` 装饰器**
+指定要捕获的异常类型（支持多参数，如 `@Catch(HttpException, CustomError)`）
+
+**`ArgumentsHost`**
+
+提供访问当前执行上下文的方法：
+
+```ts
+const httpCtx = host.switchToHttp(); // HTTP上下文
+const rpcCtx = host.switchToRpc();   // 微服务上下文
+const wsCtx = host.switchToWs();     // WebSocket上下文
+```
+
+**典型应用场景**
+
+- 统一API错误响应格式
+- 敏感错误信息过滤
+- 异常日志自动关联请求ID
+
+**注册方式**
+
+```ts
+// 路由级注册
+@Controller('users')
+export class UsersController {
+    @Get(':id')
+    @UseFilters(CustomExceptionFilter) // 直接传递类（由Nest实例化）
+    async getUser(@Param('id') id: string) {
+        // 当该路由抛出HttpException时触发CustomExceptionFilter
+    }
+}
+
+// 控制器级别注册
+@UseFilters(new CustomExceptionFilter())
+@Controller('users')
+export class UsersController {}
+
+// 全局注册（main.ts）
+app.useGlobalFilters(new CustomExceptionFilter());
+```
+
+**平台抽象访问**：
+
+```ts
+const ctx = host.switchToHttp();
+// 类型参数<Request>确保TS类型安全
+const request = ctx.getRequest<Request>();  // 底层框架的Request对象
+const response = ctx.getResponse<Response>(); // 底层框架的Response对象
+```
+
+**响应控制**
+
+直接操作平台原生响应对象，完全自定义JSON结构
+
+```ts
+response.status(status).json({...});
+```
+
+**异常元数据提取**
+
+```ts
+exception.getStatus();  // 获取HTTP状态码
+exception.message;     // 获取原始错误消息
+```
+
+
 
 ## 增删改查生成器{#crud-generator}
 

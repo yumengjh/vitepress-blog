@@ -1,5 +1,5 @@
 ---
-title: 学习和实践Nest.js的一些坑
+title: 记一些Nest.js的一些坑或技巧
 date: 2025-06-24
 category: Note
 tags: 
@@ -20,7 +20,7 @@ aside: false
 [[toc]]
 :::
 
-# 使用 @nestjs/serve-static 托管静态资源
+## 使用 @nestjs/serve-static 托管静态资源
 
 ```ts
 imports: [
@@ -35,7 +35,7 @@ imports: [
 
 上述配置防止访问任何不存在的路径都会返回 index.html，默认 ServeStaticModule 会把所有未命中的路由都返回 index.html
 
-# interface & DTO & Entity 的区别
+## interface & DTO & Entity 的区别
 
 `interface`（类型接口）
 
@@ -81,7 +81,7 @@ imports: [
 -  `DTO` 是请求进门前的“安检员”，
 -  `Entity` 是数据库里的“实名登记表”。
 
-# REST 和 CRUD 的区别
+## REST 和 CRUD 的区别
 
 CRUD 是数据库和应用开发中最基础的四种操作，分别是：
 
@@ -128,3 +128,145 @@ REST API 中的操作往往映射到 CRUD 的操作上。
 | 删除用户             | `DELETE /users/{id}` | 删除指定 ID 的用户   |
 
 **总结**：CRUD 是数据操作的抽象概念，REST 是用 HTTP 方法来规范和实现这些操作的架构风格。
+
+## 动态移除Header
+
+在**最佳实践**中，建议移除或隐藏一些可能**暴露后端实现细节的响应头（Header）**，这是提升安全性和防止信息泄露的一个常见手段。
+
+比如暴露 `X-Powered-By: Express`，攻击者知道你用的是 Express，就可能利用已知的 Express 漏洞、攻击点或中间件绕过方式。
+
+使用中间件，动态移除一些 HTTP 响应头，比如 x-powered-by，以提升安全性。
+
+```ts
+// security.middleware.ts
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+
+@Injectable()
+export class SecurityMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: NextFunction) {
+    // 移除 x-powered-by，可以根据需求加上自定义逻辑层进行动态移除
+    res.removeHeader('x-powered-by');
+	
+    // 还可以换上一些...
+    next();
+  }
+}
+```
+
+在 app.module.ts 注册全局中间件
+
+```ts
+// app.module.ts
+import { MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { SecurityMiddleware } from './middlewares/security.middleware';
+
+// ...
+
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(SecurityMiddleware).forRoutes('*');
+  }
+}
+```
+
+如果只是简单移除，可以在 **main.ts** 使用`app.disable('x-powered-by');`
+
+```ts
+const expressApp = app.getHttpAdapter().getInstance();
+expressApp.disable('x-powered-by');
+```
+
+Express有可能在中间件执行后**又添加一次 `x-powered-by`**（Express 默认行为），导致你的 `removeHeader` 失效。
+
+```ts
+// 推荐的安全 HTTP Header
+res.setHeader('X-Content-Type-Options', 'nosniff'); // 防止 MIME 类型混淆攻击
+res.setHeader('X-Frame-Options', 'DENY'); // 禁止页面被 iframe 嵌套（点击劫持防护）
+res.setHeader('X-XSS-Protection', '1; mode=block'); // 启用浏览器 XSS 过滤
+res.setHeader('Referrer-Policy', 'no-referrer'); // 限制 Referer 泄露
+```
+
+`helmet` 会自动添加大量安全 header，非常省心，推荐生产环境使用。
+
+```bash
+npm i helmet
+```
+
+```ts
+import helmet from 'helmet';
+
+const app = await NestFactory.create(AppModule);
+app.use(helmet());
+```
+
+## `Request` 中的`.ip`和`.headers`
+
+`Request` 的类型推断中，有时**不包含 `.ip` 和 `.headers` 的类型定义**（虽然运行时这些字段确实存在）。
+ 所以会出现这种编译时的报错：
+
+```json
+TS2339: Property 'ip' does not exist on type 'Request<...>'.
+TS2339: Property 'headers' does not exist on type 'Request<...>'.
+```
+
+使用类型合并处理
+
+```ts{7}
+import { Controller, Get, Req } from '@nestjs/common';
+import { Request } from 'express';
+
+@Controller('init')
+export class InitController {
+  @Get()
+  getInitInfo(@Req() request: Request & { ip: string; headers: any }) {
+    return {
+      status: 'Successful startup',
+      env: process.env.NODE_ENV || 'unknown',
+      vercel: !!process.env.VERCEL,
+      ip: request.ip,
+      'x-forwarded-for': request.headers['x-forwarded-for'] || null,
+      timestamp: new Date().toISOString(),
+      version: '1.0.0',
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+    };
+  }
+}
+```
+
+## process.cwd() &  __dirname
+
+`process.cwd()` 获取 Node.js **进程的当前工作目录**，即启动进程时所在的路径。
+
+**使用场景：**
+
+- 获取项目根路径（依赖启动位置）
+- 读取 `.env` 或其他根级配置文件
+- 动态构建路径（如日志存储、上传目录）
+
+**注意事项：**
+
+- 值会随着 `process.chdir()` 改变
+- **结果与模块位置无关**，依赖于 Node.js 启动命令的工作目录
+
+`__dirname` 获取当前模块文件所在的**目录的绝对路径**。
+
+**使用场景：**
+
+- 加载与当前模块相对的资源文件（如 JSON、配置等）
+- 构建模块内部专用的静态路径（如模板、图像）
+
+ **注意事项：**
+
+- 值在模块中是固定的
+- 在 **ES Module** 模式下需用 `import.meta.url` 处理后获取
+
+**稳定性**：使用 `process.cwd()` 保证无论在哪个模块调用，日志目录始终定位到**项目根路径**。
+
+**可移植性**：如果该模块作为 npm 包被引入，它仍然能把日志写入**宿主项目的根目录**。
+
+**一致性**：与 NestJS 应用级资源和组件通常位于根路径的设计保持一致。
+
+​	
+
