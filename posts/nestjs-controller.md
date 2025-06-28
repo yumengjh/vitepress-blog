@@ -14,7 +14,7 @@ zoomable: true
 aside: false
 ---
 
-# NestJS
+# NestJS 控制器
 
 ::: details 目录
 
@@ -1392,6 +1392,73 @@ export class AppModule {}
 - 继承 `BaseExceptionFilter` 是为了复用 Nest 的成熟异常处理机制和跨平台支持。
 - 如果你的实现完全自定义且不依赖这些特性，可以不用继承它，直接实现 `ExceptionFilter` 接口即可。
 
+## 完整资源样本{#full-resource-sample}
+
+下面是一个使用多个 **HTTP 装饰器** 创建的基本控制器 `CatsController`，它支持常见的 **增删改查（CRUD）操作**，并通过 DTO 管理数据结构。
+
+```ts
+import {
+  Controller,
+  Get,
+  Query,
+  Post,
+  Body,
+  Put,
+  Param,
+  Delete,
+} from '@nestjs/common';
+
+import {
+  CreateCatDto,
+  UpdateCatDto,
+  ListAllEntities,
+} from './dto'; // 引入数据传输对象 DTO
+
+@Controller('cats') // 路由前缀：所有路由以 /cats 开头
+export class CatsController {
+  @Post() // POST /cats
+  create(@Body() createCatDto: CreateCatDto) {
+    // 从请求体中提取 JSON 数据并映射到 CreateCatDto 类型
+    return 'This action adds a new cat';
+  }
+
+  @Get() // GET /cats
+  findAll(@Query() query: ListAllEntities) {
+    // 从查询参数中提取数据，如 /cats?limit=10
+    return `This action returns all cats (limit: ${query.limit} items)`;
+  }
+
+  @Get(':id') // GET /cats/:id
+  findOne(@Param('id') id: string) {
+    // 从路由参数中提取 id，例如 /cats/123
+    return `This action returns a #${id} cat`;
+  }
+
+  @Put(':id') // PUT /cats/:id
+  update(@Param('id') id: string, @Body() updateCatDto: UpdateCatDto) {
+    // 从路由参数获取 id，同时从请求体中获取更新数据
+    return `This action updates a #${id} cat`;
+  }
+
+  @Delete(':id') // DELETE /cats/:id
+  remove(@Param('id') id: string) {
+    // 删除指定 ID 的猫咪数据
+    return `This action removes a #${id} cat`;
+  }
+}
+```
+
+```ts
+// 示例：CreateCatDto
+export class CreateCatDto {
+  name: string;
+  age: number;
+  breed: string;
+}
+```
+
+DTO 通常使用 `class-validator` 和 `class-transformer` 结合 `@Body()` 一起对数据进行验证和转换。
+
 ## 增删改查生成器{#crud-generator}
 
 > `Entity`（实体类）
@@ -1432,3 +1499,82 @@ $ nest g resource [name]
 `nest g resource` 命令不仅生成所有 NestJS 构建块（**模块、服务、控制器**类），还生成**实体类**、**DTO 类**以及测试 (`.spec`) 文件，并且自动连接它们。
 
 > 为了避免生成测试文件，你可以传递 `--no-spec` 标志，如下所示：`nest g resource users --no-spec`
+
+## 启动并运行{#getting-up-and-running}
+
+即使我们已经定义了 `CatsController`，Nest 并不会自动识别或实例化它。
+ 在 NestJS 中，**控制器（Controller）必须显式地注册到模块中**，否则它们不会被框架识别或使用。
+
+**模块是 Nest 应用的基础构建块**
+
+Nest 应用程序是由一个或多个模块组成的。每个模块使用 `@Module()` 装饰器定义，用于声明当前模块中包含的控制器、服务、提供者等组件。
+
+由于我们目前只有一个根模块 `AppModule`，可以直接在其中注册我们的控制器：
+
+```ts
+import { Module } from '@nestjs/common';
+import { CatsController } from './cats/cats.controller';
+
+@Module({
+  controllers: [CatsController], // 显式注册 CatsController
+})
+export class AppModule {}
+```
+
+- `@Module()`：这是 Nest 提供的模块装饰器，用于声明模块元数据。
+- `controllers: [CatsController]`：这表示该模块管理的控制器列表，Nest 会自动扫描这些控制器并为其创建实例。
+- `AppModule` 是应用的根模块，**所有功能模块最终都会被引入这里或被该模块间接导入**。
+
+## 特定于库的方法{#library-specific-approach}
+
+Nest 默认使用抽象的方式处理 HTTP 响应（如通过 `@HttpCode()` 设置状态码、返回对象即为响应体等）。但有时候，你可能希望直接使用底层框架（如 Express）的响应对象，这种情况下可以使用 `@Res()` 装饰器注入它。
+
+使用 Express 响应对象：
+
+```ts
+import { Controller, Get, Post, Res, HttpStatus } from '@nestjs/common';
+import { Response } from 'express'; // 显式使用 Express 响应类型
+
+@Controller('cats')
+export class CatsController {
+  @Post()
+  create(@Res() res: Response) {
+    // 直接使用 res 对象设置状态码和发送响应
+    res.status(HttpStatus.CREATED).send(); // 状态码 201
+  }
+
+  @Get()
+  findAll(@Res() res: Response) {
+    // 返回 JSON 响应
+    res.status(HttpStatus.OK).json([]); // 状态码 200，空数组
+  }
+}
+```
+
+ 使用 `@Res()` 的注意事项
+
+虽然直接使用底层响应对象提供了更大的灵活性（如自定义头部、设置 Cookie 等），但也存在以下问题：
+
+| 问题                   | 说明                                                         |
+| ---------------------- | ------------------------------------------------------------ |
+| **与平台耦合**         | 代码依赖于具体的 HTTP 平台（如 Express、Fastify），降低了移植性 |
+| **破坏框架功能兼容性** | Nest 的拦截器、过滤器、`@HttpCode()`、`@Header()` 等功能将失效 |
+| **影响测试可用性**     | 单元测试中需要手动模拟响应对象（如 mock `res.status()`、`res.send()`） |
+
+推荐方式：启用 passthrough（兼顾框架与底层能力）
+
+你可以使用 `@Res({ passthrough: true })`，该模式允许你对响应对象进行局部控制（如设置 Cookie、标头等），同时依然保留标准的返回机制。
+
+```ts
+@Get()
+findAll(@Res({ passthrough: true }) res: Response) {
+  res.status(HttpStatus.OK); // 设置响应状态码，但不立即结束响应
+  return []; // Nest 继续处理返回值，并序列化为响应体
+}
+```
+
+ 优势：
+
+- 保留框架的自动响应处理（支持拦截器、异常过滤器等）
+- 可灵活操作原始响应对象（如设置 Cookie、标头）
+- 保持平台切换的灵活性（Express ↔ Fastify）
