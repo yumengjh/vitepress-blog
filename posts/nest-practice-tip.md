@@ -504,7 +504,164 @@ constructor(private catsService: CatsService) {}
 1. 类上使用 `@Injectable()` 装饰器（使其变为 Nest 可管理的提供者）
 2. 在当前模块的 `providers` 中注册它
 
-**TODO** 不够详细
+**详细版**：
+
+```ts
+export class AppController {
+    constructor(private readonly appService: AppService) {}
+    // ...
+}
+```
+
+是谁调用了这个`AppController`：**是 Nest 框架的 IoC 容器（Injector）在应用启动时调用构造函数并自动注入参数的。**这不是用户代码调用，而是 Nest 的内部框架在应用初始化阶段自动解析模块依赖图，**根据类型信息自动调用构造函数**，并注入正确的依赖实例。
+
+**详细还原 Nest 的 DI 注入流程**：
+
+第一步：Nest 启动时执行 `AppModule` 的 `NestFactory.create(AppModule)`
+
+```ts
+// main.ts
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule); // 👈 入口
+  await app.listen(3000);
+}
+```
+
+这会启动一个叫做 **NestApplicationContext** 的容器系统。
+
+第二步：Nest 扫描 `AppModule` 的元数据（通过 `@Module()` 装饰器）
+
+```ts
+@Module({
+  controllers: [CatsController],
+  providers: [CatsService],
+})
+export class AppModule {}
+```
+
+Nest 从这个模块中提取出：
+
+- 要创建的控制器：`CatsController`
+- 要创建的服务提供者：`CatsService`
+
+然后它会开始**构建依赖图**（Dependency Graph）。
+
+第三步：Nest 创建 `CatsService` 实例
+
+```ts
+@Injectable()
+export class CatsService {
+  ...
+}
+```
+
+- Nest 检查 `CatsService` 是否有构造函数参数 → 没有，直接调用 `new CatsService()` 得到实例。
+- 该实例被注册进全局容器，并标记为“已就绪”（已构建）。
+
+第四步：Nest 创建 `CatsController` 实例
+
+控制器是通过 `new CatsController(...)` 构造的，但不是你写的，是 Nest 自动做的。
+
+这时候 Nest 会：
+
+**1. 读取构造函数参数类型**
+
+这一关键操作依赖 TypeScript 元数据反射：
+
+```ts
+Reflect.getMetadata('design:paramtypes', CatsController);
+// 👈 得到：[CatsService]
+```
+
+说明：构造函数需要一个类型为 `CatsService` 的参数。
+
+这依赖于你在 `tsconfig.json` 中设置了：
+
+```json
+"emitDecoratorMetadata": true,
+"experimentalDecorators": true
+```
+
+**2. 在容器中查找 `CatsService` 的实例**
+
+Nest 查询内部容器中是否有已构建的 `CatsService`：
+
+```ts
+const catsServiceInstance = container.get(CatsService); // ✅ 存在，复用
+```
+
+**3. 调用构造函数并注入实例**
+
+Nest 用反射调用：
+
+```ts
+const controllerInstance = new CatsController(catsServiceInstance);
+```
+
+就这样，你写的 `constructor(private catsService: CatsService)` 得到注入。
+
+此时 `catsService` 属性已自动赋值。
+
+**Nest 构造函数注入全流程**
+
+```text
+NestFactory.create(AppModule)
+           ↓
+扫描模块元数据 (@Module)
+           ↓
+构建 Providers（CatsService）
+           ↓
+构建 Controllers（CatsController）
+           ↓
+读取 CatsController 构造函数参数类型 (Reflect.getMetadata)
+           ↓
+在容器中查找/构建 CatsService 实例
+           ↓
+调用构造函数 new CatsController(catsServiceInstance)
+           ↓
+将控制器注册进路由系统，完成依赖注入
+```
+
+**重点**：
+
+**类作为类型，是如何记录下来的？**
+
+当你写了：
+
+```ts
+constructor(private catsService: CatsService) {}
+```
+
+TypeScript + `emitDecoratorMetadata` 会生成以下运行时元数据：
+
+```ts
+{
+  "design:paramtypes": [CatsService]
+}
+```
+
+这就是 Nest 能拿到参数类型信息的关键。
+
+ **是谁调用了构造函数？**
+
+Nest 的内部类 `Injector` 调用，它在构建实例时，会：
+
+```ts
+new Constructor(...resolvedDependencies)
+```
+
+这些依赖是通过元数据拿到的。
+
+**总结**:
+
+| 问题                               | 解答                                                     |
+| ---------------------------------- | -------------------------------------------------------- |
+| 谁调用构造函数？                   | Nest 的 IoC 容器调用（非用户代码）                       |
+| 何时调用？                         | 在模块初始化阶段，扫描 controller/providers 时           |
+| 为什么能注入正确的类？             | 利用 TS 装饰器元数据读取构造函数参数类型，并在容器中查找 |
+| 构造函数参数后面的类是类型还是值？ | **是类型，也是构造函数，TS 类兼具两种角色**              |
+| `private` 有什么作用？             | 简写方式，自动声明 + 初始化属性（见前面问题）            |
+| `{}` 里是否能写代码？              | ✅ 可以写逻辑，但不建议写副作用代码                       |
 
 ## private的简写
 
