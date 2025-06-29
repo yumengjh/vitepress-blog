@@ -1,5 +1,5 @@
 ---
-title: Nest提供器
+title: NestJS 提供器，封装业务逻辑或复用性强的功能
 date: 2025-06-28
 category: Note
 tags: 
@@ -12,11 +12,11 @@ sticky: false
 cbf: false
 zoomable: true
 publish: true
-AutoAnchor: false
+AutoAnchor: true
 aside: false
 ---
 
-# Nest 提供器
+# NestJS 提供器
 
 ::: details 目录
 [[toc]]

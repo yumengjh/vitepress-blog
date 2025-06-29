@@ -16,7 +16,7 @@ AutoAnchor: false
 aside: false
 ---
 
-# Nest.js 教程目录
+# NestJS 教程目录
 
 - 概述
     - [控制器](./nestjs-controller)

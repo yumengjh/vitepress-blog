@@ -1,5 +1,5 @@
 ---
-title: NestJS是一个用于构建高效、可扩展的 Node.js 服务器端应用的框架。
+title: NestJS 控制器，负责处理传入的请求并将响应发送回客户端
 date: 2025-06-13
 category: Note
 tags: 
@@ -11,6 +11,7 @@ draft: false
 sticky: false
 cbf: false
 zoomable: true
+AutoAnchor: true
 aside: false
 ---
 
