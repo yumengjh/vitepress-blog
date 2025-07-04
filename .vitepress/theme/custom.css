@@ -2,6 +2,9 @@
     /* 覆盖配置 */
     --vp-code-color: #3451b2;
     --vp-c-bg: #fdfdfd;
+    --vp-c-indigo-1: #2a8b5e;
+    --vp-c-indigo-2: #30a46c;
+    --vp-c-indigo-3: #5bb98c;
     /* --vp-c-gutter: transparent; */
     /* 主题配置 */
     /* --date-font-family: Georgia, sans-serif; */
@@ -29,6 +32,9 @@
 }
 
 .dark {
+    --vp-c-indigo-1: #3dd68c;
+    --vp-c-indigo-2: #30a46c;
+    --vp-c-indigo-3: #1f7d51;
     --vp-c-bg: #1b1b1f;
     --vp-c-gutter: var(--vp-c-divider);
     --vp-code-color: #a8b1ff;
@@ -160,7 +166,7 @@ h3 {
     border-bottom: 1px solid var(--vp-c-gutter);
 }
 
-.VPNavBarHamburger .container{
+.VPNavBarHamburger .container {
     border: none;
 }
 
@@ -189,11 +195,11 @@ h3 {
     }
 }
 
-.outline-marker{
+.outline-marker {
     background-color: var(--vp-c-text-1) !important;
 }
 
-.VPFooter{
+.VPFooter {
     border-top: none !important;
 }
 
@@ -220,7 +226,7 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 }
 
 .timeline-dot::before {
-    border-width: 2px ;
+    border-width: 2px;
 }
 
 #nprogress {
@@ -230,8 +236,8 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 }
 
 #nprogress .bar {
-    background: linear-gradient(120deg, #2d60ec, #3ccfda) !important;
-    /* background: linear-gradient(120deg, var(--vp-c-text-2), var(--vp-c-text-3)) !important; */
+    /* background: linear-gradient(120deg, #2d60ec, #3ccfda) !important; */
+    /* background: linear-gradient(120deg, var(--vp-c-indigo-1), var(--vp-c-indigo-3)) !important; */
     position: fixed;
     z-index: 1031;
     top: 0;
@@ -250,7 +256,7 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
     /* font-family: 'Inter', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
         'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji' !important; */
     /* font-size: 1rem !important; */
-    color: var(--vp-c-text-2) !important;
+    /* color: var(--vp-c-text-2) !important; */
     /* margin: 0 3px; */
 }
 
@@ -259,7 +265,7 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
     overflow: hidden;
 }
 
-.VPNavBarMenuLink::after {
+/* .VPNavBarMenuLink::after {
     content: "";
     display: block;
     position: absolute;
@@ -275,7 +281,7 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 .VPNavBarMenuLink:hover::after,
 .VPNavBarMenuLink.active::after {
     width: 100%;
-}
+} */
 
 /* 移动端导航 */
 @media (max-width: 767px) {
@@ -298,16 +304,6 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 .divider,
 .divider-line {
     background-color: transparent !important;
-}
-
-/* 搜索框透明 */
-.blog-search>.nav-search-btn-wait {
-    /* background-color: transparent !important; */
-}
-
-.blog-search>.nav-search-btn-wait:hover {
-    /* background-color: transparent !important; */
-    border: var(--vp-c-divider) 1px solid !important;
 }
 
 @media (max-width: 767px) {
@@ -349,7 +345,7 @@ html {
     scrollbar-gutter: stable;
 }
 
-.vpi-chevron-down{
+.vpi-chevron-down {
     display: none !important;
 }
 

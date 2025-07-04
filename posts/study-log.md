@@ -73,9 +73,9 @@ dns:
 - DOMAIN,image.yumeng.icu,DIRECT
 ```
 
-信息传播现状：
+<!-- 信息传播现状： -->
 
-![](https://image.yumeng.icu/2025-05-25%2F222215.png)
+<!-- ![](https://image.yumeng.icu/2025-05-25%2F222215.png) -->
 
 
 

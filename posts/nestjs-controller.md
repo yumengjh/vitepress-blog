@@ -374,7 +374,7 @@ export class AccountController {
 
 ## 状态共享{#state-sharing}
 
-相关文章：[单例模式和请求级作用域](./singletons-isolation)
+相关文章：[单例模式和请求级作用域](./nest-singletons-isolation)
 
 ## 异步性{#asynchronicity}
 

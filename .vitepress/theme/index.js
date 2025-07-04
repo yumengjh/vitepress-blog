@@ -77,7 +77,7 @@ export default {
             initAutoAnchor();
 
             // 国际化
-            internationalization(theme.value.website.SearchText);
+            // internationalization(theme.value.website.SearchText);
         });
 
         // 路由变化监听

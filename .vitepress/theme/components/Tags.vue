@@ -1,22 +1,14 @@
 <template>
     <div class="tags">
-        <span 
-            @click="toggleTag(String(key))" 
-            v-for="(_, key) in data" 
-            class="tag"
-            :class="{ 'tag-active': selectTag === key }"
-        >
+        <span @click="toggleTag(String(key))" v-for="(_, key) in data" class="tag"
+            :class="{ 'tag-active': selectTag === key }">
             {{ key }} <sup>{{ data[key].length }}</sup>
         </span>
     </div>
     <div class="tag-header">{{ selectTag }}</div>
     <div class="posts-container">
-        <a
-            :href="withBase(article.regularPath)"
-            v-for="(article, index) in selectTag ? data[selectTag] : []"
-            :key="index"
-            class="posts"
-        >
+        <a :href="withBase(article.regularPath)" v-for="(article, index) in selectTag ? data[selectTag] : []"
+            :key="index" class="posts">
             <div class="post-container">
                 <span class="post-title">{{ article.frontMatter.title }}</span>
             </div>
@@ -100,6 +92,10 @@ onMounted(() => {
     padding-right: 1rem;
 }
 
+.post-title:hover {
+    color: var(--vp-c-indigo-2);
+}
+
 .date {
     flex-shrink: 0;
     font-family: var(--date-font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -128,11 +124,19 @@ onMounted(() => {
 }
 
 .tag:hover {
-    background-color: var(--vp-c-bg-soft);
+    background-color: var(--vp-c-indigo-3);
+
+    sup {
+        border: 1px solid var(--vp-c-indigo-2);
+    }
 }
 
 .tag-active {
-    background-color: var(--vp-c-bg-soft);
+    background-color: var(--vp-c-indigo-2);
+
+    sup {
+        border: 1px solid var(--vp-c-indigo-1) !important;
+    }
 }
 
 .tag sup {
@@ -142,7 +146,7 @@ onMounted(() => {
     opacity: 0.8;
     border-radius: 50%;
     background-color: inherit;
-    border: 1px solid var(--vp-c-divider);
+    border: 1px solid var(--vp-c-text-3);
     padding: 2px 6px;
     display: inline-flex;
     align-items: center;
@@ -157,6 +161,7 @@ onMounted(() => {
     padding-bottom: 1rem;
     font-size: 1.75rem;
     font-weight: 600;
+    color: var(--vp-c-indigo-2);
 }
 
 @media screen and (max-width: 768px) {

@@ -1,3 +1,4 @@
+import 'dotenv/config'  // 环境变量
 import { defineConfig } from 'vitepress'
 import { getPosts } from './theme/serverUtils'
 import timeline from "vitepress-markdown-timeline";
@@ -100,7 +101,7 @@ export default defineConfig({
                 },
                 website: {
                     // copyrightLink: '/pages/about',
-                    SearchText:'搜索文章',
+                    SearchText: '搜索文章',
                     showPrevNextBtn: true,
                     updateText: '更新',
                     UpdateTextsuffix: {
@@ -112,6 +113,51 @@ export default defineConfig({
                         minute: '分钟',
                         hour: '小时',
                         day: '天'
+                    }
+                },
+                search: {
+                    provider: 'algolia',
+                    options: {
+                        appId: process.env.VITE_ALGOLIA_APP_ID || '',
+                        apiKey: process.env.VITE_ALGOLIA_API_KEY || '',
+                        indexName: process.env.VITE_ALGOLIA_INDEX_NAME || '',
+                        placeholder: '搜索文章',
+                        translations: {
+                            button: {
+                                buttonText: '搜索文章',
+                                buttonAriaLabel: '搜索'
+                            },
+                            modal: {
+                                searchBox: {
+                                    resetButtonTitle: '清除查询条件',
+                                    resetButtonAriaLabel: '清除查询条件',
+                                    cancelButtonText: '取消',
+                                    cancelButtonAriaLabel: '取消'
+                                },
+                                startScreen: {
+                                    recentSearchesTitle: '搜索历史',
+                                    noRecentSearchesText: '没有搜索历史',
+                                    saveRecentSearchButtonTitle: '保存至搜索历史',
+                                    removeRecentSearchButtonTitle: '从搜索历史中移除'
+                                },
+                                errorScreen: {
+                                    titleText: '无法获取结果',
+                                    helpText: '你可能需要检查你的网络连接'
+                                },
+                                footer: {
+                                    selectText: '选择',
+                                    navigateText: '切换',
+                                    closeText: '关闭',
+                                    searchByText: '搜索提供者'
+                                },
+                                noResultsScreen: {
+                                    noResultsText: '无法找到相关结果',
+                                    suggestedQueryText: '你可以尝试查询',
+                                    reportMissingResultsText: '你认为该查询应该有结果？',
+                                    reportMissingResultsLinkText: '点击反馈'
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -159,11 +205,61 @@ export default defineConfig({
                 },
                 lastUpdated: {
                     text: 'Last updated'
+                },
+                search: {
+                    provider: 'algolia',
+                    options: {
+                        appId: process.env.VITE_ALGOLIA_APP_ID || '',
+                        apiKey: process.env.VITE_ALGOLIA_API_KEY || '',
+                        indexName: process.env.VITE_ALGOLIA_INDEX_NAME || '',
+                        placeholder: 'Search article',
+                        translations: {
+                            button: {
+                                buttonText: 'Search',
+                                buttonAriaLabel: 'Search'
+                            },
+                            modal: {
+                                searchBox: {
+                                    resetButtonTitle: 'Clear query',
+                                    resetButtonAriaLabel: 'Clear query',
+                                    cancelButtonText: 'Cancel',
+                                    cancelButtonAriaLabel: 'Cancel'
+                                },
+                                startScreen: {
+                                    recentSearchesTitle: 'Recent',
+                                    noRecentSearchesText: 'No recent searches',
+                                    saveRecentSearchButtonTitle: 'Save to recent',
+                                    removeRecentSearchButtonTitle: 'Remove from recent'
+                                },
+                                errorScreen: {
+                                    titleText: 'Unable to fetch results',
+                                    helpText: 'You might want to check your network connection'
+                                },
+                                footer: {
+                                    selectText: 'Select',
+                                    navigateText: 'Navigate',
+                                    closeText: 'Close',
+                                    searchByText: 'Search by'
+                                },
+                                noResultsScreen: {
+                                    noResultsText: 'No results for',
+                                    suggestedQueryText: 'You can try',
+                                    reportMissingResultsText: 'Think this query should return results?',
+                                    reportMissingResultsLinkText: 'Let us know'
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
     },
     themeConfig: {
+        search: {
+            provider: 'algolia',
+            options: {
+            }
+        },
         // logo: {
         //     light: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg?color=black',
         //     dark: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg?color=white'
@@ -192,10 +288,10 @@ export default defineConfig({
         server: { port: 5000 },
         plugins: [
             // RssPlugin(RSS),
-            pagefindPlugin({
-                showDate: true,
-                pageResultCount: 4,
-            })
+            // pagefindPlugin({
+            //showDate: true,
+            //pageResultCount: 4,
+            //})
         ],
         optimizeDeps: {
             exclude: [
