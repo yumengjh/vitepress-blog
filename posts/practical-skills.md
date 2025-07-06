@@ -1,10 +1,10 @@
 ---
-title: 实践中可能会遇到的一些操作
+title: 日常开发中常会遇到的一些场景与对应操作命令，帮助你提高效率、避免踩坑。
 date: 2025-07-04
 category: Note
 tags: 
     # - 
-description: 实践中可能会遇到一些操作但是具体不知道怎么做
+description: 日常开发中常会遇到的一些场景与对应操作命令，帮助你提高效率、避免踩坑。
 outline: [2,3]
 draft: false
 sticky: false

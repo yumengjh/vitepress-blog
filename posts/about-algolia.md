@@ -1,5 +1,5 @@
 ---
-title: 关于Algolia的一些配置和其他
+title: Algolia 是一个托管型搜索平台，关于它的一些配置，使用与开发中注意事项的详细说明
 date: 2025-07-06
 category: Note
 tags: 
