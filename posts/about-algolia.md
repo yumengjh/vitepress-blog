@@ -35,6 +35,28 @@ noindex: true  # 禁止被 Algolia 收录
 ---
 ```
 
+因为VitePress不会自动加上 `<meta property="noSearch" content="true">`
+
+```ts
+// config.js
+export default defineConfig({
+  // ...existing code...
+  vite: {
+    // ...existing code...
+  },
+  // 自动为 noSearch: true 的页面添加 head
+  transformPageData(pageData) {
+    if (pageData.frontmatter.noSearch) {
+      pageData.frontmatter.head = pageData.frontmatter.head || [];
+      pageData.frontmatter.head.push([
+        'meta',
+        { property: 'noSearch', content: 'true' }
+      ]);
+    }
+  }
+});
+```
+
 #### 2. 修改 Algolia 爬虫配置
 
 在 Algolia 控制台的 Crawler 配置中，添加 `selectors_exclude` 规则：
@@ -45,7 +67,7 @@ actions: [
     indexName: "yumeng",
     recordExtractor: ({ $, helpers }) => {
       // 如果 Frontmatter 包含 noindex: true，跳过该页面
-      if ($('meta[property="noindex"]').length > 0) {
+      if ($('meta[property="noSearch"]').length > 0) {
         return [];
       }
       return helpers.docsearch({

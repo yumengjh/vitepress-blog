@@ -313,5 +313,15 @@ export default defineConfig({
                 }
             ]
         },
+    },
+    // 自动为 noSearch: true 的页面添加 head
+    transformPageData(pageData) {
+        if (pageData.frontmatter.noSearch) {
+            pageData.frontmatter.head = pageData.frontmatter.head || [];
+            pageData.frontmatter.head.push([
+                'meta',
+                { property: 'noSearch', content: 'true' }
+            ]);
+        }
     }
 })
