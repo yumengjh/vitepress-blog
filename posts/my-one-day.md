@@ -13,6 +13,7 @@ done: false
 gridPaper: true
 handwriting: true
 aside: false
+noSearch: true
 ---
 
 # 我的一天

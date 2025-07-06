@@ -26,6 +26,7 @@ zoomable: true
 publish: true
 AutoAnchor: false
 aside: false
+noSearch: false 
 ---
 
 ::: details 目录
