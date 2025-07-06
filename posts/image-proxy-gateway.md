@@ -234,4 +234,4 @@ export class AppService {
 
 图片地址：https://api.yumeng.icu/image/test/2025-07-05/224223.jpg
 
-![](https://api.yumeng.icu/image/test/2025-07-05/224223.jpg){width=100% title=图片来自Pixiv}
+![](https://api.yumeng.icu/image/test/2025-07-05/224223.jpg?token=admin){width=100% title=图片来自Pixiv}
