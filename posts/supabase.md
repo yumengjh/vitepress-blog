@@ -1,18 +1,18 @@
 ---
-title: Supabase 是一个开源免费的 PostgreSQL 数据库，提供了现代化的 REST 风格 API 查询接口
+title: Supabase 踩坑手记，上手实践，注意事项
 date: 2025-07-07
 category: Note
 tags: 
     - Supabase
-description: Supabase 是一个开源 Firebase 替代品，底层基于 PostgreSQL 数据库。它不仅提供 SQL 访问方式，还提供了现代化的 REST 风格 API 查询接口，这在前端项目中极其方便
+description: 涵盖初学记录、专题整理、踩坑复盘
 outline: [2,3]
 draft: false
 sticky: false
 cbf: false
 zoomable: true
 publish: true
-AutoAnchor: true
-aside: true
+AutoAnchor: false
+aside: false
 noSearch: false 
 ---
 
@@ -20,223 +20,76 @@ noSearch: false
 [[toc]]
 :::
 
-# Supabase API 
+# Supabase
 
-## 基础查询 `.from().select()` {#basic-select}
+## Supabase 中的 3 类访问者
 
-**Supabase**：
+| 访问者类型             | 用途               | 使用密钥/令牌              | 对应角色        | 是否受 RLS 限制 | 场景示例                   |
+| ---------------------- | ------------------ | -------------------------- | --------------- | --------------- | -------------------------- |
+| 🛡️ 服务端（超级管理员） | 后端/脚本/部署工具 | `service_role key`         | 无（绕过 RLS）  | ❌ 不受限制      | 后端服务加载配置、管理数据 |
+| 👤 登录用户             | 已登录的普通用户   | `access_token` 登录令牌    | `authenticated` | ✅ 遵守 RLS      | 用户查看个人信息、业务操作 |
+| 🧍‍♂️ 游客                | 未登录访问者       | `anon key`（匿名访问密钥） | `anon`          | ✅ 遵守 RLS      | 公共页面加载、注册请求等   |
+
+ **服务端（Super Admin）**
+
+- 用 `service_role key` 来访问 Supabase 的 REST 或客户端
+- **不会执行 Row-Level Security (RLS)**，权限最大
+- 不建议前端使用（泄露就等于数据库裸奔）
+- NestJS / Node 后端**应该用它**
+
+**游客（anon）**
+
+- 使用 `anon key`，**适合前端未登录状态访问**
+- 角色为 `anon`
+- 如果你希望“允许任何人读取一些数据”，就需要为 `anon` 创建 RLS Policy
+
+**已登录用户（authenticated）**
+
+- 用户通过 `supabase.auth.signInWithPassword()` 登录成功
+- 之后客户端会获得一个 `access_token`
+- 后续 API 请求会自动带上 `Authorization: Bearer <access_token>`，Supabase 就知道你是登录用户
+- 角色为 `authenticated`
+- 可以基于此做更精细的权限控制（只允许访问自己的数据等）
+
+ **注意**：Supabase 不支持自定义角色字段（role 只是 JWT claim）
+
+Supabase 本身只识别两种用户角色：
+
+- `anon`
+- `authenticated`
+
+想要实现 **“管理员”、“普通用户”** 这样的**自定义角色权限**，你可以用这种方式：
 
 ```ts
-const { data, error } = await supabase
-.from('users')
-.select('*');
+-- users 表中加一个 role 字段
+-- 然后在 RLS policy 中判断 auth.uid() 所对应用户的 role
 ```
 
-**MySQL**：
+示例 RLS：
 
 ```sql
-SELECT * FROM users;
+create policy "only admins can see this"
+on some_table
+for select
+to authenticated
+using (
+  exists (
+    select 1 from users
+    where users.id = auth.uid()
+    and users.role = 'admin'
+  )
+);
 ```
 
-## 条件筛选 `.eq()` / `.neq()` / `.lt()` / `.gt()` / `.gte()` / `.lte()` {#conditions}
+ **在控制台哪里配置权限？**
 
-**Supabase**：
+你可以在 Supabase 控制台中：
 
-```ts
-supabase.from('users').select('*')
-    .eq('age', 18)
-    .neq('status', 'inactive')
-    .gt('score', 60)
-    .lt('rank', 100)
-    .gte('experience', 3)
-    .lte('level', 5);
-```
+1. 打开 `Table Editor` → 点某个表
+2. 点击右上角的 `RLS` 开关（默认关闭，建议开启）
+3. 添加 Row Level Policies（行级安全策略），根据 `anon` 或 `authenticated` 配置访问条件
 
-**MySQL**：
+**总结**：
 
-```sql
-SELECT * FROM users
-WHERE age = 18 AND status != 'inactive' AND score > 60
-AND rank < 100 AND experience >= 3 AND level <= 5;
-```
-
-## 范围匹配 `.in()` / `.not()` / `.like()` / `.ilike()` {#range-matching}
-
-**Supabase**：
-
-```ts
-supabase.from('users').select('*')
-    .in('role', ['admin', 'editor'])
-    .like('email', '%@gmail.com')
-    .ilike('username', '%john%');
-```
-
-**MySQL**：
-
-```sql
-SELECT * FROM users
-WHERE role IN ('admin', 'editor')
-  AND email LIKE '%@gmail.com'
-  AND username ILIKE '%john%';
-```
-
-## 组合条件 `.or()` / `.not()` / `.filter()` {#logical-combination}
-
-**Supabase**：
-
-```ts
-supabase.from('users')
-    .select('*')
-    .or('status.eq.active,status.eq.pending')
-    .not('deleted', 'is', true)
-    .filter('age', 'gte', 18);
-```
-
-**MySQL**：
-
-```sql
-SELECT * FROM users
-WHERE (status = 'active' OR status = 'pending')
-  AND deleted IS NOT true
-  AND age >= 18;
-```
-
-## 排序分页 `.order()` / `.limit()` / `.range()` {#pagination}
-
-**Supabase**：
-
-```ts
-supabase.from('users')
-  .select('*')
-  .order('created_at', { ascending: false })
-  .range(10, 19); // 第 2 页，每页 10 条
-```
-
-**MySQL**：
-
-```sql
-SELECT * FROM users ORDER BY created_at DESC LIMIT 10 OFFSET 10;
-```
-
-## 获取单行 `.single()` / `.maybeSingle()` {#single-maybeSingle}
-
-**Supabase**：
-
-```ts
-supabase.from('config')
-    .select('value')
-    .eq('key', 'site_title')
-    .single();
-```
-
-- `.single()`：返回一行，0 或多行都会报错
-- `.maybeSingle()`：0 或 1 行都可接受
-
-## 插入数据 `.insert()` {#insert}
-
-**Supabase**：
-
-```ts
-await supabase.from('users').insert({ name: 'Tom', age: 30 });
-```
-
-**MySQL**：
-
-```sql
-INSERT INTO users (name, age) VALUES ('Tom', 30);
-```
-
-- 可插入多个：`insert([{...}, {...}])`
-- 默认返回插入后的数据
-
-## 更新数据 `.update()` {#update}
-
-**Supabase**：
-
-```ts
-await supabase.from('users')
-  .update({ age: 35 })
-  .eq('id', 1);
-```
-
-**MySQL**：
-
-```sql
-UPDATE users SET age = 35 WHERE id = 1;
-```
-
-## 删除数据 `.delete()` {#delete}
-
-**Supabase**：
-
-```ts
-await supabase.from('users')
-  .delete()
-  .eq('id', 1);
-```
-
-**MySQL**：
-
-```sql
-DELETE FROM users WHERE id = 1;
-```
-
-## 原始 SQL 支持（服务端） {#raw-sql}
-
-Supabase 控制台支持原始 SQL 查询，但 **前端不支持直接执行原生 SQL**。
-
-推荐通过 RPC 函数调用：
-
-```ts
-await supabase.rpc('get_user_stats', { user_id: 123 });
-```
-
-## 错误处理 `.throwOnError()` {#error-handling}
-
-```ts
-supabase.from('users').select('*').throwOnError();
-```
-
-等价于：
-
-```ts
-const { data, error } = await supabase.from('users').select('*');
-if (error) throw error;
-```
-
-## 所有查询方法对照表 {#api-table}
-
-| Supabase 方法      | SQL 对应         | 说明                       |
-| ------------------ | ---------------- | -------------------------- |
-| `.select()`        | `SELECT`         | 查询字段                   |
-| `.eq()`            | `=`              | 等于                       |
-| `.neq()`           | `!=`             | 不等于                     |
-| `.gt()`, `.lt()`   | `>`, `<`         | 比较运算                   |
-| `.gte()`, `.lte()` | `>=`, `<=`       | 比较运算                   |
-| `.in()`            | `IN`             | 多值匹配                   |
-| `.like()`          | `LIKE`           | 模糊匹配                   |
-| `.ilike()`         | `ILIKE`          | 忽略大小写匹配（Postgres） |
-| `.order()`         | `ORDER BY`       | 排序                       |
-| `.limit()`         | `LIMIT`          | 限制数量                   |
-| `.range()`         | `OFFSET + LIMIT` | 分页                       |
-| `.or()`            | `OR`             | 或条件                     |
-| `.not()`           | `NOT`            | 非条件                     |
-| `.filter()`        | 通用 `WHERE`     | 动态运算符传入             |
-| `.single()`        | 1 行限制         | 多行或 0 行报错            |
-| `.maybeSingle()`   | 最多 1 行        | 宽容版本                   |
-| `.insert()`        | `INSERT`         | 插入数据                   |
-| `.update()`        | `UPDATE`         | 修改数据                   |
-| `.delete()`        | `DELETE`         | 删除数据                   |
-| `.throwOnError()`  | 无               | 自动抛出错误               |
-
-## 最佳实践建议 {#best-practices}
-
-- 所有操作均为异步 `await`，不可漏写
-- 前端使用匿名 key，受限于 Row Level Security（RLS）
-- 服务端使用 `service_role` key，可访问所有数据
-- 建议封装为统一查询服务（如 NestJS Service）
-- 支持链式调用，可组合多个条件与功能
-
-## 总结 {#summary}
-
-Supabase 的客户端 API 提供了一个现代、类型安全、SQL 等价的数据库操作方式，无需写原生 SQL 就能完成绝大多数业务逻辑。
+Supabase 实际上只有两类**RLS角色**：`anon` 和 `authenticated`。服务端使用 `service_role` 密钥是“超级权限模式”，绕过所有规则，适合后端。
+想实现更复杂的“角色权限”，请通过数据库字段 + RLS Policy 手动实现。
