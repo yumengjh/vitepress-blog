@@ -4,7 +4,7 @@ date: 2025-07-04
 category: Note
 tags: 
     # - 
-description: 日常开发中常会遇到的一些场景与对应操作命令，帮助你提高效率、避免踩坑。
+description:  实践开发中常见的一些操作记录（不定期更新）
 outline: [2,3]
 draft: false
 sticky: false
