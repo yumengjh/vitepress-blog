@@ -688,3 +688,113 @@ class CatsController {
 - 定义一个名为 `catsService` 的私有属性，类型为 `CatsService`
 - 同时将构造函数传入的参数赋值给这个属性
 
+## 同一个控制器注入请求级和单例
+
+**控制器最终的作用域会由它依赖的“最小作用域级别”决定。请求级 > 单例，所以只要注入了请求级服务，控制器就会自动变成请求级。**
+
+控制器的作用域是由**它的依赖链决定的**：
+
+- 如果你注入的 **都是单例服务** → 控制器就是默认的单例
+- 如果你注入了 **请求级服务** → 控制器会“冒泡”变成请求级
+- 如果你注入了 **瞬态服务** → 控制器不会变成瞬态（瞬态不会影响上层作用域）
+
+```ts
+// UserService 是单例
+@Injectable()
+export class UserService {}
+
+// LoggerService 是请求级
+@Injectable({ scope: Scope.REQUEST })
+export class LoggerService {}
+
+@Controller('cats')
+export class CatsController {
+  constructor(
+    private userService: UserService,          // 单例
+    private loggerService: LoggerService       // 请求级
+  ) {}
+}
+```
+
+上面的 `CatsController` 虽然注入了一个单例服务，但只要有一个是请求级，控制器本身就会**被提升为请求级**。
+
+**不能混用不同作用域的控制器吗？**
+
+其实 NestJS **允许你在一个控制器中注入不同作用域的服务**，只要你接受这个控制器会被整体提升到“最小生命周期”（通常是请求级）。
+
+- 是合法的
+- 是常见的（比如你要用 traceId，又要查数据库）
+- **但要注意性能影响，控制器每次请求都要重新创建**
+
+**如果你不想控制器变成请求级怎么办？**
+
+你就**不能注入请求级服务**，而是要通过其他方式**“向下传递”上下文**，比如：
+
+- 用 `@Inject(REQUEST)` 拿到原始请求（`@Req() req: Request`）
+- 从控制器层级把数据传到需要的服务，而不是依赖注入
+
+## @Req() 和 @Inject()  语法糖
+
+`@Req()` 本质上就是 `@Inject(REQUEST)` 的语法糖
+
+```ts
+// 写在 Controller 里
+@Get()
+handle(@Req() req: Request) {
+  console.log(req.headers);
+}
+
+// 等价于
+@Get()
+handle(@Inject(REQUEST) req: Request) {
+  console.log(req.headers);
+}
+```
+
+只不过：
+
+- `@Req()` 是 Nest 给你包了一层，让你写得更短更直观；
+- 而 `@Inject(REQUEST)` 是低层的原理实现，**你想在 Service 里用就只能用它**。
+
+“@Inject(REQUEST) 怎么向下传？” ？？？
+
+**它不是“向下传”，它就是直接注入进来的——只不过你平时在控制器里习惯用 `@Req()` 这个糖而已 🍬。**
+
+```ts
+客户端请求 --> Nest 控制器方法被调用
+              |
+              |--> @Req() 自动注入 Request（语法糖）
+              |
+              |--> 你要用 req，就传下去
+              |    或者在某个服务里用 @Inject(REQUEST) 注入它（Nest 框架帮你搞定）
+```
+
+| 用法               | 控制器中是否可用 | 服务中是否可用       | 备注               |
+| ------------------ | ---------------- | -------------------- | ------------------ |
+| `@Req()`           | ✅ 是             | ❌ 否                 | 只能用在方法参数中 |
+| `@Inject(REQUEST)` | ✅ 是（不常见）   | ✅ 是（必须是请求级） | 用于构造函数注入   |
+
+## DI子树和DI树
+
+想象你 Nest 项目的所有服务、控制器、模块、依赖关系构成了一棵树：
+
+- 根是 AppModule
+- 中间是各个模块、控制器
+- 叶子节点是各种服务（Service）
+
+这棵树 Nest 在启动时一次性构造好，并且默认**整个项目都用一套共享实例（即单例）**。
+
+现在来了个请求，Nest 就走这个大树，找到响应控制器和服务，用**已有的单例实例去处理请求**。
+这就是默认行为。
+
+但如果你声明了：
+
+```ts
+@Injectable({ scope: Scope.REQUEST })
+export class UserContextService {}
+```
+
+Nest 就不能用全局的那棵树了，因为你要的这个服务必须**每次请求都新建**。
+于是它会为你新建一棵“局部子树”，只复制那一部分需要请求级的服务。
+
+这就是所谓的“**请求级 DI 子树**”。

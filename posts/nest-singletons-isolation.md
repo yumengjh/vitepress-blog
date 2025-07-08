@@ -532,3 +532,268 @@ export class CatsController {
 即使 `find()` 方法没有用 `requestService`，**控制器还是请求级**！因为 Nest 无法做到“按方法注入。
 
 ## 请求提供器{#request-provider}
+
+在基于 HTTP 的应用中（例如使用 `@nestjs/platform-express` 或 `@nestjs/platform-fastify`），你可能希望在使用 **请求作用域 Scope.REQUEST** 的服务时访问原始请求对象（如 headers、IP、user 等信息）。Nest 提供了一种方式：通过注入 `REQUEST` 对象来实现。
+
+```ts
+import { Injectable, Scope, Inject } from '@nestjs/common';
+import { REQUEST } from '@nestjs/core';
+import { Request } from 'express';
+
+@Injectable({ scope: Scope.REQUEST }) // 请求级作用域
+export class CatsService {
+  constructor(@Inject(REQUEST) private request: Request) {}
+  // ...
+}
+```
+
+`REQUEST` 是 Nest 提供的特殊 token，代表当前请求上下文中的原始 `Express.Request` 对象。
+
+注入它，可以让你读取当前请求的各种数据（headers、params、cookies、user 等）。
+
+这个方式在你**不需要额外封装服务，只想直接读取原始请求信息**时非常有用。
+
+**不需要自己设置作用域为 REQUEST**，因为只要依赖了 `REQUEST`，Nest 会自动将当前服务标记为请求作用域。
+
+**注意**：
+
+`REQUEST` 本质上就是一个请求作用域的提供器，因此不需要手动指定作用域，因为有冒泡机制。
+
+如果你的服务依赖于 `REQUEST`，Nest 会**自动把这个服务也标记为请求作用域**，这个行为是自动且不可更改的。
+
+但请注意：**你不能通过 `REQUEST` 访问其他请求级服务（如 `UserContextService`）的实例**，它只能提供 Express/Fastify 请求对象。
+
+**GraphQL 特例补充**
+
+由于底层平台的差异，在 GraphQL 应用中，**不能使用 `REQUEST`**，而是使用 `CONTEXT`：
+
+```ts
+import { CONTEXT } from '@nestjs/graphql';
+
+@Injectable({ scope: Scope.REQUEST })
+export class CatsService {
+  constructor(@Inject(CONTEXT) private context) {}
+}
+```
+
+你需要在 `GraphQLModule` 中配置 `context` 对象，把 request 信息加进去：
+
+```ts
+GraphQLModule.forRoot({
+  context: ({ req }) => ({ request: req }),
+});
+```
+
+**总结**:
+
+**请求提供器** 让你在请求作用域的服务中，访问 Express/Fastify 的原始 Request 对象，这是在需要读取用户身份、header、IP 等原始信息时非常常见的做法。比起专门封装一个请求上下文服务，它更轻量直接。
+
+## 查询器提供器{#inquirer-provider}
+
+NestJS 提供了一个特殊的注入令牌 `INQUIRER`，它代表了“当前构建（请求）这个提供器的**父类实例**”。
+换句话说，如果一个服务（提供器）被其他服务注入，你可以通过 `INQUIRER` 获取到那个调用方服务的实例（或者至少是它的类实例）。
+
+```ts
+import { Inject, Injectable, Scope } from '@nestjs/common';
+import { INQUIRER } from '@nestjs/core';
+
+@Injectable({ scope: Scope.TRANSIENT }) // 这里用了瞬态作用域，方便每次注入都是新实例
+export class HelloService {
+  constructor(@Inject(INQUIRER) private parentClass: object) {}
+
+  sayHello(message: string) {
+    console.log(`${this.parentClass?.constructor?.name}: ${message}`);
+  }
+}
+```
+
+`HelloService` 注入了 `INQUIRER`，这个 `parentClass` 就是“谁在使用（构建）这个 HelloService”。
+
+在 `sayHello` 里，它打印出调用者的类名和传入的信息。
+
+```ts
+import { Injectable } from '@nestjs/common';
+import { HelloService } from './hello.service';
+
+@Injectable()
+export class AppService {
+  constructor(private helloService: HelloService) {}
+
+  getRoot(): string {
+    this.helloService.sayHello('My name is getRoot');
+
+    return 'Hello world!';
+  }
+}
+```
+
+`AppService` 注入并调用了 `HelloService` 的方法。
+
+当调用 `AppService#getRoot()` 时，控制台会输出：
+
+```bash
+AppService: My name is getRoot
+```
+
+**使用场景**：
+
+- **了解调用链或上下文**：有些情况下，一个服务想知道“是谁调用了我”，可以利用 `INQUIRER` 注入的父实例，获取调用者的类型或信息。
+- **日志记录**：自动打印调用者的类名，方便调试和追踪日志来源。
+- **指标监控**：可以根据调用者不同，做分类统计，比如哪个模块调用了某个服务。
+- **高级框架设计**：实现一些框架特性，动态基于调用方做不同处理。
+
+**注意**：
+
+- `INQUIRER` 一般配合 **瞬态（`TRANSIENT`）作用域**一起用，因为你希望每次注入都能正确区分调用者。
+- 如果你的服务是单例，且多个地方共享同一个实例，那么 `INQUIRER` 可能不能准确表示具体调用方。
+- 这不是特别常用的功能，属于框架内部或高级用法。
+
+## 性能{#performance}
+
+使用请求作用域的提供者会对应用性能产生影响。虽然 Nest 尝试尽可能缓存元数据，但它仍需在每个请求中创建该类的新实例。因此，这会降低平均响应时间和整体基准测试结果。除非提供者必须是请求作用域，否则强烈建议使用默认的单例作用域。
+
+**提示**
+尽管听起来可能让人担心，但设计合理的请求作用域应用，响应延迟通常不会超过大约 5% 的增幅。
+
+**请求级作用域不会影响单例的性能，但它自己的“额外开销”会在整体响应中体现出来，稍微拉低整体性能。**
+
+## 耐用提供器{#durable-providers}
+
+如上一节所述，请求作用域的提供器可能会导致性能下降。只要你有一个请求作用域的服务（比如它被注入进控制器或其他服务），**Nest 就会为每个请求重新创建整个依赖链的实例**，请求结束后再进行垃圾回收。
+
+举例来说，如果你有 30,000 个并发请求，同时请求了某个控制器，而该控制器中注入了一个请求作用域服务，那么 Nest 会临时创建 30,000 份控制器和它们的服务实例。
+
+**多租户问题场景**
+
+假设你在做一个多租户应用，有 10 个客户，每个客户都有自己的数据库连接（或 schema）。你想保证 A 客户永远不会访问 B 客户的数据。那么一种办法是：
+
+为每个请求声明一个「请求作用域的数据源提供器」，它读取请求头中的 `x-tenant-id`，再选择对应的数据库连接。
+
+这么做确实能保证隔离，但问题是：
+
+- 你的大多数服务都依赖于这个 `DataSourceService`；
+- 那么它们都会**变成请求作用域**；
+- Nest 就要为每个请求**重新创建整棵 DI 树**，很影响性能。
+
+**更优方式**
+
+如果你知道这些请求其实可以按某些公共属性聚类（比如 `tenantId`），那么你没必要为每个请求都重新创建服务实例。你只需要：
+
+- 为每个租户创建一棵 DI 子树，所有来自同一租户的请求共享它；
+- 这样大幅减少实例化和 GC 的负担。
+
+这就是**持久 DI 子树**（**耐用提供器**）的场景。
+
+[DI 子树和DI 树](./nest-practice-tip#di子树和di树)
+
+**步骤**
+
+**① 定义 Context 策略**
+
+你需要自定义一个上下文策略 `ContextIdStrategy` 来**告诉 Nest：怎么判断请求属于哪个租户**。
+
+```ts
+import {
+  HostComponentInfo,
+  ContextId,
+  ContextIdFactory,
+  ContextIdStrategy,
+} from '@nestjs/core';
+import { Request } from 'express';
+
+const tenants = new Map<string, ContextId>();
+
+export class AggregateByTenantContextIdStrategy implements ContextIdStrategy {
+  attach(contextId: ContextId, request: Request) {
+    const tenantId = request.headers['x-tenant-id'] as string;
+
+    let tenantSubTreeId: ContextId;
+    if (tenants.has(tenantId)) {
+      tenantSubTreeId = tenants.get(tenantId)!;
+    } else {
+      tenantSubTreeId = ContextIdFactory.create();
+      tenants.set(tenantId, tenantSubTreeId);
+    }
+
+    // 若提供器被标记为 durable，则返回 tenantId 对应的上下文；否则返回默认 contextId
+    return (info: HostComponentInfo) =>
+      info.isTreeDurable ? tenantSubTreeId : contextId;
+  }
+}
+```
+
+ 说明：
+
+- `info.isTreeDurable` 是 Nest 用来判断某个服务是否被标记为 durable（耐用）的；
+- 如果是，就用 `tenantSubTreeId`，这样就不会重复创建；
+- 如果不是，就走默认逻辑（每次都新建）。
+
+**② 可选：注入 payload（例如 tenantId）**
+
+你也可以让 `REQUEST` 注入的不再是 Express 的 req 对象，而是你自定义的 payload，例如：
+
+```ts
+return {
+  resolve: (info) =>
+    info.isTreeDurable ? tenantSubTreeId : contextId,
+  payload: { tenantId },
+};
+```
+
+这将允许你在服务中：
+
+```ts
+constructor(@Inject(REQUEST) private readonly req: { tenantId: string }) {}
+```
+
+**③ 全局注册你的策略**
+
+你需要在应用启动时注册这个策略（比如在 `main.ts`）：
+
+```ts
+import { ContextIdFactory } from '@nestjs/core';
+ContextIdFactory.apply(new AggregateByTenantContextIdStrategy());
+```
+
+**④ 标记服务为 durable: true**
+
+你需要手动标记哪些服务可以使用租户 DI 子树：
+
+```ts
+@Injectable({ scope: Scope.REQUEST, durable: true })
+export class CatsService {}
+```
+
+或者在自定义提供器中：
+
+```ts
+{
+  provide: 'foobar',
+  useFactory: () => new Foobar(),
+  scope: Scope.REQUEST,
+  durable: true,
+}
+```
+
+| 概念             | 含义说明                                           |
+| ---------------- | -------------------------------------------------- |
+| Durable Provider | 请求作用域服务 + 可复用实例                        |
+| 使用场景         | 多租户、每类请求可归类，避免每次都新建整个服务树   |
+| 关键点           | 按 `tenantId` 聚合请求上下文，只为不同租户建立一次 |
+| 优势             | 显著减少内存创建/GC，避免性能被请求作用域拖垮      |
+| 警告             | 不适合有大量租户的 SaaS 应用，Map 缓存可能爆炸     |
+
+**耐用提供器** 是一种**请求级服务的优化手段**，但是现实情况是：**非常少用**，甚至大多数项目一辈子都不会用到：
+
+| 特性                       | 是否常见                                   |
+| -------------------------- | ------------------------------------------ |
+| `Scope.DEFAULT`（单例）    | ✅ 90% 项目都靠它撑起                       |
+| `Scope.REQUEST`（请求级）  | 🔶 少数涉及 traceId、多租户、GraphQL 等才用 |
+| `durable: true` + 聚合策略 | ❌ 极少数“高并发多租户项目”才需要           |
+
+**durable 的设计动机总结**：
+
+请求级服务如果依赖多、被很多地方注入，会拉着整个服务树每个请求都新建，成本高。
+durable 的设计目的是：**当我们能“分组请求”时（比如按租户 ID 聚合），就不用每个请求都新建一套服务链了。**
+
+这东西你理解一下原理就够了，**真的到了需要用 durable 的时候，你一定已经做了中大型项目**，并且业务架构足够复杂。

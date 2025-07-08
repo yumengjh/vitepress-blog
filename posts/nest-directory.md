@@ -18,7 +18,8 @@ aside: false
 
 # NestJS 教程目录
 
-- 概述
+- **概述**
+
     - [控制器](./nestjs-controller)
     - [提供器](./nestjs-provider)
 
@@ -26,13 +27,22 @@ aside: false
 
 ---
 
-**相关原文档**：
+- **笔记**
 
-[NestJS中文网](https://nest.nodejs.cn/)
+    - [NestJS小册子](./nest-practice-tip)
+    - [项目搭建](./nest-simplest-demo)
+---
 
-[NestJS中文文档](https://docs.nestjs.cn/)
+- **基础知识**
 
-[Nest官方文档](https://docs.nestjs.com/)
+    - [注入作用域](./nest-singletons-isolation)
 
-[NestJS Github仓库](https://github.com/nestjs/nest)
+---
+
+- **相关原文档**：
+
+    - [NestJS中文网](https://nest.nodejs.cn/)
+    - [NestJS中文文档](https://docs.nestjs.cn/)
+    - [Nest官方文档](https://docs.nestjs.com/)
+    - [NestJS Github仓库](https://github.com/nestjs/nest)
 
