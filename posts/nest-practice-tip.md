@@ -798,3 +798,198 @@ Nest 就不能用全局的那棵树了，因为你要的这个服务必须**每�
 于是它会为你新建一棵“局部子树”，只复制那一部分需要请求级的服务。
 
 这就是所谓的“**请求级 DI 子树**”。
+
+## 服务类注册的两种方式
+
+方式一：**隐式绑定（推荐默认方式）**
+
+```ts
+// 注册：
+providers: [AppService]
+
+// 使用：
+constructor(private readonly appService: AppService) {}
+```
+
+特点：
+
+- 自动以类名 `AppService` 作为 Token 注册和注入
+- 简洁、直观、90% 场景下够用
+- 对应的注入语法也是：`constructor(private xxx: AppService)`
+
+方式二：**显式绑定（useClass）**
+
+```ts
+// 注册：
+providers: [
+  {
+    provide: 'MyServiceAlias', // 自定义 token
+    useClass: MyService,       // 实际类
+  },
+]
+
+// 使用：
+constructor(@Inject('MyServiceAlias') private readonly myService: MyService) {}
+```
+
+特点：
+
+- 显式指定 Token 名称（可自定义、可多命名）
+- 多用于需要**多个实现类**或做**别名**时
+- 也可用于替换某个服务的实现（比如单元测试、运行时切换）
+
+| 方式                 | 语法简洁性 | 灵活性       | 推荐使用场景                         |
+| -------------------- | ---------- | ------------ | ------------------------------------ |
+| `[AppService]`       | ✅ 简洁     | ❌ 不可自定义 | 常规开发、默认使用方式               |
+| `provide + useClass` | ❌ 略繁琐   | ✅ 高灵活     | 多实现切换、别名注入、测试 mock 场景 |
+
+**真实例子**
+
+比如你有两个日志服务实现类：
+
+```ts
+@Injectable()
+export class FileLogger implements LoggerService {
+  log() {
+    console.log('写入文件');
+  }
+}
+
+@Injectable()
+export class ConsoleLogger implements LoggerService {
+  log() {
+    console.log('输出控制台');
+  }
+}
+```
+
+你可以在 `AppModule` 里动态选择使用哪一个：
+
+```ts
+providers: [
+  {
+    provide: 'LoggerService',
+    useClass: process.env.LOG_TO_FILE ? FileLogger : ConsoleLogger,
+  },
+]
+```
+
+然后注入时统一用：
+
+```ts
+constructor(@Inject('LoggerService') private logger: LoggerService) {}
+```
+
+**默认注册适合快速开发**，**useClass 适合灵活配置或更复杂的依赖管理场景**。
+
+## 在Module类中能写啥
+
+虽然在大型项目中，`AppModule` 更多是作为“根模块”或“聚合模块”使用，但它**不是不能写东西**，而是：
+
+**常见用途包括**：
+
+| 目的                     | 举例                                        |
+| ------------------------ | ------------------------------------------- |
+| 注册全局服务             | 如配置服务、日志服务、拦截器、异常过滤器等  |
+| 提供一些“别名”或“策略”类 | 如 `LoggerAliasProvider`                    |
+| 注册一些平台适配层       | 如注册 Express 中间件、自定义管道、动态模块 |
+| 注册全局常量、配置项     | 如 `useValue: { APP_CONFIG: xxx }`          |
+
+“**模块类**”本身也可以注入依赖的体现，Nest 中的模块类不仅是个装饰器容器，它**自己也可以作为被实例化的类被注入依赖**。
+
+```ts
+@Module({
+  imports: [AppModule],
+})
+export class OtherModule {
+  constructor(@Inject('APP_CONFIG') private config: any) {
+    console.log('OtherModule 初始化时能拿到 config：', this.config);
+  }
+}
+```
+
+**目的不是为了“注册”，而是为了“执行副作用”或“初始化逻辑”。**
+
+**适用场景：**
+
+- 在模块初始化阶段做一些副作用处理（例如连接、注册、上报）
+- 动态模块时读取共享配置
+- 在模块内部注册一些依赖时用到它
+
+但这不是常规推荐做法，**模块类中一般不会主动写构造函数逻辑**，除非你确实需要在模块加载时就执行某些逻辑。
+
+模块（class）本身 90% 真的不会写任何代码，`@Module()` 装饰器是配置区域，注册依赖，`class AppModule {}` 是 Nest 在内部实例化模块时需要的“外壳”
+
+用生命周期钩子 `onModuleInit()`（用于初始化逻辑）
+
+```ts
+import { Module, OnModuleInit, Injectable } from '@nestjs/common';
+import { DataSource } from 'typeorm';
+
+@Injectable()
+export class DatabaseService implements OnModuleInit {
+  constructor(private dataSource: DataSource) {}
+
+  async onModuleInit() {
+    try {
+      await this.dataSource.initialize();
+      console.log('[数据库] 已成功连接');
+    } catch (error) {
+      console.error('[数据库] 连接失败', error);
+      process.exit(1); // 连接失败直接终止程序
+    }
+  }
+}
+
+@Module({
+  providers: [DatabaseService],
+})
+export class AppModule {}
+```
+
+**@Module 装饰器是注册依赖的地方，class 本体几乎不会写逻辑。真正写逻辑的是服务类里的生命周期钩子**。
+
+在 `AppModule` 的 `constructor()` 中的逻辑，**会早于** `onModuleInit()` 生命周期钩子执行。
+
+因为：
+
+- `constructor()` 是**类被实例化时立刻执行**的 JS 标准行为（与 Nest 无关）
+- `onModuleInit()` 是 Nest 的生命周期钩子，**在实例化完毕 & 依赖注入完成后才会执行**
+
+```ts	
+AppModule constructor() --> onModuleInit() --> [NestApplication] Nest application successfully started
+```
+
+```ts
+@Module({})
+export class AppModule implements OnModuleInit {
+  constructor() {
+    console.log('✅ AppModule constructor 执行');
+  }
+
+  onModuleInit() {
+    console.log('✅ AppModule 生命周期钩子 onModuleInit 执行');
+  }
+}
+```
+
+输出：
+
+```ts
+✅ AppModule constructor 执行
+✅ AppModule 生命周期钩子 onModuleInit 执行
+```
+
+虽然 constructor 更早执行，但你应该 **避免在 constructor 里写<u>依赖相关的逻辑</u>**，因为此时：
+
+- 依赖注入还没完成
+- 依赖项可能是 `undefined`
+- 尤其在涉及数据库、配置服务时，容易出错
+
+✅ 最推荐的初始化位置仍然是 `onModuleInit()`，因为这时：
+
+- 所有注入依赖都准备好了
+- 可安全访问注入服务，例如 `ConfigService`、`DataSource` 等
+
+通常在 `AppModule` 的构造函数中，写一些**简单的人性化日志提示**，比如：<u>XXX服务器开始启动....</u>
+

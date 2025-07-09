@@ -362,7 +362,271 @@ export class RequestScopedService {
 
 提供者默认是 **单例**，但可以通过设置作用域变更为 **请求级** 或 **瞬态级别**，用于满足不同的生命周期需求。
 
-在高并发、多用户请求背景下，请求作用域非常实用，但需注意：**性能成本更高**，不要滥用。
+在多用户请求背景下，请求作用域非常实用，但需注意：**性能成本更高**，不要滥用。
 
 [深入掌握 Scope 的完整机制](./nest-singletons-isolation)
+
+## 自定义提供器{#custom-providers}
+
+Nest 内部内置了一个 **控制反转容器（IoC，Inversion of Control）**，用于管理应用中各种服务（Provider）之间的关系。
+
+这构成了 Nest **依赖注入机制的基础**，但这个机制实际上要比我们之前介绍的更强大得多。你可以通过多种方式定义一个 Provider，比如：
+
+- 提供一个普通的常量值（`useValue`）
+- 提供一个类（`useClass`）
+- 使用一个同步或异步工厂函数（`useFactory` + `inject`）
+
+**可以用非常灵活的方式注册服务**
+
+`useClass` 示例（默认最常用）
+
+```ts
+// 提供者
+@Injectable()
+export class MyService {
+  getData() {
+    return 'hello from MyService';
+  }
+}
+
+const MyServiceProvider = {
+  provide: 'MyServiceAlias',
+  useClass: MyService,
+};
+```
+
+注册方式（例如在模块中）：
+
+```ts
+@Module({
+  providers: [MyServiceProvider],
+  exports: [MyServiceProvider],
+})
+export class AppModule {}
+```
+
+使用方式
+
+```ts
+@Injectable()
+export class ConsumerService {
+  constructor(@Inject('MyServiceAlias') private readonly myService: MyService) {}
+
+  log() {
+    console.log(this.myService.getData());
+  }
+}
+```
+
+`useValue` 示例（常量）
+
+提供者
+
+```ts
+const AppConfig = {
+  appName: 'Nest Demo',
+  version: '1.0.0',
+};
+
+const ConfigProvider = {
+  provide: 'APP_CONFIG',
+  useValue: AppConfig,
+};
+```
+
+注册方式
+
+```ts
+@Module({
+  providers: [ConfigProvider],
+  exports: [ConfigProvider],
+})
+export class AppModule {}
+```
+
+使用方式
+
+```ts
+@Injectable()
+export class ConfigService {
+  constructor(@Inject('APP_CONFIG') private config: { appName: string }) {}
+
+  print() {
+    console.log(`App: ${this.config.appName}`);
+  }
+}
+```
+
+`useFactory` 示例（工厂函数 + 注入依赖）
+
+提供者
+
+```ts
+const LoggerProvider = {
+  provide: 'LOGGER',
+  useFactory: (config: { logLevel: string }) => {
+    return {
+      log: (msg: string) => {
+        if (config.logLevel === 'debug') {
+          console.log(`[DEBUG] ${msg}`);
+        }
+      },
+    };
+  },
+  inject: ['APP_CONFIG'], // 注入上面定义的 config
+};
+```
+
+注册方式（接续 `APP_CONFIG`）
+
+```ts
+@Module({
+  providers: [
+    ConfigProvider, // 来自 useValue 示例
+    LoggerProvider,
+  ],
+  exports: ['LOGGER'],
+})
+export class AppModule {}
+```
+
+使用方式
+
+```ts
+@Injectable()
+export class LogService {
+  constructor(@Inject('LOGGER') private logger: { log: (msg: string) => void }) {}
+
+  doSomething() {
+    this.logger.log('This is a log message');
+  }我们想给它起个别名 ILogger：
+}
+```
+
+`useExisting` 示例（使用别名）
+
+提供者
+
+假设我们已经有一个现成的服务：
+
+```ts
+@Injectable()
+export class RealLoggerService {
+  l	og(msg: string) {
+    console.log(`[REAL] ${msg}`);
+  }
+}
+```
+
+我们想给它起个别名 `ILogger`：
+
+```ts
+const LoggerAliasProvider = {
+  provide: 'ILogger',
+  useExisting: RealLoggerService,
+};
+```
+
+注册方式
+
+```ts
+@Module({
+  providers: [
+    RealLoggerService,
+    LoggerAliasProvider,
+  ],
+})
+export class AppModule {}
+```
+
+使用方式
+
+```ts
+@Injectable()
+export class SomeService {
+  constructor(@Inject('ILogger') private readonly logger: RealLoggerService) {}
+
+  run() {
+    this.logger.log('Alias works!');
+  }
+}
+```
+
+- `providers: [...]` 是 **在当前模块中注册这个服务**
+- `exports: [...]` 是 **把这个服务“导出”给其他模块使用**
+
+如果不写`exports`，**这个 Provider 只能在 AppModule 这个模块的内部使用**，如果你希望 **其他模块也能使用这个服务**（通过 `imports: [AppModule]` 引入），你必须把它导出。
+
+```ts
+@Module({
+  providers: [ConfigProvider],
+  exports: [ConfigProvider], // 👈 这样别的模块才看得见
+})
+```
+
+```ts
+@Module({
+  imports: [AppModule],
+})
+export class OtherModule {
+  constructor(@Inject('APP_CONFIG') private config: any) {} // 只有 export 后这里才能拿到
+}
+```
+
+✅ **在控制器中使用某个 provider，不需要 `exports`**；
+❌ **只有当其他模块 module 也要用这个 provider 时，才需要 `exports`。**
+
+只要这个 **controller 和 provider 在同一个模块中声明**，你就可以直接注入使用，无需 export。
+
+```ts
+@Module({
+  controllers: [AppController],
+  providers: [ConfigProvider],
+  // ❌ 不需要 exports
+})
+export class AppModule {}
+```
+
+```ts
+@Controller()
+export class AppController {
+  constructor(private readonly config: ConfigProvider) {} // ✅ 可以正常注入
+}
+```
+
+其他模块想用这个 provider：
+
+比如你在 `AppModule` 中注册了 `ConfigProvider`，但你想在 `UserModule` 中也使用它，就需要：
+
+```ts
+@Module({
+  providers: [ConfigProvider],
+  exports: [ConfigProvider], // 👈 关键是这里
+})
+export class AppModule {}
+```
+
+然后在别的模块里导入：
+
+```ts
+@Module({
+  imports: [AppModule],
+})
+export class UserModule {
+  constructor(private readonly config: ConfigProvider) {} // ✅ 可以用了
+}
+```
+
+所以：`providers + exports` 一起写，只是为了让它 **既能在当前模块内用，也能被其他模块用**。如果你不打算跨模块复用，就写 `providers` 就够了。
+
+[服务类的两种注册方式](./nest-practice-tip#服务类注册的两种方式)
+
+**总结**
+
+| 提供方式      | 说明                           | 典型场景                              |
+| ------------- | ------------------------------ | ------------------------------------- |
+| `useClass`    | 使用某个类作为 Provider        | 默认方式，配合 `@Injectable` 使用     |
+| `useValue`    | 提供常量（对象/字符串/布尔值） | 全局配置、枚举、常量数据              |
+| `useFactory`  | 运行时动态创建 Provider 实例   | 依赖注入其他服务、异步初始化          |
+| `useExisting` | 指向另一个已注册的 Provider    | 别名场景：多个 token 使用同一服务实例 |
 
