@@ -22,6 +22,7 @@
     "vitepress-plugin-pagefind": "^0.4.13"
   },
   "dependencies": {
+    "axios": "^1.10.0",
     "dotenv": "^17.0.1",
     "medium-zoom": "^1.1.0",
     "vitepress-markdown-timeline": "^1.2.2",

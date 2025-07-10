@@ -1,416 +1,562 @@
 <template>
-    <div class="wrap"
-        :class="{ hasaside: frontmatter.aside, hassidebar: frontmatter.sidebar || theme?.sidebar?.length }">
-        <div class="tools" v-for="(section, index) in sections" :key="index">
-            <h2 class="h2" :id="section.title" tabindex="-1" @click="toggleSection(index)">
-                {{ section.title }}
-                <a class="header-anchor" :href="`#${section.title}`" aria-hidden="true"></a>
-                <span class="collapse-icon" :class="{ 'is-collapsed': !expandedSections[index] }">
-                    <svg viewBox="0 0 24 24" width="24" height="24">
-                        <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </span>
-            </h2>
-            <div class="section-content" :class="{ 'is-collapsed': !expandedSections[index] }">
-                <div v-if="loadingSections[index]" class="loading">
-                    <div class="loading-spinner"></div>
-                    <span>加载中...</span>
-                </div>
-                <ul v-else class="ul">
-                    <li class="li" v-for="(cell, key) in section.items">
-                        <div class="h3">
-                            <div class="icon">
-                                <!-- SVG 图标 -->
-                                <svg v-if="isSvg(cell?.icon)" class="svg-icon" v-html="cell.icon"></svg>
-                                <!-- 网络图片 -->
-                                <img v-else alt="" class="img" :src="cell?.icon || getFavicon(cell?.link)"
-                                    @error="handleImageError($event, cell)" />
-                            </div>
-                            <a class="a" target="_blank" :href="cell?.link">
-                                <span class="title">{{ cell.title }}</span>
-                                <span v-if="cell.badge" :class="['badge', cell.badgeType || 'default']">{{ cell.badge
-                                    }}</span>
-                                <span class="bg"></span>
-                            </a>
-                        </div>
-
-                        <p class="desc" v-if="cell.desc">{{ cell.desc }}</p>
-                        <p class="link">
-                            <svg class="svg" viewBox="0 0 24 24" aria-hidden="true">
-                                <path
-                                    d="M15.712 11.823a.75.75 0 1 0 1.06 1.06l-1.06-1.06Zm-4.95 1.768a.75.75 0 0 0 1.06-1.06l-1.06 1.06Zm-2.475-1.414a.75.75 0 1 0-1.06-1.06l1.06 1.06Zm4.95-1.768a.75.75 0 1 0-1.06 1.06l1.06-1.06Zm3.359.53-.884.884 1.06 1.06.885-.883-1.061-1.06Zm-4.95-2.12 1.414-1.415L12 6.344l-1.415 1.413 1.061 1.061Zm0 3.535a2.5 2.5 0 0 1 0-3.536l-1.06-1.06a4 4 0 0 0 0 5.656l1.06-1.06Zm4.95-4.95a2.5 2.5 0 0 1 0 3.535L17.656 12a4 4 0 0 0 0-5.657l-1.06 1.06Zm1.06-1.06a4 4 0 0 0-5.656 0l1.06 1.06a2.5 2.5 0 0 1 3.536 0l1.06-1.06Zm-7.07 7.07.176.177 1.06-1.06-.176-.177-1.06 1.06Zm-3.183-.353.884-.884-1.06-1.06-.884.883 1.06 1.06Zm4.95 2.121-1.414 1.414 1.06 1.06 1.415-1.413-1.06-1.061Zm0-3.536a2.5 2.5 0 0 1 0 3.536l1.06 1.06a4 4 0 0 0 0-5.656l-1.06 1.06Zm-4.95 4.95a2.5 2.5 0 0 1 0-3.535L6.344 12a4 4 0 0 0 0 5.656l1.06-1.06Zm-1.06 1.06a4 4 0 0 0 5.657 0l-1.061-1.06a2.5 2.5 0 0 1-3.535 0l-1.061 1.06Zm7.07-7.07-.176-.177-1.06 1.06.176.178 1.06-1.061Z"
-                                    fill="currentColor"></path>
-                            </svg><span class="span">{{ cell.linktxt }}</span>
-                        </p>
-                    </li>
-                </ul>
-            </div>
+  <div class="bookmark-container">
+    <div class="collapse-container">
+      <div v-for="(category, index) in categories" :key="category.id" class="collapse-item">
+        <div class="collapse-header" @click="toggleCategory(index)">
+          <div class="header-content">
+            <span class="title">{{ category.title }}</span>
+            <span class="time">创建于: {{ formatTime(category.created_at) }} | 更新于: {{ formatTime(category.updated_at) }}</span>
+          </div>
+          <div class="arrow" :class="{ 'is-active': expandedCategories[index] }">
+            <svg viewBox="0 0 24 24" width="24" height="24">
+              <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
         </div>
+        
+        <Transition name="section">
+          <div class="collapse-content" v-show="expandedCategories[index]">
+            <div v-if="loadingStates[index]" class="loading-container">
+              <div class="loading-spinner"></div>
+              <span>加载中...</span>
+            </div>
+            <div v-else-if="category.items && category.items.length" class="bookmark-grid">
+              <div v-for="item in category.items" :key="item.uuid" class="bookmark-card">
+                <div class="card-header">
+                  <div class="icon-wrapper">
+                    <svg v-if="isSvg(item.icon)" class="svg-icon" v-html="item.icon"></svg>
+                    <img v-else :src="item.icon || getFavicon(item.link)" 
+                         @error="handleImageError($event, item)" 
+                         class="favicon" 
+                         alt="" />
+                  </div>
+                  <div class="title-wrapper">
+                    <a :href="item.link" target="_blank" class="title">{{ item.title }}</a>
+                    <span v-if="item.badge" class="badge" :class="item.badge_type">{{ item.badge }}</span>
+                  </div>
+                </div>
+                <p class="description">{{ item.desc }}</p>
+                <div class="card-footer">
+                  <span class="link-text">{{ item.linktxt }}</span>
+                  <div class="time-info">
+                    <div class="time-item">
+                      <span class="time-label">创建</span>
+                      <time :datetime="item.created_at" :title="formatDetailTime(item.created_at)">
+                        {{ formatTime(item.created_at) }}
+                      </time>
+                    </div>
+                    <div class="time-item">
+                      <span class="time-label">更新</span>
+                      <time :datetime="item.updated_at" :title="formatDetailTime(item.updated_at)">
+                        {{ formatTime(item.updated_at) }}
+                      </time>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-else class="empty-state">
+              暂无书签
+            </div>
+          </div>
+        </Transition>
+      </div>
     </div>
+  </div>
 </template>
-<script lang="js" setup>
+
+<script setup>
 import { ref, onMounted } from 'vue'
 import { useData } from 'vitepress'
+import axios from 'axios'
 
-const { theme, frontmatter } = useData();
+const { theme, isDark } = useData()
 
-// 工具分类列表
-const sections = ref([])
-const expandedSections = ref({})
-const loadingSections = ref({})
+const categories = ref([])
+const expandedCategories = ref({})
+const loadingStates = ref({})
 
 // 判断是否为 SVG
 const isSvg = (icon) => {
-    if (!icon) return false
-    return icon.trim().startsWith('<svg')
-}
-
-// 从 localStorage 获取折叠状态
-const getStoredExpandedState = (sectionId) => {
-    const stored = localStorage.getItem(`section-${sectionId}-expanded`)
-    return stored !== null ? JSON.parse(stored) : null
-}
-
-// 保存折叠状态到 localStorage
-const saveExpandedState = (sectionId, isExpanded) => {
-    localStorage.setItem(`section-${sectionId}-expanded`, JSON.stringify(isExpanded))
-}
-
-// 动态导入工具数据
-const loadSection = async (index) => {
-    if (loadingSections.value[index]) return
-    
-    loadingSections.value[index] = true
-    try {
-        const modules = import.meta.glob('../../data/*.json')
-        const module = await modules[`../../data/${sections.value[index].id}.json`]()
-        sections.value[index] = {
-            ...sections.value[index],
-            ...module.default
-        }
-    } catch (error) {
-        console.error(`Failed to load section ${sections.value[index].id}:`, error)
-    } finally {
-        loadingSections.value[index] = false
-    }
-}
-
-// 切换折叠状态
-const toggleSection = async (index) => {
-    const sectionId = sections.value[index].id
-    expandedSections.value[index] = !expandedSections.value[index]
-    saveExpandedState(sectionId, expandedSections.value[index])
-    
-    if (expandedSections.value[index]) {
-        await loadSection(index)
-    }
+  if (!icon) return false
+  return icon.trim().startsWith('<svg')
 }
 
 // 获取网站图标
 const getFavicon = (url) => {
-    try {
-        const domain = new URL(url).hostname
-        return `https://favicon.yandex.net/favicon/${domain}?size=32`
-    } catch (e) {
-        return 'https://s21.ax1x.com/2025/01/31/pEZi6J0.png'
-    }
+  try {
+    const domain = new URL(url).hostname
+    return `https://favicon.yandex.net/favicon/${domain}?size=32`
+  } catch (e) {
+    return 'https://s21.ax1x.com/2025/01/31/pEZi6J0.png'
+  }
 }
 
 // 图片加载失败处理
 const handleImageError = (event, cell) => {
-    const img = event.target
-    const domain = new URL(cell.link).hostname
+  const img = event.target
+  const domain = new URL(cell.link).hostname
 
-    // 尝试其他源
-    if (!img.src.includes('icon.horse')) {
-        img.src = `https://icon.horse/icon/${domain}`
-    } else if (!img.src.includes('google.com')) {
-        img.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
-    } else {
-        img.src = 'https://s21.ax1x.com/2025/01/31/pEZi6J0.png'
+  // 尝试其他源
+  if (!img.src.includes('icon.horse')) {
+    img.src = `https://icon.horse/icon/${domain}`
+  } else if (!img.src.includes('google.com')) {
+    img.src = `https://www.google.com/s2/favicons?domain=${domain}&sz=128`
+  } else {
+    img.src = 'https://s21.ax1x.com/2025/01/31/pEZi6J0.png'
+  }
+}
+
+// 格式化时间
+const formatTime = (time) => {
+  if (!time) return ''
+  const date = new Date(time)
+  return date.toLocaleDateString('zh-CN', { 
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  })
+}
+
+// 格式化具体时间
+const formatDetailTime = (time) => {
+  if (!time) return ''
+  const date = new Date(time)
+  return date.toLocaleTimeString('zh-CN', { 
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+// 加载分类书签
+const loadCategoryBookmarks = async (index) => {
+  if (loadingStates.value[index]) return
+  
+  const category = categories.value[index]
+  if (category.items) return // 已加载过的不重复加载
+  
+  loadingStates.value[index] = true
+  try {
+    const response = await axios.get(`https://inter.yumeng.icu/bookmark/resources-list?categoryId=${category.id}&enabledStatus=true`)
+    if (response.data.statusCode === 200) {
+      categories.value[index] = {
+        ...category,
+        items: response.data.data
+      }
     }
+  } catch (error) {
+    console.error(`Failed to load bookmarks for category ${category.id}:`, error)
+  } finally {
+    loadingStates.value[index] = false
+  }
+}
+
+// 切换分类展开状态
+const toggleCategory = async (index) => {
+  expandedCategories.value[index] = !expandedCategories.value[index]
+  if (expandedCategories.value[index]) {
+    await loadCategoryBookmarks(index)
+  }
 }
 
 // 初始化
 onMounted(async () => {
-    // 初始化工具分类
-    sections.value = [
-        { id: 'recent', title: '最近访问' },
-        { id: 'common', title: '常用库' },
-        { id: 'blog', title: '博客' },
-        { id: 'design', title: '设计' },
-        { id: 'tools', title: '工具' },
-        { id: 'dev', title: '开发' },
-        { id: 'ai', title: '大厂AI' },
-        { id: 'official', title: '常用官网' },
-        { id: 'diversion', title: '娱乐' }
-    ]
-
-    // 设置初始折叠状态
-    sections.value.forEach((section, index) => {
-        // 优先使用存储的状态，其次使用默认值
-        const storedState = getStoredExpandedState(section.id)
-        expandedSections.value[index] = storedState !== null ? storedState : section.defaultExpanded || false
-        loadingSections.value[index] = false
-    })
-
-    // 加载默认展开的部分
-    for (let i = 0; i < sections.value.length; i++) {
-        if (expandedSections.value[i]) {
-            await loadSection(i)
+  try {
+    const response = await axios.get('https://inter.yumeng.icu/bookmark/resources-categories-list?enabledStatus=true')
+    if (response.data.statusCode === 200) {
+      categories.value = response.data.data
+      
+      // 初始化展开状态
+      categories.value.forEach((category, index) => {
+        expandedCategories.value[index] = category.default_expanded
+        loadingStates.value[index] = false
+        
+        // 加载默认展开的分类
+        if (category.default_expanded) {
+          loadCategoryBookmarks(index)
         }
+      })
     }
+  } catch (error) {
+    console.error('Failed to load categories:', error)
+  }
 })
 </script>
 
 <style scoped>
-a {
-    text-decoration: none;
+.bookmark-container {
+  /* 使用 VitePress 的主题变量 */
+  --bookmark-transition-duration: 0.3s;
+  --bookmark-border-radius: 4px;
+  
+  padding: 20px;
+  color: var(--vp-c-text-1);
+  background-color: var(--vp-c-bg);
 }
 
-.tools {
-    font-family: 'PingFang SC', 'Microsoft Yahei', sans-serif;
-    padding-bottom: 1rem;
-    .h2 {
-        margin: 24px 0 8px;
-        padding: 24px 32px 0 0;
-        border: none;
-        letter-spacing: -0.02em;
-        line-height: 26px;
-        font-size: 20px;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        user-select: none;
-        position: relative;
-
-        &:hover {
-            color: var(--vp-c-brand);
-        }
-    }
-
-    .collapse-icon {
-        position: absolute;
-        right: 0;
-        top: 50%;
-        transform: translateY(-50%);
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
-        transition: transform 0.3s ease;
-
-        svg {
-            width: 20px;
-            height: 20px;
-            color: var(--vp-c-text-2);
-            transition: color 0.3s ease;
-        }
-
-        &:hover svg {
-            color: var(--vp-c-brand);
-        }
-
-        &.is-collapsed {
-            transform: rotate(-90deg) translateX(50%);
-        }
-    }
-
-    .ul {
-        margin: 20px 0 0;
-        padding: 0;
-        display: grid;
-        gap: 1.2rem;
-
-        .li {
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            position: relative;
-            flex-shrink: 1;
-            flex-grow: 1;
-            border-radius: 8px;
-            border: .5px solid var(--vp-c-gray-soft);
-            background: var(--vp-c-bg-elv);
-            transition: box-shadow 0.3s cubic-bezier(.4, 0, .2, 1);
-            overflow: hidden;
-            padding: 16px;
-            box-shadow: var(--vp-shadow-1);
-
-            &:hover {
-                box-shadow: var(--vp-shadow-3);
-                background-color: var(--vp-c-bg-elv);
-
-                .link {
-                    color: var(--vp-c-brand);
-                }
-            }
-
-            .h3 {
-                display: flex;
-                flex-direction: row;
-                margin: 0;
-                padding: 0;
-                border: none;
-                font-size: 1rem;
-                line-height: 1.75rem;
-                font-weight: 600;
-
-                .icon {
-                    position: relative;
-                    z-index: 10;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
-                    margin-right: 8px;
-
-                    .img {
-                        width: 33px;
-                        height: 33px;
-                    }
-
-                    .svg-icon {
-                        width: 33px;
-                        height: 33px;
-                        fill: var(--vp-c-text-1);
-                    }
-                }
-
-                .a {
-                    color: var(--vp-c-text-1);
-                    display: flex;
-                    align-items: center;
-                    gap: 8px;
-
-                    .badge {
-                        font-size: 12px;
-                        padding: 2px 6px;
-                        border-radius: 4px;
-                        font-weight: 500;
-                        line-height: 14px;
-                        white-space: nowrap;
-
-                        &.hot {
-                            background-color: rgba(234, 67, 53, 0.1);
-                            color: #ea4335;
-                        }
-
-                        &.new {
-                            background-color: rgba(28, 135, 25, 0.1);
-                            color: #1c8719;
-                        }
-
-                        &.beta {
-                            background-color: rgba(234, 179, 8, 0.1);
-                            color: #eab308;
-                        }
-
-                        &.default {
-                            background-color: var(--vp-c-bg-alt);
-                            color: var(--vp-c-text-2);
-                        }
-                    }
-
-                    .title {
-                        position: relative;
-                        z-index: 10;
-                        font-size: 1rem;
-                        line-height: 1.75rem;
-                        font-weight: 600;
-                    }
-                }
-            }
-
-            .desc {
-                position: relative;
-                z-index: 10;
-                margin: 0.5rem 0 0;
-                font-size: .8rem;
-                line-height: 1.5rem;
-                opacity: .8;
-            }
-
-            .link {
-                position: relative;
-                z-index: 10;
-                margin: 10px 0 0;
-                display: flex;
-                font-size: .875rem;
-                line-height: 1.5rem;
-                font-weight: 500;
-                opacity: .8;
-                transition: .15s;
-
-                .svg {
-                    width: 1.5rem;
-                    height: 1.5rem;
-                }
-
-                .span {
-                    margin-left: 0.5rem;
-                }
-            }
-        }
-    }
+.collapse-container {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: var(--bookmark-border-radius);
+  background-color: var(--vp-c-bg);
 }
 
-.section-content {
-    max-height: 2000px;
-    opacity: 1;
-    transition: all 0.3s ease;
-    overflow: hidden;
-
-    &.is-collapsed {
-        max-height: 0;
-        opacity: 0;
-        margin: 0;
-    }
+.collapse-item {
+  &:not(:last-child) {
+    border-bottom: 1px solid var(--vp-c-divider);
+  }
 }
 
-.loading {
+.collapse-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  cursor: pointer;
+  transition: background-color var(--bookmark-transition-duration);
+  
+  &:hover {
+    background-color: var(--vp-c-bg-soft);
+  }
+  
+  .header-content {
     display: flex;
     align-items: center;
-    justify-content: center;
-    padding: 2rem;
-    color: var(--vp-c-text-2);
+    gap: 12px;
+    
+    .title {
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--vp-c-text-1);
+    }
+    
+    .time {
+      font-size: 12px;
+      color: var(--vp-c-text-2);
+    }
+  }
+}
+
+.arrow {
+  transition: transform var(--bookmark-transition-duration);
+  color: var(--vp-c-text-2);
+  
+  &.is-active {
+    transform: rotate(180deg);
+  }
+
+  svg {
+    stroke: currentColor;
+  }
+}
+
+.collapse-content {
+  overflow: hidden;
+  transition: all var(--bookmark-transition-duration) ease-in-out;
+  opacity: 1;
+  max-height: none;
+  
+  &.is-collapsed {
+    opacity: 0;
+    max-height: 0 !important;
+    margin: 0;
+    padding: 0;
+  }
+}
+
+.loading-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: var(--vp-c-text-2);
 }
 
 .loading-spinner {
-    width: 24px;
-    height: 24px;
-    margin-right: 8px;
-    border: 2px solid var(--vp-c-text-2);
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  border: 2px solid var(--vp-c-divider);
+  border-top-color: var(--vp-c-brand);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.bookmark-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+  padding: 16px;
+  transition: all var(--bookmark-transition-duration) ease-in-out;
+}
+
+/* 添加内容区域的动画类 */
+.section-enter-active,
+.section-leave-active {
+  transition: all var(--bookmark-transition-duration) ease-in-out;
+  max-height: 2000px;
+}
+
+.section-enter-from,
+.section-leave-to {
+  opacity: 0;
+  max-height: 0;
+}
+
+.bookmark-card {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: var(--bookmark-border-radius);
+  padding: 16px;
+  background-color: var(--vp-c-bg);
+  transition: all var(--bookmark-transition-duration);
+  
+  &:hover {
+    border-color: var(--vp-c-brand);
+    box-shadow: 0 0 12px var(--vp-c-divider);
+    background-color: var(--vp-c-bg-soft);
+
+    .title {
+      color: var(--vp-c-brand);
+    }
+  }
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.icon-wrapper {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: var(--bookmark-border-radius);
+  overflow: hidden;
+  background-color: var(--vp-c-bg-soft);
+  border: 1px solid var(--vp-c-divider);
+  
+  .favicon, .svg-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    min-width: 16px;
+    min-height: 16px;
+  }
+
+  .favicon {
+    padding: 2px;
+  }
+
+  .svg-icon {
+    fill: var(--vp-c-text-1);
+  }
+}
+
+.title-wrapper {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  
+  .title {
+    color: var(--vp-c-text-1);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--bookmark-transition-duration);
+    
+    &:hover {
+      color: var(--vp-c-brand);
+    }
+  }
+}
+
+.badge {
+  padding: 2px 6px;
+  font-size: 12px;
+  border-radius: 10px;
+  background-color: var(--vp-c-bg-soft);
+  color: var(--vp-c-text-2);
+  
+  &.hot {
+    background-color: var(--vp-c-red-dimm-2);
+    color: var(--vp-c-red-1);
+  }
+  
+  &.new {
+    background-color: var(--vp-c-green-dimm-2);
+    color: var(--vp-c-green-1);
+  }
+}
+
+.description {
+  margin: 8px 0;
+  font-size: 14px;
+  color: var(--vp-c-text-2);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--vp-c-divider);
+}
+
+.time-info {
+  display: flex;
+  gap: 12px;
+  font-size: 12px;
+}
+
+.time-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  background-color: var(--vp-c-bg-soft);
+  padding: 2px 6px;
+  border-radius: 4px;
+}
+
+.time-label {
+  color: var(--vp-c-text-2);
+  font-weight: 500;
+}
+
+time {
+  color: var(--vp-c-text-2);
+  cursor: help;
+}
+
+.link-text {
+  color: var(--vp-c-text-2);
+  font-size: 12px;
+}
+
+.empty-state {
+  padding: 32px;
+  text-align: center;
+  color: var(--vp-c-text-2);
+  background-color: var(--vp-c-bg-soft);
+  border-radius: var(--bookmark-border-radius);
 }
 
 @keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* 响应式布局 */
-@media (min-width: 550px) {
-    .tools .ul {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+@media (max-width: 768px) {
+  .bookmark-container {
+    padding: 0;
+  }
+
+  .bookmark-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .header-content .time {
+    display: none;
+  }
+
+  .card-footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  
+  .time-info {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .icon-wrapper {
+    width: 28px;
+    height: 28px;
+    
+    .favicon {
+      padding: 1px;
     }
+  }
+
+  /* 针对不同设备像素比的优化 */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .icon-wrapper .favicon {
+      image-rendering: -webkit-optimize-contrast;
+      transform: translateZ(0);
+    }
+  }
 }
 
-@media (min-width: 768px) {
-    .wrap:not(.hasaside):not(.hassidebar) .tools .ul,
-    .wrap.hassidebar:not(.hasaside) .tools .ul {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+/* 响应式布局优化 */
+@media (max-width: 768px) {
+  .bookmark-container {
+    padding: 0px;
+  }
+
+  .bookmark-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding: 12px;
+  }
+
+  .bookmark-card {
+    padding: 12px;
+  }
+
+  .card-header {
+    margin-bottom: 8px;
+  }
+
+  .icon-wrapper {
+    width: 28px; /* 调整移动端图标大小 */
+    height: 28px;
+    
+    .favicon {
+      padding: 1px; /* 移动端减小内边距 */
     }
+  }
+
+  /* 针对不同设备像素比的优化 */
+  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .icon-wrapper {
+      .favicon {
+        image-rendering: -webkit-optimize-contrast; /* 优化高分辨率屏幕的图标显示 */
+        transform: translateZ(0); /* 防止图标模糊 */
+      }
+    }
+  }
 }
 
-@media (min-width: 960px) {
-    .wrap:not(.hassidebar):not(.hasaside) .tools .ul {
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-    }
+/* 针对超小屏幕的优化 */
+@media (max-width: 360px) {
+  .bookmark-container {
+    padding: 8px;
+  }
+
+  .bookmark-grid {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .time-info {
+    justify-content: flex-start;
+  }
+
+  .time-item {
+    font-size: 10px;
+  }
 }
 </style>
