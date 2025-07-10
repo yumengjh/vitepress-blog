@@ -321,23 +321,23 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 
 /* #region 文字选中样式 */
 ::selection {
-    background: #ffffcc;
-    color: var(--vp-c-text-1);
+    background: var(--vp-c-indigo-2, #30a46c);
+    color: #fff;
 }
 
 ::-moz-selection {
-    background: #ffffcc;
-    color: var(--vp-c-text-1);
+    background: var(--vp-c-indigo-2, #30a46c);
+    color: #fff;
 }
 
 .dark ::selection {
-    background: #44443a;
-    color: var(--vp-c-text-1);
+    background: #225c3e;
+    color: #fff;
 }
 
 .dark ::-moz-selection {
-    background: #44443a;
-    color: var(--vp-c-text-1);
+    background: #225c3e;
+    color: #fff;
 }
 
 /* 防止滚动条闪烁 */

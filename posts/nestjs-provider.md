@@ -630,3 +630,362 @@ export class UserModule {
 | `useFactory`  | 运行时动态创建 Provider 实例   | 依赖注入其他服务、异步初始化          |
 | `useExisting` | 指向另一个已注册的 Provider    | 别名场景：多个 token 使用同一服务实例 |
 
+## 可选提供器{#optional-providers}
+
+有时候，你的类依赖的某个提供器（比如配置对象）**不是必需的**，换句话说，即使没有提供这个依赖，也希望程序能继续正常运行。这时我们称这个依赖是“可选的”。
+
+要把某个注入的依赖标记为“可选”，只需在构造函数中使用 `@Optional()` 装饰器即可。
+
+这个装饰器的作用是：**如果 Nest 找不到这个提供器，就不会抛出异常，而是注入 `undefined`**。这时你可以手动在类中处理默认值逻辑。
+
+```ts
+import { Injectable, Optional, Inject } from '@nestjs/common';
+
+@Injectable()
+export class HttpService<T> {
+  constructor(@Optional() @Inject('HTTP_OPTIONS') private httpClient: T) {}
+}
+```
+
+在这个例子中，`HttpService` 接受一个泛型的 `httpClient` 实例作为构造参数，但它是**可选的**。如果容器中没有绑定 `HTTP_OPTIONS` 这个自定义令牌，Nest 会注入 `undefined`，不会报错。
+
+注意两点：
+
+- 需要用 `@Inject('HTTP_OPTIONS')` 明确指定注入令牌（因为它不是类型自动解析）；
+- 需要用 `@Optional()` 来容错。
+
+`@Inject()` 与自定义 token 的组合，在注入非类类型（如对象、函数、配置项）时非常常见。当然，它也可以用于注入类类型，但对于类而言，NestJS 更推荐使用**类型注入**的方式，例如：`constructor(private readonly appService: AppService) {}`，这种写法更简洁且能自动推断依赖关系。
+
+## 基于属性的注入{#property-based-injection}
+
+我们之前一直使用的是“**基于构造函数的注入**”（constructor-based injection），即依赖项通过构造函数参数传入。
+
+在某些特定场景下，另一种形式，**基于属性的注入**（property-based injection），可能更合适。
+例如：当你有一个类继承自父类，而依赖项实际上只在父类中使用，那么你就不得不在子类中写一堆冗余代码将依赖转发到 `super()`。这时直接在父类属性上注入依赖可以避免这种“构造函数透传”。
+
+NestJS 支持在类的属性上使用 `@Inject()` 装饰器，直接注入对应的提供器。
+
+```ts
+import { Injectable, Inject } from '@nestjs/common';
+
+@Injectable()
+export class HttpService<T> {
+  @Inject('HTTP_OPTIONS') private readonly httpClient: T;
+}
+```
+
+这里 `HttpService` 的 `httpClient` 属性通过 `@Inject('HTTP_OPTIONS')` 直接注入，无需出现在构造函数中。这种方式**省略了构造函数注入声明**，可以简化继承场景中的代码复杂度。
+
+**注意**：使用自定义 token 时（如 `'HTTP_OPTIONS'`），你必须显式使用 `@Inject()`，Nest 无法自动推断。
+
+如果你的类不扩展其他类，通常最好使用基于构造函数的注入。构造函数明确指定了需要哪些依赖，与使用 `@Inject` 注释的类属性相比，它提供了更好的可见性并使代码更易于理解。
+
+NestJS 官方并不推荐将属性注入作为主流方式，除非你**确实需要**绕开构造函数（例如在继承结构复杂时）。
+
+构造函数注入的优势：
+
+- 依赖一目了然（强制声明在构造函数签名中）；
+- 避免依赖“悄悄注入”，提升可维护性；
+- 有助于自动化测试和 IDE 推断。
+
+**构造函数透传**的冗余感
+
+子类必须接收依赖并手动传递给 `super()`，哪怕自己并不用。
+
+```ts
+// common.service.ts
+@Injectable()
+export class CommonService {
+  log(msg: string) {
+    console.log(`[CommonService] ${msg}`);
+  }
+}
+```
+
+```ts
+// base.service.ts
+export class BaseService {
+  constructor(protected readonly common: CommonService) {}
+
+  protected report(message: string) {
+    this.common.log(message);
+  }
+}
+```
+
+```ts
+// user.service.ts
+@Injectable()
+export class UserService extends BaseService {
+  constructor(common: CommonService) {
+    super(common); // 👈 必须转发，哪怕这里只是继承用
+  }
+
+  findUser() {
+    this.report('User found');
+  }
+}
+```
+
+`UserService` 根本不关心 `CommonService`，但却必须在构造函数中声明并传给 `super()`，显得臃肿、容易出错，维护成本也更高。
+
+**基于属性的注入，消除透传**
+
+依赖只注入到基类，子类完全不用管，结构更清爽。
+
+```ts
+// base.service.ts
+import { Inject } from '@nestjs/common';
+import { CommonService } from './common.service';
+
+export class BaseService {
+  @Inject(CommonService)
+  protected readonly common: CommonService;
+
+  protected report(message: string) {
+    this.common.log(message);
+  }
+}
+```
+
+```ts
+// user.service.ts
+import { Injectable } from '@nestjs/common';
+
+@Injectable()
+export class UserService extends BaseService {
+  findUser() {
+    this.report('User found');
+  }
+}
+```
+
+`UserService` 不需要知道也不关心 `CommonService`；
+
+清晰表达依赖**只存在于基类**；
+
+更符合“关注点分离”（Separation of Concerns）原则。
+
+::: tip 补充
+
+**类继承**允许一个类（子类）**复用**另一个类（父类）中的代码（属性、方法），从而实现代码复用、逻辑共享和行为扩展。
+
+**继承的主要作用**
+
+| 作用                     | 说明                                                         | 示例                                   |
+| ------------------------ | ------------------------------------------------------------ | -------------------------------------- |
+| **代码复用**             | 不用重复写相同逻辑                                           | 多个子类共用一个 `log()` 方法          |
+| **公共逻辑抽象**         | 把通用操作集中在父类维护                                     | 统一错误处理、权限校验                 |
+| **行为扩展（override）** | 子类可改写父类方法，保留核心逻辑的同时定制行为：` super.log() ` | `handle()` 方法在每个服务中有不同实现  |
+| **分层架构、模块抽象**   | 把逻辑结构分清楚，比如 BaseController、AbstractService 等    | 让团队开发更有规范性                   |
+| **统一接口规范**         | 父类可定义公共接口，子类必须实现                             | 使用抽象类和抽象方法实现类似接口强约束 |
+
+```ts
+// 抽象父类：
+export abstract class AuditableService {
+  logChange(entityName: string, action: string) {
+    console.log(`[Audit] ${entityName} ${action}`);
+  }
+}
+```
+
+```ts
+// 子类继承父类，复用方法：
+@Injectable()
+export class UserService extends AuditableService {
+  createUser() {
+    this.logChange('User', 'created');
+  }
+}
+
+```
+
+:::
+
+## 提供器注册{#provider-registration}
+
+当你定义了一个服务类（提供器，例如 `CatsService`），并希望在控制器（如 `CatsController`）中使用它，Nest 需要知道这个服务的存在。
+ 你必须**将服务注册到模块的 `providers` 数组中**，Nest 才能将其实例注入到依赖它的类中。
+
+这是依赖注入系统的入口：**告诉 Nest “我要注入谁”**。
+
+```ts
+import { Module } from '@nestjs/common';
+import { CatsController } from './cats/cats.controller';
+import { CatsService } from './cats/cats.service';
+
+@Module({
+  controllers: [CatsController],
+  providers: [CatsService],
+})
+export class AppModule {}
+```
+
+`providers`: 所有想要注入到其他地方的服务，都必须注册在这里；
+
+`controllers`: 控制器也必须显式注册，Nest 才能解析它们。
+
+此结构会告诉 Nest：当你要创建 `CatsController` 的实例时，它依赖的 `CatsService` 已经在容器中可用。
+
+此时，我们的目录结构应如下所示：
+
+```ts
+src
+├── cats
+│   ├── dto
+│   │   └── create-cat.dto.ts
+│   ├── interfaces
+│   │   └── cat.interface.ts
+│   ├── cats.controller.ts
+│   └── cats.service.ts
+├── app.module.ts
+└── main.ts
+```
+
+## 实践建议：
+
+- `cats` 目录聚合所有猫相关代码，形成清晰的模块边界；
+- 拆分 `dto` 和 `interfaces` 有助于结构化数据处理与接口契约；
+- 每个功能模块可拥有自己的 controller、service、module，形成**领域划分**。
+
+## 手动实例化{#manual-instantiation}
+
+Nest 通常**自动实例化和注入**依赖，无需你操心。但在以下特殊情况下，你可能希望**手动获取服务实例**：
+
+- 在 `main.ts` 引导函数中访问服务（如配置服务、初始化逻辑）；
+- 动态创建模块或服务；
+- 你正在构建 NestJS 的“插件系统”或“运行时模块”；
+
+**你可以通过注入 `ModuleRef` 类手动获取某个已注册的提供器**：
+
+```ts
+import { Injectable, ModuleRef } from '@nestjs/core';
+
+@Injectable()
+export class ManualService {
+  constructor(private moduleRef: ModuleRef) {}
+
+  async doSomething() {
+    const catsService = await this.moduleRef.resolve(CatsService);
+    catsService.findAll();
+  }
+}
+```
+
+`moduleRef.resolve()` 会从 Nest 容器中取出实例，适用于动态场景下的依赖获取。
+
+**在 bootstrap() 中访问提供器（独立应用场景）**
+
+```ts
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+
+  const configService = app.get(ConfigService); // 手动获取配置服务
+
+  await app.listen(3000);
+}
+```
+
+这非常常见，尤其是你需要在启动期间读取配置、连接数据库、注册全局中间件时。
+
+大部分业务服务注册使用 `@Injectable()` + 模块中的 `providers` 数组，在构造函数中注入依赖使用类型注入，特殊启动场景访问服务（如 ConfigService）使用 `app.get()`，动态或懒加载服务实例使用 `ModuleRef.resolve()`
+
+**总结**：NestJS 的依赖注入默认是自动的，但你仍然可以在必要时通过 `ModuleRef` 或 `app.get()` 进行**手动控制**，这提供了灵活性但要谨慎使用。
+
+从技术上讲：只要你注入了 `ModuleRef`，你就可以在任何地方动态解析其他提供器（服务类），但是滥用ModuleRef会导致：模块之间高耦合、失去边界等.....
+
+所以，**它只适合那些真的需要“动态”或“懒加载”的特殊场景**。
+
+| 场景                                 | 是否推荐使用 `ModuleRef.resolve()` | 说明                                             |
+| ------------------------------------ | ---------------------------------- | ------------------------------------------------ |
+| ✅ 动态选择服务实现（策略模式）       | ✔️ 推荐                             | 根据用户请求或配置决定注入哪个服务               |
+| ✅ 懒加载重型服务（仅用时才实例化）   | ✔️ 推荐                             | 比如生成报表、调用外部服务，避免启动时全部初始化 |
+| ✅ 插件系统（运行时加载新模块）       | ✔️ 推荐                             | 动态加载某插件模块并调用其服务                   |
+| ✅ CLI 脚本 / 定时任务脚本            | ✔️ 可用                             | 独立调用服务执行任务逻辑                         |
+| ❌ 普通业务逻辑中替代构造函数注入     | ❌ 不推荐                           | 会造成依赖隐蔽，破坏架构规范                     |
+| ❌ 控制器中直接调用其他服务（非解耦） | ❌ 不推荐                           | 应该通过构造函数注入依赖，不要“偷取服务”         |
+
+**场景：根据用户角色动态选择处理器**
+
+定义两个服务实现
+
+```ts
+@Injectable()
+export class AdminProcessor {
+  process() {
+    console.log('Admin 处理逻辑');
+  }
+}
+
+@Injectable()
+export class UserProcessor {
+  process() {
+    console.log('User 处理逻辑');
+  }
+}
+```
+
+写一个动态服务管理器（用 `ModuleRef`）
+
+```ts
+@Injectable()
+export class ProcessorManager {
+  constructor(private readonly moduleRef: ModuleRef) {}
+
+  async handle(role: 'admin' | 'user') {
+    const ServiceClass = role === 'admin' ? AdminProcessor : UserProcessor;
+    const instance = await this.moduleRef.resolve(ServiceClass);
+    instance.process();
+  }
+}
+```
+
+控制器调用
+
+```ts
+@Controller()
+export class AppController {
+  constructor(private readonly manager: ProcessorManager) {}
+
+  @Get('/process/:role')
+  async handle(@Param('role') role: 'admin' | 'user') {
+    await this.manager.handle(role);
+  }
+}
+```
+
+访问 `/process/admin` 就会输出 `Admin 处理逻辑`，这个服务是 **按需实例化的**。
+
+**场景：懒加载大内存服务**
+
+假设你有一个服务在启动时很重，但实际只在运行时偶尔用：
+
+```ts
+@Injectable()
+export class PdfRenderService {
+  constructor() {
+    console.log('PDF 引擎初始化中... 🐌');
+  }
+
+  render() {
+    return '已生成 PDF 文件';
+  }
+}
+```
+
+使用懒加载：
+
+```ts
+@Injectable()
+export class ReportService {
+  constructor(private readonly moduleRef: ModuleRef) {}
+
+  async generateReport() {
+    const pdfService = await this.moduleRef.resolve(PdfRenderService);
+    return pdfService.render();
+  }
+}
+
+```
+
+好处：启动时不会初始化 `PdfRenderService`，直到你 `generateReport()` 才加载。
