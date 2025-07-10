@@ -993,3 +993,73 @@ export class AppModule implements OnModuleInit {
 
 通常在 `AppModule` 的构造函数中，写一些**简单的人性化日志提示**，比如：<u>XXX服务器开始启动....</u>
 
+## 生命周期钩子的两种写法
+
+**写在模块类中**
+
+```ts
+@Module({
+  imports: [...],
+  providers: [...],
+})
+export class AppModule {
+  onModuleInit() {
+    console.log('AppModule initialized');
+  }
+}
+```
+
+- ✅ **可以执行初始化逻辑**
+- ❌ 但是：**`AppModule` 不是 provider**，Nest 只是「通过特殊处理」允许你定义生命周期钩子；
+- ❌ 无法使用依赖注入，不能访问 `AppService` 或其他服务；
+- ⚠️ **模块初始化粒度太粗**，不适合做具体业务初始化。
+
+ **写在 `AppService` 中（推荐）**
+
+```ts
+@Injectable()
+export class AppService implements OnModuleInit {
+  onModuleInit() {
+    console.log('AppService initialized');
+    // 可以访问 this.xxx，拿到数据库、配置等依赖
+  }
+}
+```
+
+✅ Nest 会自动调用该钩子；
+
+✅ 可以访问自身注入的依赖（比如 `this.configService`）；
+
+✅ 更符合 **单一职责原则**（SRP）：服务负责初始化自己，不搞模块级别控制；
+
+✅ 更易测试、解耦、复用。
+
+**示例**：全局初始化逻辑
+
+推荐写一个 `AppLifecycleService` 专门负责「全局生命周期管理」：
+
+```ts
+@Injectable()
+export class AppLifecycleService implements OnModuleInit {
+  constructor(private readonly configService: ConfigService) {}
+
+  async onModuleInit() {
+    await this.configService.load();
+    console.log('全局初始化完成');
+  }
+}
+```
+
+然后在 `AppModule` 中注册它：
+
+```ts
+@Module({
+  providers: [AppLifecycleService],
+})
+export class AppModule {}
+```
+
+这样就 **兼顾了“模块级初始化” + “依赖注入能力” + “结构清晰”**。
+
+**只为了启动时简单打印一句话，写在模块类中没大碍，简单快捷；但一旦需求复杂，就要用 provider 来写**。
+
