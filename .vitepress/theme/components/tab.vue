@@ -13,6 +13,13 @@
       </div>
     </div>
 
+    <!-- 错误状态 -->
+    <div v-else-if="loadError" class="collapse-container">
+      <div class="empty-state error">
+        {{ loadError }}
+      </div>
+    </div>
+
     <!-- 实际内容 -->
     <div v-else class="collapse-container">
       <div v-for="(category, index) in categories" :key="category.id" class="collapse-item">
@@ -86,6 +93,9 @@
                 </div>
               </div>
             </div>
+            <div v-else-if="category.error" class="empty-state error">
+              {{ category.error }}
+            </div>
             <div v-else class="empty-state">
               暂无书签
             </div>
@@ -99,10 +109,11 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useData } from 'vitepress'
-import axios from 'axios'
+import { authAxios } from '../utils/auth'
 
 const { theme, isDark } = useData()
 const isLoading = ref(true) // 添加整体加载状态
+const loadError = ref('') // 添加错误状态
 const categories = ref([])
 const expandedCategories = ref({})
 const loadingStates = ref({})
@@ -145,7 +156,9 @@ const formatTime = (time) => {
   return date.toLocaleDateString('zh-CN', { 
     year: 'numeric',
     month: '2-digit',
-    day: '2-digit'
+    day: '2-digit',
+    // hour: '2-digit',
+    // minute: '2-digit'
   })
 }
 
@@ -168,7 +181,7 @@ const loadCategoryBookmarks = async (index) => {
   
   loadingStates.value[index] = true
   try {
-    const response = await axios.get(`https://inter.yumeng.icu/bookmark/resources-list?categoryId=${category.id}&enabledStatus=true`)
+    const response = await authAxios.get(`/bookmark/resources-list?categoryId=${category.id}&enabledStatus=true`)
     if (response.data.statusCode === 200) {
       categories.value[index] = {
         ...category,
@@ -177,6 +190,19 @@ const loadCategoryBookmarks = async (index) => {
     }
   } catch (error) {
     console.error(`Failed to load bookmarks for category ${category.id}:`, error)
+    // 404 状态码不显示错误信息
+    console.log(error.response?.status)
+    if (error.response?.status !== 404) {
+      categories.value[index] = {
+        ...category,
+        error: error.response?.data?.message || '加载失败，请稍后重试'
+      }
+    } else {
+      categories.value[index] = {
+        ...category,
+        items: [] // 设置为空数组，这样会显示"暂无书签"
+      }
+    }
   } finally {
     loadingStates.value[index] = false
   }
@@ -185,7 +211,7 @@ const loadCategoryBookmarks = async (index) => {
 // 切换分类展开状态
 const toggleCategory = async (index) => {
   expandedCategories.value[index] = !expandedCategories.value[index]
-  if (expandedCategories.value[index]) {
+  if (expandedCategories.value[index]) {      
     await loadCategoryBookmarks(index)
   }
 }
@@ -194,7 +220,8 @@ const toggleCategory = async (index) => {
 onMounted(async () => {
   try {
     isLoading.value = true
-    const response = await axios.get('https://inter.yumeng.icu/bookmark/resources-categories-list?enabledStatus=true')
+    loadError.value = '' // 重置错误状态
+    const response = await authAxios.get('/bookmark/resources-categories-list?enabledStatus=true')
     if (response.data.statusCode === 200) {
       categories.value = response.data.data
       
@@ -211,6 +238,7 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Failed to load categories:', error)
+    loadError.value = error.response?.data?.message || '加载失败，请稍后重试'
   } finally {
     isLoading.value = false
   }
@@ -344,12 +372,12 @@ onMounted(async () => {
   transition: all var(--bookmark-transition-duration);
   
   &:hover {
-    border-color: var(--vp-c-brand);
+    /* border-color: var(--vp-c-brand); */
     box-shadow: 0 0 12px var(--vp-c-divider);
     background-color: var(--vp-c-bg-soft);
 
     .title {
-      color: var(--vp-c-brand);
+      /* color: var(--vp-c-brand); */
     }
   }
 }
@@ -483,6 +511,12 @@ time {
   color: var(--vp-c-text-2);
   background-color: var(--vp-c-bg-soft);
   border-radius: var(--bookmark-border-radius);
+  margin: 16px;
+  
+  &.error {
+    color: var(--vp-c-danger-1);
+    background-color: var(--vp-c-danger-soft);
+  }
 }
 
 @keyframes spin {
@@ -598,6 +632,7 @@ time {
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
+    
   }
   100% {
     background-position: 200% 0;
@@ -637,7 +672,7 @@ time {
     var(--vp-c-bg-soft) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 3s infinite;
   border-radius: 4px;
   color: transparent;
   user-select: none;
@@ -653,7 +688,7 @@ time {
     var(--vp-c-bg-soft) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 3s infinite;
   border-radius: 4px;
   opacity: 0.7;
   color: transparent;
@@ -671,7 +706,7 @@ time {
     var(--vp-c-bg-soft) 75%
   );
   background-size: 200% 100%;
-  animation: shimmer 1.5s infinite;
+  animation: shimmer 3s infinite;
   border-radius: 50%;
   opacity: 0.5;
   color: transparent;
