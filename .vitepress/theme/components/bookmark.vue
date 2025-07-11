@@ -371,7 +371,7 @@ onMounted(async () => {
   background-color: var(--vp-c-bg);
   transition: all var(--bookmark-transition-duration);
   
-  &:hover {
+  &:not(.skeleton-card):hover {
     /* border-color: var(--vp-c-brand); */
     box-shadow: 0 0 12px var(--vp-c-divider);
     background-color: var(--vp-c-bg-soft);
