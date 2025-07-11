@@ -93,7 +93,7 @@ export default defineConfig({
                 nav: [
                     { text: '首页', link: '/' },
                     { text: '标签', link: '/pages/tags' },
-                    { text: '书签', link: '/pages/site' },
+                    { text: '书签', link: '/pages/bookmark' },
                     { text: '关于', link: '/pages/about' },
                 ],
                 lastUpdated: {
@@ -184,7 +184,7 @@ export default defineConfig({
                 nav: [
                     { text: 'Home', link: '/en/' },
                     { text: 'Tags', link: '/en/pages/tags' },
-                    { text: 'Bookmarks', link: '/en/pages/site' },
+                    { text: 'Bookmarks', link: '/en/pages/bookmark' },
                     { text: 'About', link: '/en/pages/about' },
                 ],
                 website: {

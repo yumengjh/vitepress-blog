@@ -2,7 +2,7 @@ import DefaultTheme from 'vitepress/theme'
 import NewLayout from './components/NewLayout.vue'
 import Tags from './components/Tags.vue'
 import Page from './components/Page.vue'
-import Tab from './components/tab.vue'
+import Bookmark from './components/bookmark.vue'
 
 // 代码块折叠
 // https://github.com/T-miracle/vitepress-plugin-codeblocks-fold/blob/main/README_zh.md
@@ -40,7 +40,7 @@ export default {
         vitepressNprogress(ctx)
         ctx.app.component('Tags', Tags)
         ctx.app.component('Page', Page)
-        ctx.app.component('Tab', Tab)
+        ctx.app.component('Bookmark', Bookmark)
         // ctx.app.use(directives)
     },
     setup() {
