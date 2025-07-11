@@ -1,6 +1,20 @@
 <template>
   <div class="bookmark-container">
-    <div class="collapse-container">
+    <!-- 骨架屏 -->
+    <div v-if="isLoading" class="collapse-container">
+      <div v-for="i in 6" :key="i" class="collapse-item skeleton-item">
+        <div class="collapse-header skeleton-header">
+          <div class="header-content">
+            <div class="skeleton-title">title</div>
+            <div class="skeleton-time">time</div>
+          </div>
+          <div class="skeleton-arrow">arrow</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 实际内容 -->
+    <div v-else class="collapse-container">
       <div v-for="(category, index) in categories" :key="category.id" class="collapse-item">
         <div class="collapse-header" @click="toggleCategory(index)">
           <div class="header-content">
@@ -16,9 +30,26 @@
         
         <Transition name="section">
           <div class="collapse-content" v-show="expandedCategories[index]">
-            <div v-if="loadingStates[index]" class="loading-container">
-              <div class="loading-spinner"></div>
-              <span>加载中...</span>
+            <!-- 分类内容加载骨架屏 -->
+            <div v-if="loadingStates[index]" class="bookmark-grid">
+              <div v-for="i in 6" :key="i" class="bookmark-card skeleton-card">
+                <div class="card-header">
+                  <div class="skeleton-icon"></div>
+                  <div class="skeleton-title-wrapper">
+                    <div class="skeleton-card-title"></div>
+                    <div class="skeleton-badge"></div>
+                  </div>
+                </div>
+                <div class="skeleton-description"></div>
+                <div class="skeleton-description-short"></div>
+                <div class="card-footer">
+                  <div class="skeleton-link"></div>
+                  <div class="skeleton-time-info">
+                    <div class="skeleton-time-item"></div>
+                    <div class="skeleton-time-item"></div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div v-else-if="category.items && category.items.length" class="bookmark-grid">
               <div v-for="item in category.items" :key="item.uuid" class="bookmark-card">
@@ -71,7 +102,7 @@ import { useData } from 'vitepress'
 import axios from 'axios'
 
 const { theme, isDark } = useData()
-
+const isLoading = ref(true) // 添加整体加载状态
 const categories = ref([])
 const expandedCategories = ref({})
 const loadingStates = ref({})
@@ -162,6 +193,7 @@ const toggleCategory = async (index) => {
 // 初始化
 onMounted(async () => {
   try {
+    isLoading.value = true
     const response = await axios.get('https://inter.yumeng.icu/bookmark/resources-categories-list?enabledStatus=true')
     if (response.data.statusCode === 200) {
       categories.value = response.data.data
@@ -179,6 +211,8 @@ onMounted(async () => {
     }
   } catch (error) {
     console.error('Failed to load categories:', error)
+  } finally {
+    isLoading.value = false
   }
 })
 </script>
@@ -557,6 +591,226 @@ time {
 
   .time-item {
     font-size: 10px;
+  }
+}
+
+/* 骨架屏动画 */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-item {
+  background-color: var(--vp-c-bg);
+  border-bottom: 1px solid var(--vp-c-divider);
+  
+  &:last-child {
+    border-bottom: none;
+  }
+}
+
+.skeleton-header {
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: default;
+  
+  .header-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+.skeleton-title {
+  height: 20px;
+  width: 100px;
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-bg-soft) 25%,
+    var(--vp-c-bg-alt) 50%,
+    var(--vp-c-bg-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  color: transparent;
+  user-select: none;
+}
+
+.skeleton-time {
+  height: 14px;
+  width: 240px;
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-bg-soft) 25%,
+    var(--vp-c-bg-alt) 50%,
+    var(--vp-c-bg-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+  opacity: 0.7;
+  color: transparent;
+  user-select: none;
+}
+
+/* 添加箭头占位 */
+.skeleton-arrow {
+  width: 24px;
+  height: 24px;
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-bg-soft) 25%,
+    var(--vp-c-bg-alt) 50%,
+    var(--vp-c-bg-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 50%;
+  opacity: 0.5;
+  color: transparent;
+  user-select: none;
+  flex-shrink: 0;
+}
+
+.skeleton-card {
+  border: 1px solid var(--vp-c-divider);
+  border-radius: var(--bookmark-border-radius);
+  padding: 16px;
+  background-color: var(--vp-c-bg);
+}
+
+.skeleton-icon {
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-bg-soft) 25%,
+    var(--vp-c-bg-alt) 50%,
+    var(--vp-c-bg-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-title-wrapper {
+  flex: 1;
+  margin-left: 12px;
+}
+
+.skeleton-card-title {
+  height: 20px;
+  width: 70%;
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-bg-soft) 25%,
+    var(--vp-c-bg-alt) 50%,
+    var(--vp-c-bg-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-badge {
+  height: 16px;
+  width: 40px;
+  margin-top: 8px;
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-bg-soft) 25%,
+    var(--vp-c-bg-alt) 50%,
+    var(--vp-c-bg-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 10px;
+}
+
+.skeleton-description {
+  height: 16px;
+  width: 100%;
+  margin: 16px 0 8px;
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-bg-soft) 25%,
+    var(--vp-c-bg-alt) 50%,
+    var(--vp-c-bg-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-description-short {
+  height: 16px;
+  width: 60%;
+  margin-bottom: 16px;
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-bg-soft) 25%,
+    var(--vp-c-bg-alt) 50%,
+    var(--vp-c-bg-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-link {
+  height: 16px;
+  width: 100px;
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-bg-soft) 25%,
+    var(--vp-c-bg-alt) 50%,
+    var(--vp-c-bg-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+.skeleton-time-info {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+}
+
+.skeleton-time-item {
+  height: 16px;
+  width: 80px;
+  background: linear-gradient(
+    90deg,
+    var(--vp-c-bg-soft) 25%,
+    var(--vp-c-bg-alt) 50%,
+    var(--vp-c-bg-soft) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 4px;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .skeleton-time {
+    display: none; /* 移动端隐藏时间，与实际布局一致 */
+  }
+
+  .skeleton-icon {
+    width: 28px;
+    height: 28px;
+  }
+
+  .skeleton-card-title {
+    width: 60%;
   }
 }
 </style>
