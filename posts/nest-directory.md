@@ -23,6 +23,7 @@ aside: false
     - [控制器](./nestjs-controller)
     - [提供器](./nestjs-provider)
     - [模块](./nest-modules)
+    - [中间件](./nest-middleware)
 
 ---
 

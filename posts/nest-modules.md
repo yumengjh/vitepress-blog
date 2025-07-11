@@ -248,6 +248,8 @@ export class DogsModule {}
 export class CoreModule {}
 ```
 
+![](https://image.yumeng.icu/2025-07-11%2F170710.png)
+
 **重新导出**可以理解为在模块之间建立「服务转发通道」：**A 模块导入了 B 模块，并在自己的 exports 中再次导出 B 模块**，那今后**任何导入 A 模块的模块，也可以访问 B 模块导出的 provider**，就像直接导入了 B 一样。
 
 这就是所谓的 **re-export（再导出）**。
