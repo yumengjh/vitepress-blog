@@ -114,9 +114,9 @@ select setval(pg_get_serial_sequence('motivational_quotes', 'id'), 136);
 
 假设新分类 id 是 `new_category_id`，名称是 `新分类名称`，是否默认展开 `default_expanded`（true/false）
 
-```sql
+```sql{2}
 INSERT INTO categories (id, title, default_expanded, created_at, updated_at)
-VALUES ('new_category_id', '新分类名称', false, NOW(), NOW())
+VALUES ('[new_category_id]', '[新分类名称]', false, NOW(), NOW())
 ON CONFLICT (id) DO UPDATE SET
   title = EXCLUDED.title,
   default_expanded = EXCLUDED.default_expanded,
@@ -127,8 +127,8 @@ ON CONFLICT (id) DO UPDATE SET
 
 假设资源表命名规则为 `resources_新分类id`，例如：`resources_new_category_id`
 
-```sql
-CREATE TABLE IF NOT EXISTS resources_new_category_id (
+```sql {1,14}
+CREATE TABLE IF NOT EXISTS resources_[new_category_id] (
   uuid UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   category_id TEXT REFERENCES categories(id) ON DELETE CASCADE,
   title VARCHAR(255) NOT NULL,
@@ -141,18 +141,18 @@ CREATE TABLE IF NOT EXISTS resources_new_category_id (
   enabled BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP NOT NULL DEFAULT NOW(),
   updated_at TIMESTAMP NOT NULL,
-  CONSTRAINT unique_title_link_new_category_id UNIQUE (title, link)
+  CONSTRAINT unique_title_link_[new_category_id] UNIQUE (title, link)
 );
 ```
 
 **插入新资源数据示范**
 
-```sql
-INSERT INTO resources_new_category_id (
+```sql {1,4,5}
+INSERT INTO resources_[new_category_id] (
   uuid, category_id, title, "desc", link, linktxt, icon, badge, badge_type, enabled, created_at, updated_at
 ) VALUES
-(gen_random_uuid(), 'new_category_id', '资源标题1', '资源描述1', 'https://resource1.link/', 'resource1.link', NULL, NULL, NULL, TRUE, NOW(), NOW()),
-(gen_random_uuid(), 'new_category_id', '资源标题2', '资源描述2', 'https://resource2.link/', 'resource2.link', NULL, NULL, NULL, TRUE, NOW(), NOW());
+(gen_random_uuid(), '[new_category_id]', '资源标题1', '资源描述1', 'https://resource1.link/', 'resource1.link', NULL, NULL, NULL, TRUE, NOW(), NOW()),
+(gen_random_uuid(), '[new_category_id]', '资源标题2', '资源描述2', 'https://resource2.link/', 'resource2.link', NULL, NULL, NULL, TRUE, NOW(), NOW());
 ```
 
 **建表代码**

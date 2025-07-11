@@ -39,7 +39,7 @@
           <div class="collapse-content" v-show="expandedCategories[index]">
             <!-- 分类内容加载骨架屏 -->
             <div v-if="loadingStates[index]" class="bookmark-grid">
-              <div v-for="i in 6" :key="i" class="bookmark-card skeleton-card">
+              <div v-for="i in 2" :key="i" class="bookmark-card skeleton-card">
                 <div class="card-header">
                   <div class="skeleton-icon"></div>
                   <div class="skeleton-title-wrapper">
@@ -473,12 +473,24 @@ onMounted(async () => {
   margin-top: 12px;
   padding-top: 12px;
   border-top: 1px solid var(--vp-c-divider);
+  gap: 8px;
+}
+
+.link-text {
+  color: var(--vp-c-text-2);
+  font-size: 12px;
+  max-width: 120px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
 }
 
 .time-info {
   display: flex;
   gap: 12px;
   font-size: 12px;
+  flex-shrink: 0;
 }
 
 .time-item {
@@ -498,11 +510,6 @@ onMounted(async () => {
 time {
   color: var(--vp-c-text-2);
   cursor: help;
-}
-
-.link-text {
-  color: var(--vp-c-text-2);
-  font-size: 12px;
 }
 
 .empty-state {
@@ -846,6 +853,9 @@ time {
 
   .skeleton-card-title {
     width: 60%;
+  }
+  .link-text {
+    max-width: 230px;
   }
 }
 </style>
