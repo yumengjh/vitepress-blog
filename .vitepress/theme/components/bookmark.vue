@@ -257,7 +257,7 @@ onMounted(async () => {
 }
 
 .collapse-container {
-  border: 1px solid var(--vp-c-divider);
+  /* border: 1px solid var(--vp-c-divider); */
   border-radius: var(--bookmark-border-radius);
   background-color: var(--vp-c-bg);
 }
@@ -277,7 +277,7 @@ onMounted(async () => {
   transition: background-color var(--bookmark-transition-duration);
   
   &:hover {
-    background-color: var(--vp-c-bg-soft);
+    /* background-color: var(--vp-c-bg-soft); */
   }
   
   .header-content {
@@ -437,19 +437,19 @@ onMounted(async () => {
 }
 
 .badge {
-  padding: 2px 6px;
+  padding: 0px 8px;
   font-size: 12px;
-  border-radius: 10px;
-  background-color: var(--vp-c-bg-soft);
+  border-radius: 99999px;
+  background-color: var(--vp-c-bg-soft) !important;
   color: var(--vp-c-text-2);
   
   &.hot {
-    background-color: var(--vp-c-red-dimm-2);
+    background-color: color-mix(in srgb, var(--vp-c-red-1) 20%, transparent) !important;
     color: var(--vp-c-red-1);
   }
   
   &.new {
-    background-color: var(--vp-c-green-dimm-2);
+    background-color: color-mix(in srgb, var(--vp-c-green-1) 20%, transparent) !important;
     color: var(--vp-c-green-1);
   }
 }
