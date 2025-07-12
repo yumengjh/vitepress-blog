@@ -857,7 +857,7 @@ new NotFoundException('用户不存在', { cause: new Error('DB lookup failed') 
 
 | 参数名     | 类型              | 作用                                     |
 | ---------- | ----------------- | ---------------------------------------- |
-| `response` | `string | object` | 自定义返回消息体（message 字符串或对象） |
+| `response` | `string \| object`   | 自定义返回消息体（message 字符串或对象） |
 | `options`  | `{ cause?: any }` | 提供内部异常详情（不会返回给前端）       |
 
 > 在**真实开发和日志追踪场景**中，建议总是使用 `new Error(...)`，它提供堆栈信息，对排错非常有帮助。
