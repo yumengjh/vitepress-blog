@@ -26,15 +26,17 @@
         <div class="collapse-header" @click="toggleCategory(index)">
           <div class="header-content">
             <span class="title">{{ category.title }}</span>
-            <span class="time">创建于: {{ formatTime(category.created_at) }} | 更新于: {{ formatTime(category.updated_at) }}</span>
+            <span class="time">创建于: {{ formatTime(category.created_at) }} | 更新于: {{ formatTime(category.updated_at)
+            }}</span>
           </div>
           <div class="arrow" :class="{ 'is-active': expandedCategories[index] }">
             <svg viewBox="0 0 24 24" width="24" height="24">
-              <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                stroke-linejoin="round" />
             </svg>
           </div>
         </div>
-        
+
         <Transition name="section">
           <div class="collapse-content" v-show="expandedCategories[index]">
             <!-- 分类内容加载骨架屏 -->
@@ -63,10 +65,8 @@
                 <div class="card-header">
                   <div class="icon-wrapper">
                     <svg v-if="isSvg(item.icon)" class="svg-icon" v-html="item.icon"></svg>
-                    <img v-else :src="item.icon || getFavicon(item.link)" 
-                         @error="handleImageError($event, item)" 
-                         class="favicon" 
-                         alt="" />
+                    <img v-else :src="item.icon || getFavicon(item.link)" @error="handleImageError($event, item)"
+                      class="favicon" alt="" />
                   </div>
                   <div class="title-wrapper">
                     <a :href="item.link" target="_blank" class="title">{{ item.title }}</a>
@@ -153,7 +153,7 @@ const handleImageError = (event, cell) => {
 const formatTime = (time) => {
   if (!time) return ''
   const date = new Date(time)
-  return date.toLocaleDateString('zh-CN', { 
+  return date.toLocaleDateString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
@@ -166,7 +166,7 @@ const formatTime = (time) => {
 const formatDetailTime = (time) => {
   if (!time) return ''
   const date = new Date(time)
-  return date.toLocaleTimeString('zh-CN', { 
+  return date.toLocaleTimeString('zh-CN', {
     hour: '2-digit',
     minute: '2-digit'
   })
@@ -175,10 +175,10 @@ const formatDetailTime = (time) => {
 // 加载分类书签
 const loadCategoryBookmarks = async (index) => {
   if (loadingStates.value[index]) return
-  
+
   const category = categories.value[index]
   if (category.items) return // 已加载过的不重复加载
-  
+
   loadingStates.value[index] = true
   try {
     const response = await authAxios.get(`/bookmark/resources-list?categoryId=${category.id}&enabledStatus=true`)
@@ -211,7 +211,7 @@ const loadCategoryBookmarks = async (index) => {
 // 切换分类展开状态
 const toggleCategory = async (index) => {
   expandedCategories.value[index] = !expandedCategories.value[index]
-  if (expandedCategories.value[index]) {      
+  if (expandedCategories.value[index]) {
     await loadCategoryBookmarks(index)
   }
 }
@@ -224,12 +224,12 @@ onMounted(async () => {
     const response = await authAxios.get('/bookmark/resources-categories-list?enabledStatus=true')
     if (response.data.statusCode === 200) {
       categories.value = response.data.data
-      
+
       // 初始化展开状态
       categories.value.forEach((category, index) => {
         expandedCategories.value[index] = category.default_expanded
         loadingStates.value[index] = false
-        
+
         // 加载默认展开的分类
         if (category.default_expanded) {
           loadCategoryBookmarks(index)
@@ -247,11 +247,23 @@ onMounted(async () => {
 
 <style scoped>
 .bookmark-container {
+  --vp-c-bg-soft: #f0f2f5;
+  --vp-c-bg-alt: #dcdfe6;
+}
+
+.dark .bookmark-container {
+  --vp-c-bg-soft: #23272e;
+  --vp-c-bg-alt: #2d323b;
+}
+
+
+.bookmark-container {
   /* 使用 VitePress 的主题变量 */
   --bookmark-transition-duration: 0.3s;
   --bookmark-border-radius: 4px;
-  
-  padding: 20px;
+
+  padding: 20px 0;
+  padding-top: 0px;
   color: var(--vp-c-text-1);
   background-color: var(--vp-c-bg);
 }
@@ -275,22 +287,22 @@ onMounted(async () => {
   padding: 16px;
   cursor: pointer;
   transition: background-color var(--bookmark-transition-duration);
-  
+
   &:hover {
     /* background-color: var(--vp-c-bg-soft); */
   }
-  
+
   .header-content {
     display: flex;
     align-items: center;
     gap: 12px;
-    
+
     .title {
       font-size: 16px;
       font-weight: 500;
       color: var(--vp-c-text-1);
     }
-    
+
     .time {
       font-size: 12px;
       color: var(--vp-c-text-2);
@@ -301,7 +313,7 @@ onMounted(async () => {
 .arrow {
   transition: transform var(--bookmark-transition-duration);
   color: var(--vp-c-text-2);
-  
+
   &.is-active {
     transform: rotate(180deg);
   }
@@ -316,7 +328,7 @@ onMounted(async () => {
   transition: all var(--bookmark-transition-duration) ease-in-out;
   opacity: 1;
   max-height: none;
-  
+
   &.is-collapsed {
     opacity: 0;
     max-height: 0 !important;
@@ -370,7 +382,7 @@ onMounted(async () => {
   padding: 16px;
   background-color: var(--vp-c-bg);
   transition: all var(--bookmark-transition-duration);
-  
+
   &:not(.skeleton-card):hover {
     /* border-color: var(--vp-c-brand); */
     box-shadow: 0 0 12px var(--vp-c-divider);
@@ -400,8 +412,9 @@ onMounted(async () => {
   overflow: hidden;
   background-color: var(--vp-c-bg-soft);
   border: 1px solid var(--vp-c-divider);
-  
-  .favicon, .svg-icon {
+
+  .favicon,
+  .svg-icon {
     width: 100%;
     height: 100%;
     object-fit: contain;
@@ -423,13 +436,13 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 8px;
-  
+
   .title {
     color: var(--vp-c-text-1);
     text-decoration: none;
     font-weight: 500;
     transition: color var(--bookmark-transition-duration);
-    
+
     &:hover {
       color: var(--vp-c-brand);
     }
@@ -442,12 +455,12 @@ onMounted(async () => {
   border-radius: 99999px;
   background-color: var(--vp-c-bg-soft) !important;
   color: var(--vp-c-text-2);
-  
+
   &.hot {
     background-color: color-mix(in srgb, var(--vp-c-red-1) 20%, transparent) !important;
     color: var(--vp-c-red-1);
   }
-  
+
   &.new {
     background-color: color-mix(in srgb, var(--vp-c-green-1) 20%, transparent) !important;
     color: var(--vp-c-green-1);
@@ -516,13 +529,13 @@ time {
   padding: 32px;
   text-align: center;
   color: var(--vp-c-text-2);
-  background-color: var(--vp-c-bg-soft);
+  /* background-color: var(--vp-c-bg-soft); */
   border-radius: var(--bookmark-border-radius);
   margin: 16px;
-  
+
   &.error {
-    color: var(--vp-c-danger-1);
-    background-color: var(--vp-c-danger-soft);
+    /* color: var(--vp-c-danger-1); */
+    /* background-color: var(--vp-c-danger-soft); */
   }
 }
 
@@ -541,7 +554,7 @@ time {
   .bookmark-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .header-content .time {
     display: none;
   }
@@ -551,7 +564,7 @@ time {
     align-items: flex-start;
     gap: 8px;
   }
-  
+
   .time-info {
     width: 100%;
     justify-content: space-between;
@@ -560,14 +573,15 @@ time {
   .icon-wrapper {
     width: 28px;
     height: 28px;
-    
+
     .favicon {
       padding: 1px;
     }
   }
 
   /* 针对不同设备像素比的优化 */
-  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  @media (-webkit-min-device-pixel-ratio: 2),
+  (min-resolution: 192dpi) {
     .icon-wrapper .favicon {
       image-rendering: -webkit-optimize-contrast;
       transform: translateZ(0);
@@ -596,20 +610,25 @@ time {
   }
 
   .icon-wrapper {
-    width: 28px; /* 调整移动端图标大小 */
+    width: 28px;
+    /* 调整移动端图标大小 */
     height: 28px;
-    
+
     .favicon {
-      padding: 1px; /* 移动端减小内边距 */
+      padding: 1px;
+      /* 移动端减小内边距 */
     }
   }
 
   /* 针对不同设备像素比的优化 */
-  @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  @media (-webkit-min-device-pixel-ratio: 2),
+  (min-resolution: 192dpi) {
     .icon-wrapper {
       .favicon {
-        image-rendering: -webkit-optimize-contrast; /* 优化高分辨率屏幕的图标显示 */
-        transform: translateZ(0); /* 防止图标模糊 */
+        image-rendering: -webkit-optimize-contrast;
+        /* 优化高分辨率屏幕的图标显示 */
+        transform: translateZ(0);
+        /* 防止图标模糊 */
       }
     }
   }
@@ -639,8 +658,9 @@ time {
 @keyframes shimmer {
   0% {
     background-position: -200% 0;
-    
+
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -649,7 +669,7 @@ time {
 .skeleton-item {
   background-color: var(--vp-c-bg);
   border-bottom: 1px solid var(--vp-c-divider);
-  
+
   &:last-child {
     border-bottom: none;
   }
@@ -661,7 +681,7 @@ time {
   align-items: center;
   justify-content: space-between;
   cursor: default;
-  
+
   .header-content {
     display: flex;
     align-items: center;
@@ -672,12 +692,10 @@ time {
 .skeleton-title {
   height: 20px;
   width: 100px;
-  background: linear-gradient(
-    90deg,
-    var(--vp-c-bg-soft) 25%,
-    var(--vp-c-bg-alt) 50%,
-    var(--vp-c-bg-soft) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--vp-c-bg-soft) 25%,
+      var(--vp-c-bg-alt) 50%,
+      var(--vp-c-bg-soft) 75%);
   background-size: 200% 100%;
   animation: shimmer 3s infinite;
   border-radius: 4px;
@@ -688,12 +706,10 @@ time {
 .skeleton-time {
   height: 14px;
   width: 240px;
-  background: linear-gradient(
-    90deg,
-    var(--vp-c-bg-soft) 25%,
-    var(--vp-c-bg-alt) 50%,
-    var(--vp-c-bg-soft) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--vp-c-bg-soft) 25%,
+      var(--vp-c-bg-alt) 50%,
+      var(--vp-c-bg-soft) 75%);
   background-size: 200% 100%;
   animation: shimmer 3s infinite;
   border-radius: 4px;
@@ -706,12 +722,10 @@ time {
 .skeleton-arrow {
   width: 24px;
   height: 24px;
-  background: linear-gradient(
-    90deg,
-    var(--vp-c-bg-soft) 25%,
-    var(--vp-c-bg-alt) 50%,
-    var(--vp-c-bg-soft) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--vp-c-bg-soft) 25%,
+      var(--vp-c-bg-alt) 50%,
+      var(--vp-c-bg-soft) 75%);
   background-size: 200% 100%;
   animation: shimmer 3s infinite;
   border-radius: 50%;
@@ -731,12 +745,10 @@ time {
 .skeleton-icon {
   width: 32px;
   height: 32px;
-  background: linear-gradient(
-    90deg,
-    var(--vp-c-bg-soft) 25%,
-    var(--vp-c-bg-alt) 50%,
-    var(--vp-c-bg-soft) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--vp-c-bg-soft) 25%,
+      var(--vp-c-bg-alt) 50%,
+      var(--vp-c-bg-soft) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -750,12 +762,10 @@ time {
 .skeleton-card-title {
   height: 20px;
   width: 70%;
-  background: linear-gradient(
-    90deg,
-    var(--vp-c-bg-soft) 25%,
-    var(--vp-c-bg-alt) 50%,
-    var(--vp-c-bg-soft) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--vp-c-bg-soft) 25%,
+      var(--vp-c-bg-alt) 50%,
+      var(--vp-c-bg-soft) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -765,12 +775,10 @@ time {
   height: 16px;
   width: 40px;
   margin-top: 8px;
-  background: linear-gradient(
-    90deg,
-    var(--vp-c-bg-soft) 25%,
-    var(--vp-c-bg-alt) 50%,
-    var(--vp-c-bg-soft) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--vp-c-bg-soft) 25%,
+      var(--vp-c-bg-alt) 50%,
+      var(--vp-c-bg-soft) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 10px;
@@ -780,12 +788,10 @@ time {
   height: 16px;
   width: 100%;
   margin: 16px 0 8px;
-  background: linear-gradient(
-    90deg,
-    var(--vp-c-bg-soft) 25%,
-    var(--vp-c-bg-alt) 50%,
-    var(--vp-c-bg-soft) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--vp-c-bg-soft) 25%,
+      var(--vp-c-bg-alt) 50%,
+      var(--vp-c-bg-soft) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -795,12 +801,10 @@ time {
   height: 16px;
   width: 60%;
   margin-bottom: 16px;
-  background: linear-gradient(
-    90deg,
-    var(--vp-c-bg-soft) 25%,
-    var(--vp-c-bg-alt) 50%,
-    var(--vp-c-bg-soft) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--vp-c-bg-soft) 25%,
+      var(--vp-c-bg-alt) 50%,
+      var(--vp-c-bg-soft) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -809,12 +813,10 @@ time {
 .skeleton-link {
   height: 16px;
   width: 100px;
-  background: linear-gradient(
-    90deg,
-    var(--vp-c-bg-soft) 25%,
-    var(--vp-c-bg-alt) 50%,
-    var(--vp-c-bg-soft) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--vp-c-bg-soft) 25%,
+      var(--vp-c-bg-alt) 50%,
+      var(--vp-c-bg-soft) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -829,12 +831,10 @@ time {
 .skeleton-time-item {
   height: 16px;
   width: 80px;
-  background: linear-gradient(
-    90deg,
-    var(--vp-c-bg-soft) 25%,
-    var(--vp-c-bg-alt) 50%,
-    var(--vp-c-bg-soft) 75%
-  );
+  background: linear-gradient(90deg,
+      var(--vp-c-bg-soft) 25%,
+      var(--vp-c-bg-alt) 50%,
+      var(--vp-c-bg-soft) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
   border-radius: 4px;
@@ -843,7 +843,8 @@ time {
 /* 响应式调整 */
 @media (max-width: 768px) {
   .skeleton-time {
-    display: none; /* 移动端隐藏时间，与实际布局一致 */
+    display: none;
+    /* 移动端隐藏时间，与实际布局一致 */
   }
 
   .skeleton-icon {
@@ -854,8 +855,17 @@ time {
   .skeleton-card-title {
     width: 60%;
   }
+
   .link-text {
     max-width: 230px;
+  }
+
+  .collapse-header {
+    padding: 16px 0px 16px 0px;
+  }
+
+  .bookmark-grid {
+    padding: 12px 0px;
   }
 }
 </style>
