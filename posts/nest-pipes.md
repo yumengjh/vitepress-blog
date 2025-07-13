@@ -225,3 +225,47 @@ uuid: string;
 **提示**：更多 `ValidationPipe` 的详细示例，请参阅 [验证技术](./nest-validation)。
 
 ## 定制管道{#custom-pipes}
+
+除了使用 NestJS 提供的内置管道（如 `ParseIntPipe` 和 `ValidationPipe`），你还可以从头打造自定义管道。虽然内置管道已经很强大，但通过构建自定义版本，我们可以深入理解管道的实现原理。本节将从一个简单的 `ValidationPipe` 开始，逐步展示如何创建自定义管道。
+
+我们先构建一个最简单的 `ValidationPipe`，它像一个“中转站”，接收输入值并直接返回，不做任何处理，类似数学中的恒等函数（输入什么，输出什么）：
+
+```typescript
+import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
+
+@Injectable()
+export class ValidationPipe implements PipeTransform {
+  transform(value: any, metadata: ArgumentMetadata) {
+    return value; // 直接返回输入值，未做处理
+  }
+}
+```
+
+**提示**：`PipeTransform<T, R>` 是一个泛型接口，所有管道必须实现。它用 `T` 表示输入值 `value` 的类型，用 `R` 表示 `transform` 方法的返回类型。
+
+每个管道都必须实现 `transform` 方法，以满足 `PipeTransform` 接口的契约。这个方法接收两个参数：
+
+- `value`：当前处理的控制器方法参数（在路由处理程序接收前）。
+- `metadata`：参数的元数据，描述参数的上下文信息。
+
+元数据对象（`ArgumentMetadata`）包含以下属性：
+
+```typescript
+export interface ArgumentMetadata {
+  type: 'body' | 'query' | 'param' | 'custom'; // 参数来源
+  metatype?: Type<unknown>; // 参数的类型（如 String、Number）
+  data?: string; // 装饰器中传递的字符串（如 @Body('key') 的 key）
+}
+```
+
+**元数据属性解释**：
+
+- `type`：指示参数来源，例如 `@Body()`（请求体）、`@Query()`（查询参数）、`@Param()`（路由参数）或 `@Custom()`（自定义参数）。
+- `metatype`：参数的 TypeScript 类型（如 `String`、`Number`）。如果未声明类型或使用普通 JavaScript，值为 `undefined`。
+- `data`：装饰器中传递的字符串，例如 `@Body('key')` 的 `key`。如果装饰器括号为空（如 `@Body()`），则为 `undefined`。
+
+**警告**：TypeScript 的接口（interface）在编译为 JavaScript 后会被完全移除，运行时无法获取接口的任何类型信息。因此，如果你的方法参数使用接口类型，NestJS 在运行时获取到的 `metatype` 只会是 `Object`，无法精确反映原本的类型结构。
+
+**如何解决？**
+如果你需要在运行时进行类型检查、验证或元数据反射（如在自定义管道或 `ValidationPipe` 中），建议使用 **类（class）** 来定义 DTO（数据传输对象），而不是接口。因为类在编译后依然存在于 JavaScript 代码中，NestJS 可以通过反射机制获取到类的构造函数和类型信息。
+
