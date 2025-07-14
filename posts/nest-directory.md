@@ -51,6 +51,7 @@ aside: false
     - [NestJS中文文档](https://docs.nestjs.cn/)
     - [Nest官方文档](https://docs.nestjs.com/)
     - [NestJS Github仓库](https://github.com/nestjs/nest)
+    - [NestJS中文文档（自部署）](https://nest.yumeng.icu)
 
 ---
 
