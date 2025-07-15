@@ -690,3 +690,1010 @@ pipeDemoMethod(
 :::
 
 ## 类验证器{#class-validator}
+
+**警告**：本节的技术依赖 TypeScript，普通 JavaScript 应用无法使用这些方法，因为 `class-validator` 需要 TypeScript 的元数据支持。
+
+NestJS 与 [`class-validator`](https://github.com/typestack/class-validator) 库无缝集成，通过基于装饰器的验证方式简化 DTO 验证。结合 `class-transformer`，可以实现强大的类型转换和验证功能。本节展示如何使用 `class-validator` 为 `CreateCatDto` 添加验证规则，并通过自定义 `ValidationPipe` 或内置 `ValidationPipe` 验证请求参数。相比 Zod 验证，`class-validator` 的优势在于直接在 DTO 类上定义验证规则，无需额外的模式文件，保持单一职责。
+
+安装所需的库：
+
+```bash
+npm install --save class-validator class-transformer
+```
+
+**定义 DTO 与验证装饰器**
+
+为 `CreateCatDto` 添加 `class-validator` 装饰器，直接在类中定义验证规则：
+
+```typescript
+import { IsString, IsInt, IsNotEmpty, Min } from 'class-validator';
+
+export class CreateCatDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsInt()
+  @Min(1)
+  age: number;
+
+  @IsString()
+  @IsNotEmpty()
+  breed: string;
+}
+```
+
+**代码解释**：
+
+- **`@IsString()`**：确保 `name` 和 `breed` 是字符串。
+- **`@IsNotEmpty()`**：确保字段非空（`null` 或 `undefined` 无效）。
+- **`@IsInt()`**：确保 `age` 是整数。
+- **`@Min(1)`**：确保 `age` 大于或等于 1。
+- **优势**：验证规则与 DTO 定义合二为一，符合单一职责原则（SRP），无需单独的验证类。
+
+**提示**：更多 `class-validator` 装饰器（如 `@MaxLength`、`@IsEmail` 等）请参考 [官方文档](https://github.com/typestack/class-validator#usage)。
+
+**自定义 ValidationPipe**
+
+创建一个自定义 `ValidationPipe` 使用 [`class-validator`](https://github.com/typestack/class-validator) 和 [`class-transformer`](https://github.com/typestack/class-transformer) 验证 DTO：
+
+```typescript
+import { PipeTransform, Injectable, ArgumentMetadata, BadRequestException } from '@nestjs/common';
+import { validate } from 'class-validator';
+import { plainToInstance } from 'class-transformer';
+
+@Injectable()
+export class ValidationPipe implements PipeTransform<any> {
+  async transform(value: any, { metatype }: ArgumentMetadata) {
+    // 跳过基本类型（String、Number 等）
+    if (!metatype || !this.toValidate(metatype)) {
+      return value;
+    }
+
+    // 将普通对象转为 DTO 实例
+    const object = plainToInstance(metatype, value);
+    // 使用 class-validator 验证
+    const errors = await validate(object);
+    if (errors.length > 0) {
+      throw new BadRequestException('Validation failed');
+    }
+    return value; // 返回原始值
+  }
+
+  private toValidate(metatype: Function): boolean {
+    const types: Function[] = [String, Boolean, Number, Array, Object];
+    return !types.includes(metatype); // 仅验证复杂类型（如 DTO），跳过基本类型（如 String、Number 等）
+  }
+}
+```
+
+**代码解释**：
+
+- **`async transform`**：标记为异步，因为 `class-validator` 的验证（如 `@IsEmail`）可能涉及异步操作。
+- **`plainToInstance`**：将普通 JavaScript 对象（如请求体 `{ name: "Fluffy" }`）转为 `CreateCatDto` 实例，以便应用装饰器验证。
+- **`validate`**：运行 `class-validator` 验证，失败时返回错误数组。
+- **`toValidate`**：跳过基本类型（`String`、`Number` 等），仅验证复杂类型（如 DTO 类），当正在处理的当前参数是原生 JavaScript 类型时，它负责绕过验证步骤（它们不能附加验证装饰器，因此没有理由让它们通过验证步骤）。
+- **异常**：验证失败抛出 `BadRequestException`，由异常过滤器处理。
+
+**提示**：NestJS 提供内置的 `ValidationPipe`（`@nestjs/common`），功能更强大，支持更多选项（如 `whitelist`、`transform`）。本例中的自定义管道仅为演示，生产环境推荐使用内置版本。
+
+**注意**：`class-transformer` 和 `class-validator` 由同一作者开发，协同性强，`plainToInstance` 确保验证前将输入转为类型化对象。
+
+**绑定 ValidationPipe**
+
+将管道绑定到控制器方法的 `@Body()` 参数：
+
+```typescript
+import { Controller, Post, Body } from '@nestjs/common';
+import { ValidationPipe } from './validation.pipe';
+import { CreateCatDto } from './create-cat.dto';
+import { CatsService } from './cats.service';
+
+@Controller('cats')
+export class CatsController {
+  constructor(private readonly catsService: CatsService) {}
+
+  @Post()
+  async create(@Body(new ValidationPipe()) createCatDto: CreateCatDto) {
+    return this.catsService.create(createCatDto);
+  }
+}
+```
+
+**代码解释**：
+
+- **`@Body(new ValidationPipe())`**：参数级绑定，仅验证请求体 `createCatDto`。
+- **验证流程**：请求体通过 `plainToInstance` 转为 `CreateCatDto` 实例，`validate` 检查装饰器规则，失败抛出异常。
+
+增强 `ValidationPipe` 提供详细错误：
+
+```typescript
+@Injectable()
+export class ValidationPipe implements PipeTransform<any> {
+  async transform(value: any, { metatype }: ArgumentMetadata) {
+    if (!metatype || !this.toValidate(metatype)) {
+      return value;
+    }
+    const object = plainToInstance(metatype, value);
+    const errors = await validate(object);
+    if (errors.length > 0) {
+      throw new BadRequestException(
+        errors
+          .map(err => Object.values(err.constraints).join(', '))
+          .join('; '),
+      );
+    }
+    return value;
+  }
+
+  private toValidate(metatype: Function): boolean {
+    const types: Function[] = [String, Boolean, Number, Array, Object];
+    return !types.includes(metatype);
+  }
+}
+```
+
+**核心功能**
+
+- **`class-validator`**：通过装饰器（如 `@IsString`、`@IsInt`）定义 DTO 验证规则。
+- **`class-transformer`**：将普通对象转为 DTO 实例，支持验证和类型转换。
+- **参数级绑定**：`@Body(new ValidationPipe())` 仅验证请求体，适合单一参数验证。
+- **异步支持**：`transform` 方法支持异步，兼容 `class-validator` 的异步验证。
+
+**开发建议**
+
+使用内置 ValidationPipe，生产环境推荐使用 NestJS 的内置 `ValidationPipe`，支持更多选项：
+
+```typescript
+import { Module } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+
+@Module({
+  providers: [
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        whitelist: true, // 过滤非 DTO 属性
+        forbidNonWhitelisted: true, // 非 DTO 属性抛异常
+        transform: true, // 自动类型转换
+        transformOptions: { enableImplicitConversion: true }, // 隐式转换
+      }),
+    },
+  ],
+})
+export class AppModule {}
+```
+
+## 全局作用域管道{#global-scope-pipes}
+
+`ValidationPipe` 设计为通用的验证工具，通过将其设置为**全局作用域管道**，可以应用于整个应用的每个路由处理程序，统一验证所有控制器参数（如 `@Body()`、`@Query()`、`@Param()`）。以下是两种设置全局管道的方式，以及对网关、微服务和非混合微服务的解释和示例。
+
+在 `main.ts` 中设置全局管道
+
+**通过 `app.useGlobalPipes()` 在应用初始化时设置全局管道：**
+
+```typescript
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // 过滤非 DTO 属性
+      forbidNonWhitelisted: true, // 非 DTO 属性抛异常
+      transform: true, // 自动类型转换
+      transformOptions: { enableImplicitConversion: true }, // 隐式转换
+    }),
+  );
+  await app.listen(process.env.PORT ?? 3000);
+}
+bootstrap();
+```
+
+**代码解释**： 
+
+`app.useGlobalPipes(new ValidationPipe())`：为整个应用设置全局管道，验证所有控制器方法的参数。
+
+配置选项
+
+- `whitelist: true`：忽略 DTO 未定义的属性。
+- `forbidNonWhitelisted: true`：非 DTO 属性抛出 `BadRequestException`。
+- `transform: true`：自动将输入转为 DTO 定义的类型（如 `"2"` 转为 `2`）。
+
+局限性
+
+- 在**混合应用**（包含 HTTP 和微服务的应用）中，`useGlobalPipes()` 不适用于**网关**（如 WebSocket 网关）或**微服务**。
+- 全局管道无法通过 DI（依赖注入）注入依赖，因为它在模块上下文之外注册。
+
+**注意**：对于标准（非混合）微服务应用，`useGlobalPipes()` 仍然有效，但仅限于微服务上下文。
+
+**在模块中设置全局管道**
+
+通过 `APP_PIPE` 令牌在模块中注册全局管道，利用 DI 容器：
+
+```typescript
+import { Module } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+
+@Module({
+  providers: [
+    {
+      provide: APP_PIPE,
+      useClass: ValidationPipe, // 或 useValue: new ValidationPipe({...})
+    },
+  ],
+})
+export class AppModule {}
+```
+
+**代码解释**：
+
+`APP_PIPE`：NestJS 提供的令牌，用于注册全局管道。
+
+`useClass: ValidationPipe`：让 DI 容器自动实例化管道，支持依赖注入。
+
+优势
+
+- 支持 DI，管道可以注入其他服务（如配置服务）。
+- 全局作用域，适用于所有控制器和路由处理程序。
+
+**适用模块**：可以在任意模块（如 `AppModule`）中定义，管道对整个应用生效。
+
+**提示**：`useClass` 是注册自定义提供者的常用方式，也可以用 `useValue` 传递实例（`new ValidationPipe({...})`）或 `useFactory` 动态创建管道。
+
+**网关、微服务和非混合微服务的解释与示例**
+
+**网关（Gateway）**
+
+定义：网关是 NestJS 中处理实时通信（如 WebSocket、gRPC）的组件，通常用于实时应用（如聊天、通知）。网关通过 `@WebSocketGateway()` 装饰器定义，不直接处理 HTTP 请求，因此不受 `app.useGlobalPipes()` 影响。
+
+**示例**：一个简单的 WebSocket 网关，用于实时聊天：
+
+```typescript
+import { WebSocketGateway, SubscribeMessage, MessageBody } from '@nestjs/websockets';
+import { IsString, IsNotEmpty } from 'class-validator';
+
+// DTO 定义
+class MessageDto {
+  @IsString()
+  @IsNotEmpty()
+  content: string;
+}
+
+@WebSocketGateway()
+export class ChatGateway {
+  @SubscribeMessage('message')
+  handleMessage(@MessageBody() message: MessageDto) {
+    return { event: 'message', data: message.content };
+  }
+}
+```
+
+**模块注册**：
+
+```typescript
+import { Module } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { ChatGateway } from './chat.gateway';
+
+@Module({
+  providers: [
+    ChatGateway,
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({ transform: true }),
+    },
+  ],
+})
+export class AppModule {}
+```
+
+**说明**：
+
+`@WebSocketGateway()`：定义 WebSocket 网关，监听客户端事件。
+
+`@SubscribeMessage('message')`：处理名为 `message` 的事件。
+
+**管道限制**：`app.useGlobalPipes()` 不适用于网关，但 `APP_PIPE` 在模块中注册的管道对网关生效。
+
+测试
+
+- 客户端发送 `{ "content": "Hello" }`：验证通过，返回 `{ event: "message", data: "Hello" }`。
+- 客户端发送 `{ "content": "" }`：抛出 `BadRequestException`。
+
+**微服务（Microservice）**
+
+**定义**：微服务是 NestJS 中用于分布式系统的模块，通过 `@nestjs/microservices` 提供支持（如 TCP、Redis、gRPC 通信）。微服务不依赖 HTTP 协议，通常用于模块化、高可扩展的架构。微服务可以是**混合应用**（与 HTTP 应用共存）或**非混合微服务**（独立运行）。
+
+**示例**：一个 TCP 微服务，处理猫咪创建请求：
+
+```typescript
+import { Controller } from '@nestjs/common';
+import { MessagePattern } from '@nestjs/microservices';
+import { IsString, IsInt, IsNotEmpty, Min } from 'class-validator';
+
+// DTO 定义
+class CreateCatDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsInt()
+  @Min(1)
+  age: number;
+
+  @IsString()
+  @IsNotEmpty()
+  breed: string;
+}
+
+@Controller()
+export class CatsMicroserviceController {
+  @MessagePattern({ cmd: 'create_cat' })
+  createCat(data: CreateCatDto) {
+    return { message: 'Cat created', data };
+  }
+}
+```
+
+**模块注册**：
+
+```typescript
+import { Module } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { CatsMicroserviceController } from './cats-microservice.controller';
+
+@Module({
+  controllers: [CatsMicroserviceController],
+  providers: [
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({ transform: true }),
+    },
+  ],
+})
+export class AppModule {}
+```
+
+**启动微服务**：
+
+```typescript
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+    transport: Transport.TCP,
+    options: { host: '127.0.0.1', port: 3001 },
+  });
+  await app.listen();
+}
+bootstrap();
+```
+
+**说明**：
+
+`@MessagePattern({ cmd: 'create_cat' })`：监听 `create_cat` 消息。
+
+**管道支持**：`APP_PIPE` 注册的全局管道对微服务有效，验证 `CreateCatDto`。
+
+测试
+
+- 客户端发送 `{ cmd: "create_cat", data: { name: "Fluffy", age: 2, breed: "Persian" } }`：返回 `{ message: "Cat created", data: {...} }`。
+- 客户端发送 `{ cmd: "create_cat", data: { name: "", age: -1 } }`：抛出 `BadRequestException`。
+
+**非混合微服务**
+
+**定义**：非混合微服务是指独立运行的微服务应用，不与 HTTP 服务器（如 Express）结合。`app.useGlobalPipes()` 在这种场景下仍然有效，因为它只处理微服务上下文。
+
+**示例**：独立 TCP 微服务（与上述类似，但明确为非混合）：
+
+```typescript
+// cats-microservice.controller.ts (同上)
+import { Controller } from '@nestjs/common';
+import { MessagePattern } from '@nestjs/microservices';
+import { IsString, IsInt, IsNotEmpty, Min } from 'class-validator';
+
+class CreateCatDto {
+  @IsString()
+  @IsNotEmpty()
+  name: string;
+
+  @IsInt()
+  @Min(1)
+  age: number;
+
+  @IsString()
+  @IsNotEmpty()
+  breed: string;
+}
+
+@Controller()
+export class CatsMicroserviceController {
+  @MessagePattern({ cmd: 'create_cat' })
+  createCat(data: CreateCatDto) {
+    return { message: 'Cat created', data };
+  }
+}
+```
+
+**模块**：
+
+```typescript
+import { Module } from '@nestjs/common';
+import { CatsMicroserviceController } from './cats-microservice.controller';
+
+@Module({
+  controllers: [CatsMicroserviceController],
+})
+export class AppModule {}
+```
+
+**启动**：
+
+```typescript
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.createMicroservice<MicroserviceOptions>(AppModule, {
+    transport: Transport.TCP,
+    options: { host: '127.0.0.1', port: 3001 },
+  });
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+  await app.listen();
+}
+bootstrap();
+```
+
+**说明**：
+
+- **非混合**：此应用仅作为微服务运行，不包含 HTTP 服务器。
+- `app.useGlobalPipes()`：在非混合微服务中有效，验证所有消息模式的数据。
+- **测试**：同上，验证 `CreateCatDto` 的字段。
+
+**混合应用**
+
+**定义**：混合应用同时支持 HTTP 和微服务（如 WebSocket、TCP），通过 `NestFactory.create` 创建 HTTP 应用，再附加微服务。
+
+**示例**：
+
+```typescript
+import { NestFactory } from '@nestjs/core';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule); // HTTP 应用
+  app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
+  // 附加微服务
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.TCP,
+    options: { host: '127.0.0.1', port: 3001 },
+  });
+
+  await app.startAllMicroservices(); // 启动微服务
+  await app.listen(3000); // 启动 HTTP 服务
+}
+bootstrap();
+```
+
+**说明**：
+
+- `app.useGlobalPipes()`：仅对 HTTP 路由生效，不影响微服务。
+- **解决办法**：在 `AppModule` 中使用 `APP_PIPE` 注册全局管道，确保 HTTP 和微服务都受影响。
+
+## 内置的 ValidationPipe{#the-built-in-validationpipe}
+
+NestJS 提供了一个内置的 `ValidationPipe`（从 `@nestjs/common` 导入），无需自行构建即可实现强大的 DTO 验证功能。相比我们在前几节中创建的自定义验证管道，内置 `ValidationPipe` 提供了更多配置选项（如 `whitelist`、`transform` 等），功能更全面，适合生产环境。本节将简要介绍内置 `ValidationPipe` 的用法和优势，并通过示例展示如何结合 `class-validator` 和 `class-transformer` 验证 DTO。
+
+**提示**：内置 `ValidationPipe` 的完整文档和更多示例可参考 [验证章节](./nest-validation)
+
+**核心功能与配置选项**
+
+内置 `ValidationPipe` 的主要功能是通过 `class-validator` 和 `class-transformer` 验证和转换请求参数（如 `@Body()`、`@Query()`、`@Param()`）。它支持以下关键配置选项：
+
+- **`whitelist: true`**：过滤掉 DTO 中未定义的属性，防止意外数据进入。
+- **`forbidNonWhitelisted: true`**：非 DTO 定义的属性抛出 `BadRequestException`。
+- **`transform: true`**：自动将输入转为 DTO 定义的类型（如字符串 `"2"` 转为整数 `2`）。
+- **`transformOptions: { enableImplicitConversion: true }`**：启用隐式类型转换（通过类型），无需显式装饰器。
+- **`disableErrorMessages: boolean`**：禁用详细错误消息（安全性考虑）。
+- **`exceptionFactory`**：自定义异常生成逻辑。
+
+**代码示例**
+
+1. 安装依赖
+
+确保安装 `class-validator` 和 `class-transformer`：
+
+```bash
+npm install --save class-validator class-transformer
+```
+
+在 `tsconfig.json` 中启用元数据支持：
+
+```json
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictNullChecks": true
+  }
+}
+```
+
+2. 定义 DTO
+
+使用 `class-validator` 装饰器定义验证规则：
+
+```typescript
+import { IsString, IsInt, IsNotEmpty, Min, MinLength } from 'class-validator';
+
+export class CreateCatDto {
+  @IsString()
+  @IsNotEmpty()
+  @MinLength(2)
+  name: string;
+
+  @IsInt()
+  @Min(1)
+  age: number;
+
+  @IsString()
+  @IsNotEmpty()
+  breed: string;
+}
+```
+
+**说明**：
+
+- `@IsString()` 和 `@IsNotEmpty()`：确保 `name` 和 `breed` 是非空字符串。
+- `@MinLength(2)`：确保 `name` 至少 2 个字符。
+- `@IsInt()` 和 `@Min(1)`：确保 `age` 是正整数。
+
+3. 使用内置 ValidationPipe
+
+参数级绑定
+
+在控制器方法中为 `@Body()` 绑定 `ValidationPipe`：
+
+```typescript
+import { Controller, Post, Body } from '@nestjs/common';
+import { ValidationPipe } from '@nestjs/common';
+import { CreateCatDto } from './create-cat.dto';
+import { CatsService } from './cats.service';
+
+@Controller('cats')
+export class CatsController {
+  constructor(private readonly catsService: CatsService) {}
+
+  @Post()
+  async create(@Body(new ValidationPipe({ transform: true })) createCatDto: CreateCatDto) {
+    return this.catsService.create(createCatDto);
+  }
+}
+```
+
+**代码解释**：
+
+- `@Body(new ValidationPipe({ transform: true }))`：仅验证请求体，自动将输入转为 `CreateCatDto` 类型。
+- **验证行为**：检查 `name`、`age`、`breed` 是否符合规则，失败抛出 `BadRequestException`。
+
+**全局管道**
+
+在 `main.ts` 或模块中设置全局管道：
+
+**方式 1：在 `main.ts` 中**：
+
+```typescript
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { AppModule } from './app.module';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: true },
+    }),
+  );
+  await app.listen(process.env.PORT ?? 3000);
+}
+bootstrap();
+```
+
+**方式 2：在 `AppModule` 中**：
+
+```typescript
+import { Module } from '@nestjs/common';
+import { APP_PIPE } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { CatsController } from './cats.controller';
+import { CatsService } from './cats.service';
+
+@Module({
+  controllers: [CatsController],
+  providers: [
+    CatsService,
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+      }),
+    },
+  ],
+})
+export class AppModule {}
+```
+
+**说明**：
+
+- **`APP_PIPE`**：支持依赖注入，适用于 HTTP、网关和微服务。
+- **全局效果**：验证所有控制器参数（`@Body()`、`@Query()`、`@Param()`）。
+
+**开发建议**
+
+1. 优化全局管道配置
+
+```typescript
+@Module({
+  providers: [
+    {
+      provide: APP_PIPE,
+      useValue: new ValidationPipe({
+        whitelist: true,
+        forbidNonWhitelisted: true,
+        transform: true,
+        transformOptions: { enableImplicitConversion: true },
+        exceptionFactory: (errors) =>
+          new BadRequestException(
+            errors
+              .map((err) => Object.values(err.constraints).join(', '))
+              .join('; '),
+          ),
+      }),
+    },
+  ],
+})
+export class AppModule {}
+```
+
+- **自定义异常**：通过 `exceptionFactory` 提供详细错误消息。
+
+2. 结合其他管道
+
+为特定参数使用其他管道（如 `ParseIntPipe`）：
+
+```typescript
+@Get(':id')
+async findOne(@Param('id', ParseIntPipe) id: number) {
+  return this.catsService.findOne(id);
+}
+```
+
+- **全局管道**：验证 DTO（如 `@Body()`）。
+- **参数级管道**：处理特定参数（如 `id`）。
+
+## 转换用例{#transformation-use-case}
+
+管道（Pipes）不仅用于验证，还能通过 `transform` 方法将输入数据转换为所需格式。**转换管道的返回值会完全覆盖原始参数值**，这使其非常适合处理客户端输入的预处理，例如将字符串转为整数、应用默认值，或从数据库获取实体。本节展示如何实现一个简单的自定义 `ParseIntPipe`，以及一个从 ID 获取用户实体的 `UserByIdPipe`，并解释转换管道的典型用例和绑定方式。
+
+**提示**：NestJS 提供内置的 `ParseIntPipe`，功能更强大（支持配置错误状态码等）。本例中的自定义 `ParseIntPipe` 仅为演示目的，保持简单。
+
+**核心功能**
+
+**转换**：将输入（如字符串）转为目标格式（如整数、对象）。
+
+**覆盖值**：`transform` 方法的返回值替换原始参数值。
+
+用例：
+
+- 将字符串转为数字（如 `"123"` → `123`）。
+- 为缺失字段设置默认值。
+- 从数据库查询实体（如 ID → `UserEntity`）。
+
+**代码示例**
+
+1. 自定义 ParseIntPipe
+
+实现一个简单的 `ParseIntPipe`，将字符串转为整数：
+
+```typescript
+import { PipeTransform, Injectable, BadRequestException, ArgumentMetadata } from '@nestjs/common';
+
+@Injectable()
+export class ParseIntPipe implements PipeTransform<string, number> {
+  transform(value: string, metadata: ArgumentMetadata): number {
+    const val = parseInt(value, 10);
+    if (isNaN(val)) {
+      throw new BadRequestException('Validation failed: Expected a numeric string');
+    }
+    return val; // 返回转换后的整数
+  }
+}
+```
+
+**代码解释**：
+
+- **`PipeTransform<string, number>`**：泛型接口，指定输入为 `string`，输出为 `number`。
+- **`parseInt(value, 10)`**：将字符串转为十进制整数。
+- **`isNaN(val)`**：检查转换是否失败，失败抛出 `BadRequestException`。
+- **返回值**：转换后的整数覆盖原始参数值。
+
+2. 绑定 ParseIntPipe
+
+将 `ParseIntPipe` 绑定到路由参数：
+
+```typescript
+import { Controller, Get, Param } from '@nestjs/common';
+import { ParseIntPipe } from './parse-int.pipe';
+import { CatsService } from './cats.service';
+
+@Controller('cats')
+export class CatsController {
+  constructor(private readonly catsService: CatsService) {}
+
+  @Get(':id')
+  async findOne(@Param('id', new ParseIntPipe()) id: number) {
+    return this.catsService.findOne(id); // id 已转为整数
+  }
+}
+```
+
+**行为**：
+
+- 请求 `GET /cats/123`：`id` 转为 `123`（number），调用 `catsService.findOne(123)`。
+- 请求 `GET /cats/abc`：抛出 `BadRequestException`，错误消息为 `"Validation failed: Expected a numeric string"`。
+
+3. 自定义 UserByIdPipe
+
+实现一个从 ID 获取用户实体的转换管道：
+
+```typescript
+import { PipeTransform, Injectable, BadRequestException, ArgumentMetadata } from '@nestjs/common';
+import { UsersService } from './users.service';
+
+@Injectable()
+export class UserByIdPipe implements PipeTransform<string, Promise<UserEntity>> {
+  constructor(private readonly usersService: UsersService) {}
+
+  async transform(value: string, metadata: ArgumentMetadata): Promise<UserEntity> {
+    const id = parseInt(value, 10);
+    if (isNaN(id)) {
+      throw new BadRequestException('Invalid ID: Expected a numeric string');
+    }
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new BadRequestException(`User with ID ${id} not found`);
+    }
+    return user; // 返回 UserEntity
+  }
+}
+
+interface UserEntity {
+  id: number;
+  name: string;
+}
+```
+
+**代码解释**：
+
+- **依赖注入**：注入 `UsersService` 用于数据库查询。
+- **`transform`**：异步方法，将字符串 ID 转为整数，查询数据库，返回 `UserEntity`。
+- **异常**：ID 无效或用户不存在时抛出 `BadRequestException`。
+
+4. 绑定 UserByIdPipe
+
+将 `UserByIdPipe` 绑定到路由参数：
+
+```typescript
+import { Controller, Get, Param } from '@nestjs/common';
+import { UserByIdPipe } from './user-by-id.pipe';
+import { UserEntity } from './users.service';
+
+@Controller('users')
+export class UsersController {
+  @Get(':id')
+  findOne(@Param('id', UserByIdPipe) userEntity: UserEntity) {
+    return userEntity; // 直接返回用户实体
+  }
+}
+```
+
+**模拟服务**：
+
+```typescript
+import { Injectable } from '@nestjs/common';
+import { UserEntity } from './users.service';
+
+@Injectable()
+export class UsersService {
+  async findById(id: number): Promise<UserEntity | null> {
+    // 模拟数据库查询
+    const users: UserEntity[] = [
+      { id: 1, name: 'Alice' },
+      { id: 2, name: 'Bob' },
+    ];
+    return users.find((user) => user.id === id) || null;
+  }
+}
+```
+
+**行为**：
+
+- 请求 `GET /users/1`：返回 `{ id: 1, name: "Alice" }`。
+- 请求 `GET /users/abc`：抛出 `BadRequestException: Invalid ID: Expected a numeric string`。
+- 请求 `GET /users/3`：抛出 `BadRequestException: User with ID 3 not found`。
+
+5. 全局异常过滤器
+
+确保管道抛出的异常被格式化：
+
+```typescript
+import { Catch, ArgumentsHost, HttpStatus, HttpException } from '@nestjs/common';
+import { BaseExceptionFilter } from '@nestjs/core';
+
+@Catch()
+export class AllExceptionsFilter extends BaseExceptionFilter {
+  catch(exception: any, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const status = exception instanceof HttpException ? exception.getStatus() : HttpStatus.INTERNAL_SERVER_ERROR;
+    const responseBody = {
+      statusCode: status,
+      timestamp: new Date().toISOString(),
+      path: this.httpAdapter.getRequestUrl(ctx.getRequest()),
+      message: exception.message || 'Something went wrong',
+    };
+    this.httpAdapter.reply(ctx.getResponse(), responseBody, status);
+  }
+}
+```
+
+**注册**：
+
+```typescript
+import { Module } from '@nestjs/common';
+import { APP_FILTER } from '@nestjs/core';
+import { UsersController } from './users.controller';
+import { UsersService } from './users.service';
+
+@Module({
+    controllers: [UsersController],
+    providers: [UsersService, { provide: APP_FILTER, useClass: AllExceptionsFilter }],
+})
+export class AppModule {}
+```
+
+**开发建议**
+
+1. 使用内置 ParseIntPipe
+
+生产环境推荐 NestJS 内置的 `ParseIntPipe`：
+
+```typescript
+@Get(':id')
+async findOne(@Param('id', ParseIntPipe) id: number) {
+  return this.catsService.findOne(id);
+}
+```
+
+- 支持配置（如 `new ParseIntPipe({ errorHttpStatusCode: HttpStatus.NOT_FOUND })`）。
+
+2. 实现默认值管道
+
+为缺失字段添加默认值：
+
+```typescript
+import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
+
+@Injectable()
+export class DefaultValuePipe implements PipeTransform {
+  constructor(private defaultValue: any) {}
+
+  transform(value: any, metadata: ArgumentMetadata) {
+    return value ?? this.defaultValue; // 如果值为空，返回默认值
+  }
+}
+```
+
+**使用**：
+
+```typescript
+@Get()
+async findAll(@Query('page', new DefaultValuePipe(1)) page: number) {
+  return this.catsService.findAll(page);
+}
+```
+
+3. 优化 UserByIdPipe
+
+缓存查询结果以提高性能：
+
+```typescript
+@Injectable()
+export class UserByIdPipe implements PipeTransform<string, Promise<UserEntity>> {
+  private cache = new Map<number, UserEntity>();
+
+  constructor(private readonly usersService: UsersService) {}
+
+  async transform(value: string, metadata: ArgumentMetadata): Promise<UserEntity> {
+    const id = parseInt(value, 10);
+    if (isNaN(id)) {
+      throw new BadRequestException('Invalid ID: Expected a numeric string');
+    }
+    if (this.cache.has(id)) {
+      return this.cache.get(id)!;
+    }
+    const user = await this.usersService.findById(id);
+    if (!user) {
+      throw new BadRequestException(`User with ID ${id} not found`);
+    }
+    this.cache.set(id, user);
+    return user;
+  }
+}
+```
+
+## 提供默认值{#providing-defaults}
+
+`Parse*` 管道（如 `ParseIntPipe`、`ParseBoolPipe`）要求输入参数值必须存在，若收到 `null` 或 `undefined`，会抛出异常。为了处理缺失的查询字符串参数（如可选的 `page` 或 `activeOnly`），可以使用 `DefaultValuePipe` 在 `Parse*` 管道之前为缺失值注入默认值。
+
+**核心功能**
+
+- **`DefaultValuePipe`**：为缺失或 `undefined` 的参数提供默认值。
+- **与 `Parse\*` 管道结合**：先注入默认值，再由 `Parse*` 管道进行类型转换。
+- **适用场景**：处理可选查询参数（如分页参数 `page` 或过滤条件 `activeOnly`）。
+
+**代码示例**
+
+1. 使用 DefaultValuePipe 和 Parse* 管道
+
+在控制器方法中为查询参数绑定 `DefaultValuePipe` 和 `Parse*` 管道：
+
+```typescript
+import { Controller, Get, Query } from '@nestjs/common';
+import { DefaultValuePipe, ParseBoolPipe, ParseIntPipe } from '@nestjs/common';
+import { CatsService } from './cats.service';
+
+@Controller('cats')
+export class CatsController {
+  constructor(private readonly catsService: CatsService) {}
+
+  @Get()
+  async findAll(
+    @Query('activeOnly', new DefaultValuePipe(false), ParseBoolPipe) activeOnly: boolean,
+    @Query('page', new DefaultValuePipe(0), ParseIntPipe) page: number,
+  ) {
+    return this.catsService.findAll({ activeOnly, page });
+  }
+}
+```
+
+**代码解释**：
+
+`DefaultValuePipe(false)`：若 `activeOnly` 缺失或 `undefined`，提供默认值 `false`。
+
+`ParseBoolPipe`：将字符串（如 `"true"`、`"false"`）转为布尔值，失败抛出 `BadRequestException`。
+
+`DefaultValuePipe(0)`：若 `page` 缺失或 `undefined`，提供默认值 `0`。
+
+`ParseIntPipe`：将字符串转为整数，失败抛出 `BadRequestException`。
+
+**管道顺序**：管道按声明顺序执行，`DefaultValuePipe` 先处理缺失值，`Parse*` 管道再进行转换。
