@@ -380,7 +380,7 @@ export class CatsController {
 
 **替代方法**：可以使用内置的 `@SetMetadata()` 装饰器实现相同效果。
 
-## 将守卫与角色绑定{#putting-it-all-together）
+## 将守卫与角色绑定{#putting-it-all-together}
 
 **当前 `RolesGuard` 总是返回 `true`，允许所有请求通过。**
 我们需要让它根据路由的角色元数据和用户的实际角色进行条件判断。通过 `Reflector` 读取路由的元数据，并与 `request.user` 中的角色对比，决定是否放行。
