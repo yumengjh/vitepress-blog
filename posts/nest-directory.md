@@ -26,6 +26,7 @@ aside: false
     - [中间件](./nest-middleware)
     - [异常过滤器](./nest-exception-filters)
     - [管道](./nest-pipes)
+    - [守卫](./nest-guards)
 
 ---
 
@@ -37,11 +38,17 @@ aside: false
 - **基础知识**
 
     - [注入作用域](./nest-singletons-isolation)
-
+    - [执行上下文](./nest-execution-context)
 ---
 
 - **技术**
     - [验证](./nest-validation)
+
+---
+
+- **安全**
+    - [身份验证](./nest-authentication)
+    - [授权](./nest-authorization)
 
 ---
 
