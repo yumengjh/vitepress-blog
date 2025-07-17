@@ -43,13 +43,18 @@ async function fetchDocs() {
     await fs.rm(path.join('temp-docs', 'package-lock.json'), { force: true });
     await fs.rm(path.join('temp-docs', 'package.json'), { force: true });
     await fs.rm(path.join('temp-docs', '.gitignore'), { force: true });
-    const folderToDelete = path.join('temp-docs', 'scripts');
-    try {
-      await fs.rm(folderToDelete, { recursive: true, force: true });
-      console.log(`🗑️ 已删除文件夹: ${folderToDelete}`);
-    } catch (err) {
-      console.warn(`⚠️ 删除文件夹 ${folderToDelete} 失败:`, err.message);
+    async function deleteFolder(folder) {
+      const folderToDelete = path.join('temp-docs', folder);
+      try {
+        await fs.rm(folderToDelete, { recursive: true, force: true });
+        console.log(`🗑️ 已删除文件夹: ${folderToDelete}`);
+      } catch (err) {
+        console.warn(`⚠️ 删除文件夹 ${folderToDelete} 失败:`, err.message);
+      }
     }
+    await deleteFolder('scripts');
+    await deleteFolder('.github');
+
 
     console.log('🗑️ 删除.git、LICENSE、README.md 完成');
 
@@ -69,8 +74,26 @@ async function fetchDocs() {
     // 复制文档：用Node.js原生方法跨平台复制
     await copyDirTo('temp-docs', 'posts');
 
-    // 删除临时文件夹
-    await fs.rm('temp-docs', { recursive: true, force: true });
+    // 删除临时文件夹，若遇 ENOTEMPTY 错误则重试
+    async function removeTempDocs(retry = 3) {
+      try {
+        await fs.rm('temp-docs', { recursive: true, force: true });
+        console.log('🗑️ 已删除临时文件夹 temp-docs');
+      } catch (err) {
+        if (err.code === 'ENOTEMPTY' && retry > 0) {
+          console.warn(`⚠️ temp-docs 目录未清空，重试删除... 剩余重试次数: ${retry}`);
+          // 等待 500ms 后重试
+          await new Promise(res => setTimeout(res, 500));
+          await removeTempDocs(retry - 1);
+        } else if (err.code === 'ENOENT') {
+          // 文件夹本来就不存在
+          console.log('ℹ️ temp-docs 文件夹不存在，无需删除');
+        } else {
+          console.error('❌ 删除 temp-docs 失败:', err);
+        }
+      }
+    }
+    await removeTempDocs();
 
     console.log('✅ 云端文档合并至 posts/ 完成');
   } catch (err) {
