@@ -5,18 +5,18 @@ const dotenv = require('dotenv');
 
 dotenv.config();
 
-// 复制文件
-async function copyDir(src, dest) {
+async function copyDirTo(src, dest) {
   await fs.mkdir(dest, { recursive: true });
-  const entries = await fs.readdir(src, { withFileTypes: true }); // 读取src目录下的所有文件和目录  withFileTypes: true 表示返回的是一个包含文件和目录的数组
+  const entries = await fs.readdir(src, { withFileTypes: true });
 
   for (const entry of entries) {
     const srcPath = path.join(src, entry.name);
     const destPath = path.join(dest, entry.name);
 
     if (entry.isDirectory()) {
-      await copyDir(srcPath, destPath);
+      await copyDirTo(srcPath, destPath);
     } else {
+      // 直接覆盖写入
       await fs.copyFile(srcPath, destPath);
     }
   }
@@ -44,16 +44,16 @@ async function fetchDocs() {
     console.log('🗑️ 删除.git、LICENSE、README.md 完成');
 
     // 清空目标 docs 文件夹
-    await fs.rm('./docs', { recursive: true, force: true });
-    await fs.mkdir('./docs', { recursive: true });
+    // await fs.rm('./docs', { recursive: true, force: true });
+    // await fs.mkdir('./docs', { recursive: true });
 
     // 复制文档：用Node.js原生方法跨平台复制
-    await copyDir('temp-docs', 'docs');
+    await copyDirTo('temp-docs', 'posts');
 
     // 删除临时文件夹
     await fs.rm('temp-docs', { recursive: true, force: true });
 
-    console.log('✅ 文档拉取与处理完成');
+    console.log('✅ 云端文档合并至 posts/ 完成');
   } catch (err) {
     console.error('❌ 拉取文档失败:', err);
     process.exit(1);
