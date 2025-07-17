@@ -1,6 +1,6 @@
 ---
 page: true
-title: 第 6 页
+title: 第 14 页
 aside: false
 lastUpdated: false
 comments: false
@@ -9,6 +9,6 @@ comments: false
 import Page from "./.vitepress/theme/components/Page.vue";
 import { useData } from "vitepress";
 const { theme } = useData();
-const posts = theme.value.posts.slice(25,30)
+const posts = theme.value.posts.slice(65,70)
 </script>
-<Page :posts="posts" :pageCurrent="6" :pagesNum="16" />
+<Page :posts="posts" :pageCurrent="14" :pagesNum="16" />

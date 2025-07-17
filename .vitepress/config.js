@@ -6,7 +6,7 @@ import { RssPlugin } from 'vitepress-plugin-rss'
 import { fileURLToPath } from 'url'
 import { pagefindPlugin } from 'vitepress-plugin-pagefind'
 //每页的文章数量
-const pageSize = 15
+const pageSize = 5
 
 // RSS 配置
 const baseUrl = 'https://blog.yumeng.icu'
@@ -101,6 +101,8 @@ export default defineConfig({
                 },
                 website: {
                     // copyrightLink: '/pages/about',
+                    turnPageNextText: '下一页',
+                    turnPagePrevText: '上一页',
                     SearchText: '搜索文章',
                     showPrevNextBtn: true,
                     updateText: '更新',
@@ -188,6 +190,8 @@ export default defineConfig({
                     { text: 'About', link: '/en/pages/about' },
                 ],
                 website: {
+                    turnPageNextText: 'Next',
+                    turnPagePrevText: 'Previous',
                     SearchText: 'Search',
                     // copyrightLink: 'en/pages/about',
                     showPrevNextBtn: false,
@@ -313,6 +317,9 @@ export default defineConfig({
                 }
             ]
         },
+        build: {
+            chunkSizeWarningLimit: 1500 // 设置chunk大小警告限制
+        }
     },
     // 自动为 noSearch: true 的页面添加 head
     transformPageData(pageData) {
