@@ -5,7 +5,9 @@
   "main": "index.js",
   "scripts": {
     "dev": "vitepress dev --host 0.0.0.0",
+    "pull": "node scripts/pullPost.cjs",
     "build": "vitepress build",
+    "netlifybuild": "npm run pull && npm run build",
     "preview": "vitepress preview",
     "new": "node scripts/newPost.cjs"
   },

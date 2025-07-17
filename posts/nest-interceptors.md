@@ -130,3 +130,144 @@ return cache.get(key);  // key 用于查缓存
 
 ## 调用处理程序{#call-handler}
 
+`CallHandler` 接口实现了 `handle()` 方法，这个方法在拦截器中扮演着关键角色。它的主要作用是调用路由处理程序方法。需要注意的是，如果在 `intercept()` 方法中没有调用 `handle()`，路由处理程序将不会被执行。
+
+这种设计使得 `intercept()` 方法能够完全控制请求/响应流程：
+
+1. 你可以在调用 `handle()` 之前执行前置逻辑
+2. 由于 `handle()` 返回 Observable，你可以使用 RxJS 操作符处理响应流
+3. 这种设计符合面向切面编程(AOP)理念，其中路由处理程序的调用点被称为"切入点"
+```ts
+import { Injectable, NestInterceptor, ExecutionContext, CallHandler } from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { tap, map, catchError } from 'rxjs/operators';
+
+@Injectable()
+export class LoggingInterceptor implements NestInterceptor {
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    console.log('拦截器：请求进入');
+
+    const now = Date.now();
+
+    return next.handle().pipe(
+      tap(() => console.log(`拦截器：请求处理完毕，用时 ${Date.now() - now}ms`)),
+
+      map(data => {
+        console.log('拦截器：可以在这里修改响应数据');
+        return data; // 可以在这里加工/包装响应数据
+      }),
+
+      catchError(err => {
+        console.error('拦截器：捕获到异常', err);
+        throw err; // 重新抛出让框架处理
+      })
+    );
+  }
+}
+```
+
+`next.handle()`
+
+触发**路由处理程序**的执行（即你的控制器方法真正开始执行）。
+
+它返回一个 **Observable**（可观察的数据流），表示“处理程序的结果（数据）”。
+
+`pipe()`
+
+处理的是**从处理程序返回的数据流**，**在处理程序结果生成后**，在数据**返回客户端前**，插入额外的加工/处理流程。
+
+**作用**：把多个 RxJS 操作符串联在一起，形成“流水线”式的数据处理流程。
+
+**类比**：就像加工流水线一样，数据会顺序通过这些“加工环节”（操作符）进行处理。
+
+```ts
+return next.handle().pipe(
+  // 各种“加工步骤”在这里
+);
+```
+
+Nest 的路由处理方法返回的响应是 Observable（可观察的数据流），需要用 `pipe` 把后续逻辑附加上去，否则无法在数据返回前做任何拦截、加工或处理。
+
+`tap()`
+
+**作用**：执行副作用操作（比如日志记录），但**不改变数据**。
+
+**类比**：像“旁观者”，只是看着数据流过，顺便打印或记录一些信息。
+
+```ts
+tap(() => console.log('响应数据准备返回'))
+```
+
+记录日志、统计耗时、触发某些非核心业务逻辑（比如通知等）。
+
+`map()`
+
+**作用**：**修改/变换数据**，类似数组的 `map` 方法。
+
+**类比**：像“加工环节”，把原材料变成成品。
+
+```ts
+map(data => {
+  // 修改响应
+  return { success: true, data };
+})
+```
+
+统一包装接口返回格式、转换敏感字段、裁剪数据等。
+
+ `catchError()`
+
+**作用**：捕获上游的错误，并做相应处理。
+
+**类比**：像异常处理“护栏”，防止整个流程崩溃。
+
+```ts
+catchError(err => {
+  console.error('发生错误', err);
+  throw err;
+})
+```
+
+统一错误日志、抛出自定义异常、做降级处理等。
+
+**`handle()`**：就像开启了一条“数据流水线”，你可以接管这个过程。
+
+**`pipe()`**：在流水线上安装“加工设备”。
+
+**`tap()`**：旁观流水线，记录情况。
+
+**`map()`**：修改流水线上的产品。
+
+**`catchError()`**：万一流水线出问题，做应急处理。
+
+因为拦截器本质上是“请求 - 响应过程的拦截层”，有时需要：
+
+- 在**请求进入**时预处理；
+- 在**响应返回**前加工数据；
+- 在**流程出错**时捕捉异常。
+
+```text
+请求进入
+   ↓
+前置逻辑 (intercept 前半部分)
+   ↓
+next.handle()  ← 路由处理程序开始工作
+   ↓
+   数据流返回 (Observable)
+   ↓
+.pipe(          ← 数据加工阶段
+   tap()        ← 旁观记录
+   map()        ← 修改包装
+   catchError() ← 错误处理
+)
+   ↓
+返回数据给客户端
+```
+
+**next.handle()**：开始执行核心业务逻辑（路由处理程序），得到一个“数据流”。
+
+**pipe**：拿到这个“数据流”后，插入自定义逻辑，对即将返回的数据进行加工。
+
+## 切面拦截{#aspect-interception}
+
+拦截器的一个常见用例是用于记录用户交互，比如记录 API 调用、计算响应时间、异步触发事件等。下面是一个简单的日志拦截器示例：
