@@ -40,12 +40,31 @@ async function fetchDocs() {
     await fs.rm(path.join('temp-docs', '.git'), { recursive: true, force: true });
     await fs.rm(path.join('temp-docs', 'LICENSE'), { force: true });
     await fs.rm(path.join('temp-docs', 'README.md'), { force: true });
+    await fs.rm(path.join('temp-docs', 'package-lock.json'), { force: true });
+    await fs.rm(path.join('temp-docs', 'package.json'), { force: true });
+    await fs.rm(path.join('temp-docs', '.gitignore'), { force: true });
+    const folderToDelete = path.join('temp-docs', 'scripts');
+    try {
+      await fs.rm(folderToDelete, { recursive: true, force: true });
+      console.log(`🗑️ 已删除文件夹: ${folderToDelete}`);
+    } catch (err) {
+      console.warn(`⚠️ 删除文件夹 ${folderToDelete} 失败:`, err.message);
+    }
 
     console.log('🗑️ 删除.git、LICENSE、README.md 完成');
 
     // 清空目标 docs 文件夹
     // await fs.rm('./docs', { recursive: true, force: true });
     // await fs.mkdir('./docs', { recursive: true });
+
+    // 判断是否存在posts文件夹，如果不存在则创建
+    try {
+      await fs.access('posts');
+    } catch (err) {
+      // 如果访问失败，说明posts文件夹不存在，需要创建
+      await fs.mkdir('posts', { recursive: true });
+      console.log('📁 posts 文件夹已创建');
+    }
 
     // 复制文档：用Node.js原生方法跨平台复制
     await copyDirTo('temp-docs', 'posts');

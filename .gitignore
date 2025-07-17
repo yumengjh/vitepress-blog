@@ -8,7 +8,7 @@ pnpm-lock.yaml
 smartmontools.md
 zsh_history.md
 !/changelog.md
-# /package-lock.json  # 不再忽略 package-lock.json
+# /package-lock.json  
 origin_theme.css
 .vitepress/cache
 **/.assets/
@@ -20,3 +20,5 @@ no-uploading-files/
 .netlify
 .cursor/
 .env
+posts/
+page_*.md
