@@ -9,7 +9,7 @@ import { onMounted, ref, watch, computed } from 'vue';
 import { useRoute, useData } from 'vitepress';
 
 const route = useRoute();
-const { isDark, frontmatter } = useData();
+const { isDark, frontmatter, lang } = useData();
 const currentPath = ref(route.path);
 
 // 判断当前页面是否显示评论
@@ -21,6 +21,18 @@ const showComments = computed(() => {
 // 根据当前主题计算Giscus主题
 const giscusTheme = computed(() => {
     return isDark.value ? 'noborder_dark' : 'light';
+});
+
+// 根据当前语言计算Giscus语言
+const giscusLang = computed(() => {
+    // 根据VitePress的语言设置映射到Giscus支持的语言
+    const langMap = {
+        'zh-CN': 'zh-CN',
+        'zh': 'zh-CN',
+        'en-US': 'en',
+        'en': 'en',
+    };
+    return langMap[lang.value] || 'en';
 });
 
 // 监听主题变化并更新Giscus
@@ -68,7 +80,7 @@ const initGiscus = () => {
     script.setAttribute("data-emit-metadata", "1");
     script.setAttribute("data-input-position", "top");
     script.setAttribute("data-theme", giscusTheme.value);
-    script.setAttribute("data-lang", "zh-CN");
+    script.setAttribute("data-lang", giscusLang.value);
     script.setAttribute("crossorigin", "anonymous");
     script.async = true;
     
@@ -92,6 +104,14 @@ watch(() => route.path, (newPath) => {
 // 监听主题变化
 watch(() => isDark.value, () => {
     updateGiscusTheme();
+});
+
+// 监听语言变化
+watch(() => lang.value, () => {
+    // 语言变化时重新初始化Giscus
+    setTimeout(() => {
+        initGiscus();
+    }, 100);
 });
 
 onMounted(() => {

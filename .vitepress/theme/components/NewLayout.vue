@@ -2,13 +2,12 @@
     <Layout>
         <template #nav-bar-content-after>
             <!-- 导航栏内容后 -->
-            <!-- <CustomNavbar /> -->
+            <CustomNavbar />
         </template>
         <template #doc-before>
-            <!-- 文档内容前 - 文章日期、标签和更新时间 -->
             <div class="post-info" v-if="!$frontmatter.page">
                 <div class="post-info-left">
-                    <span class="post-date meta-bg">
+                    <span class="post-date">
                         {{ $frontmatter.date?.substring(0, 10) }}
                     </span>
                     <div class="post-tags">
@@ -26,13 +25,13 @@
             </div>
 
             <!-- 文章简介 -->
-            <div class="post-description" v-if="$frontmatter.description && $frontmatter.date">
+            <!-- <div class="post-description" v-if="$frontmatter.description && $frontmatter.date">
                 <p>{{ $frontmatter.description }}</p>
-            </div>
+            </div> -->
         </template>
         <template #doc-footer-before>
             <!-- 文档页脚前 - 原评论系统位置 -->
-            <!-- <Giscus /> -->
+            <Giscus />
         </template>
         <!-- 6. 未找到页面插槽 -->
         <template #not-found>
@@ -44,10 +43,10 @@
 
 <script setup>
 import DefaultTheme from 'vitepress/theme'
-import Copyright from './Copyright.vue'
-// import CustomNavbar from './CustomNavbar.vue'
+// import Copyright from './Copyright.vue'
+import CustomNavbar from './CustomNavbar.vue'
 // import NotFound from './notfound.vue'
-// import Giscus from './giscus.vue'
+import Giscus from './giscus.vue'
 import { withBase, useData } from "vitepress"
 import { computed } from 'vue'
 import { getRelativeTime, formatDate } from '../functions'
@@ -112,14 +111,14 @@ const displayUpdatedTime = computed(() => {
 
 .meta-bg {
     background: var(--vp-c-bg-alt);
-    padding: 1px 5px;
+    padding: 0px 6px;
     border-radius: 5px;
 }
 
 .post-date {
     font-family: var(--date-font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     font-weight: 500;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     white-space: nowrap;
 }
 
@@ -132,7 +131,7 @@ const displayUpdatedTime = computed(() => {
 
 .post-tag {
     text-decoration: none;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
     transition: opacity 0.2s;
 }
 
@@ -143,7 +142,7 @@ const displayUpdatedTime = computed(() => {
 .post-updated {
     font-family: var(--date-font-family), -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     white-space: nowrap;
-    font-size: 0.875rem;
+    font-size: 0.8rem;
 }
 
 /* 文章简介样式 */

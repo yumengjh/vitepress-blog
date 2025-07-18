@@ -132,7 +132,7 @@ onMounted(() => {
 }
 
 .post-meta {
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   color: var(--vp-c-text-2);
   margin-top: 0.5rem;
   display: flex;
@@ -147,11 +147,11 @@ onMounted(() => {
 
 .post-tag {
   padding: 0rem 0.5rem;
-  font-weight: bold;
+  /* font-weight: bold; */
   border-radius: 9999px;
   /* background-color: var(--vp-c-bg-soft); */
   border: 1px solid var(--vp-c-divider);
-  font-size: 0.7rem;
+  /* font-size: 0.8rem; */
   color: var(--vp-c-text-1);
   text-decoration: none;
   transition: all 0.2s ease;

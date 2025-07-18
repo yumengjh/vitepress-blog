@@ -78,7 +78,7 @@ export default defineConfig({
                 returnToTopLabel: '返回顶部',
                 footer: {
                     message: '如有转载或 CV 的请标注本站原文地址',
-                    copyright: '版权所有 © 2024-2025 <a style="text-decoration: none !important;" href="/pages/about">鱼梦江湖</a>'
+                    copyright: '版权所有 © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/pages/about">鱼梦江湖</a>'
                 },
                 notFound: {
                     code: 404,
@@ -171,7 +171,7 @@ export default defineConfig({
             themeConfig: {
                 footer: {
                     message: 'If there is a reprint, please mark this site',
-                    copyright: 'Copyright © 2024-2025 <a style="text-decoration: none !important;" href="/pages/about">YuMeng</a>'
+                    copyright: 'Copyright © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/pages/about">YuMeng</a>'
                 },
                 notFound: {
                     code: 404,
