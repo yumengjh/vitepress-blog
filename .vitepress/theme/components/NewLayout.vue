@@ -182,5 +182,9 @@ const displayUpdatedTime = computed(() => {
     .post-tags {
         gap: 6px;
     }
+
+    .post-updated{
+        display: none;
+    }
 }
 </style>
