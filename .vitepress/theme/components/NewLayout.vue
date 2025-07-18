@@ -146,7 +146,7 @@ const displayUpdatedTime = computed(() => {
 }
 
 /* 文章简介样式 */
-.post-description {
+/* .post-description {
     margin: 1rem 0 1.5rem;
     padding: 12px 16px;
     border-radius: 2px;
@@ -154,7 +154,7 @@ const displayUpdatedTime = computed(() => {
     font-size: 0.95rem;
     color: var(--vp-c-text-2);
     border-left: 4px solid var(--vp-c-border);
-}
+} */
 
 .post-description p {
     margin: 0;
@@ -164,7 +164,7 @@ const displayUpdatedTime = computed(() => {
     .post-info {
         flex-direction: column;
         align-items: flex-start;
-        margin: 0.75rem 0 1.5rem;
+        margin: 0.75rem 0 0rem;
         gap: 10px;
     }
 
@@ -175,8 +175,11 @@ const displayUpdatedTime = computed(() => {
     .post-date,
     .post-tag,
     .post-updated {
-        font-size: 0.8125rem;
         padding: 2px 8px;
+    }
+
+    .post-date{
+        padding-left: 0;
     }
 
     .post-tags {
