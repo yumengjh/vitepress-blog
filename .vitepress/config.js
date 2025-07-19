@@ -171,7 +171,7 @@ export default defineConfig({
             themeConfig: {
                 footer: {
                     message: 'If there is a reprint, please mark this site',
-                    copyright: 'Copyright © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/pages/about">YuMeng</a>'
+                    copyright: 'Copyright © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/en/pages/about">YuMeng</a>'
                 },
                 notFound: {
                     code: 404,

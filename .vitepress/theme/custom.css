@@ -1,16 +1,16 @@
 :root {
     /* 覆盖配置 */
     --vp-code-color: #3451b2;
-    --vp-c-bg: #fdfdfd;
-    --vp-c-indigo-1: #2a8b5e;
-    --vp-c-indigo-2: #30a46c;
-    --vp-c-indigo-3: #5bb98c;
+    /* --vp-c-bg: #fdfdfd; */
+    /* --vp-c-indigo-1: #2a8b5e; */
+    /* --vp-c-indigo-2: #30a46c; */
+    /* --vp-c-indigo-3: #5bb98c; */
     /* --vp-c-gutter: transparent; */
     /* 主题配置 */
     /* --date-font-family: Georgia, sans-serif; */
     --yu-theme-title: #000;
     --vp-font-family-base: 'PingFang SC', 'Microsoft Yahei', sans-serif;
-    /* --vp-font-family-base: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace; */
+    --vp-font-family-base: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
     /* --vp-font-family-mono: "Fira Code", monospace; */
     /* 容器自定义 */
     --vp-custom-block-tip-border: #747bff;
@@ -32,10 +32,10 @@
 }
 
 .dark {
-    --vp-c-indigo-1: #3dd68c;
-    --vp-c-indigo-2: #30a46c;
-    --vp-c-indigo-3: #1f7d51;
-    --vp-c-bg: #1b1b1f;
+    /* --vp-c-indigo-1: #3dd68c; */
+    /* --vp-c-indigo-2: #30a46c; */
+    /* --vp-c-indigo-3: #1f7d51; */
+    /* --vp-c-bg: #161618; */
     --vp-c-gutter: var(--vp-c-divider);
     --vp-code-color: #a8b1ff;
     --yu-theme-title: #fff;
@@ -347,6 +347,19 @@ html {
 
 .vpi-chevron-down {
     display: none !important;
+}
+
+.VPSocialLink:hover {
+    animation: swing 0.6s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+@keyframes swing {
+    0% { transform: rotate(0deg); }
+    20% { transform: rotate(15deg); }
+    40% { transform: rotate(-10deg); }
+    60% { transform: rotate(5deg); }
+    80% { transform: rotate(-5deg); }
+    100% { transform: rotate(0deg); }
 }
 
 /* #endregion 文字选中样式 */

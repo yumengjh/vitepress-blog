@@ -11,7 +11,7 @@
           <time>{{ article.frontMatter.date }}</time>
           <div v-if="article.frontMatter.tags" class="post-tags">
             <a v-for="tag in article.frontMatter.tags" :key="tag" class="post-tag"
-              :href="withBase(`/pages/tags?tag=${tag}`)" :title="`查看 ${tag} 相关文章`">
+              :href="withBase(`/pages/tags?tag=${tag}`)" :title="`${tag} → `">
               <!-- <span style="margin-right: -5px;">#</span> -->
               {{ tag }}
             </a>
@@ -119,7 +119,7 @@ onMounted(() => {
   height: 2px;
   background: var(--vp-c-text-2);
   transform: scaleX(0);
-  transform-origin: left;
+  transform-origin: center;
   transition: transform 0.6s;
 }
 

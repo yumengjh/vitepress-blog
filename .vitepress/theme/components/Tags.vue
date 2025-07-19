@@ -93,7 +93,7 @@ onMounted(() => {
 }
 
 .post-title:hover {
-    color: var(--vp-c-indigo-2);
+    color: var(--vp-c-text-2);
 }
 
 .date {
@@ -119,49 +119,34 @@ onMounted(() => {
     font-size: 0.9375rem;
     cursor: pointer;
     transition: all 0.1s ease;
-    border: 1px solid var(--vp-c-divider);
-    border-radius: 9999px;
+    background-color: var(--vp-c-bg-alt);
+    border-radius: 3px;
 }
 
 .tag:hover {
-    background-color: var(--vp-c-indigo-3);
-
-    sup {
-        border: 1px solid var(--vp-c-indigo-2);
-    }
+    background-color: var(--vp-c-divider);
 }
 
 .tag-active {
-    background-color: var(--vp-c-indigo-2);
-
-    sup {
-        border: 1px solid var(--vp-c-indigo-1) !important;
-    }
+    background-color: var(--vp-c-divider);
 }
 
 .tag sup {
-    margin-left: 6px;
     font-weight: 600;
     font-size: 0.75rem;
     opacity: 0.8;
     border-radius: 50%;
-    background-color: inherit;
-    border: 1px solid var(--vp-c-text-3);
-    padding: 2px 6px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 21px;
-    height: 21px;
     line-height: 21px;
+    position: relative;
+    top: -8px;
+    right: -6px;
 }
 
 .tag-header {
     margin: 2rem 0 0.5rem;
     padding-bottom: 1rem;
     font-size: 1.75rem;
-    font-weight: 600;
-    color: var(--vp-c-indigo-2);
+    font-weight: 400;
 }
 
 @media screen and (max-width: 768px) {
