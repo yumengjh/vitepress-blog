@@ -70,7 +70,7 @@ const initGiscus = () => {
     const script = document.createElement('script');
     script.className = 'giscus-script';
     script.src = "https://giscus.app/client.js";
-    script.setAttribute("data-repo", "myfishdream/note");
+    script.setAttribute("data-repo", "yumengjh/vitepress-blog");
     script.setAttribute("data-repo-id", "R_kgDOOUvf2Q");
     script.setAttribute("data-category", "Announcements");
     script.setAttribute("data-category-id", "DIC_kwDOOUvf2c4Co05c");
