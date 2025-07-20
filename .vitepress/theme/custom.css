@@ -320,7 +320,7 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 /* #endregion 其他配置 */
 
 /* #region 文字选中样式 */
-::selection {
+/* ::selection {
     background: var(--vp-c-indigo-2, #30a46c);
     color: #fff;
 }
@@ -338,7 +338,7 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
 .dark ::-moz-selection {
     background: #225c3e;
     color: #fff;
-}
+} */
 
 /* 防止滚动条闪烁 */
 html {
