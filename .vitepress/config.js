@@ -94,6 +94,7 @@ export default defineConfig({
                     { text: '首页', link: '/' },
                     { text: '标签', link: '/pages/tags' },
                     { text: '书签', link: '/pages/bookmark' },
+                    { text: '聊天', link: 'https://chat.yumeng.icu' },
                     { text: '关于', link: '/pages/about' },
                 ],
                 lastUpdated: {
@@ -187,6 +188,7 @@ export default defineConfig({
                     { text: 'Home', link: '/en/' },
                     { text: 'Tags', link: '/en/pages/tags' },
                     { text: 'Bookmarks', link: '/en/pages/bookmark' },
+                    { text: 'Chat', link: 'https://chat.yumeng.icu' },
                     { text: 'About', link: '/en/pages/about' },
                 ],
                 website: {
