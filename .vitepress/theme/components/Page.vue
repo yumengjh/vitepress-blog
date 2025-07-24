@@ -123,9 +123,9 @@ onMounted(() => {
   transition: transform 0.6s;
 }
 
-.post-title a:hover {
+/* .post-title a:hover {
   color: var(--vp-c-text-2);
-}
+} */
 
 .post-title a:hover::after {
   transform: scaleX(1);
