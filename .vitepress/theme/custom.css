@@ -2,7 +2,6 @@
     /* 覆盖配置 */
     --vp-code-color: #3451b2;
     /* --vp-c-bg: #fdfdfd; */
-    --vp-c-text-1: #000;
     /* --vp-c-indigo-1: #2a8b5e; */
     /* --vp-c-indigo-2: #30a46c; */
     /* --vp-c-indigo-3: #5bb98c; */
@@ -33,7 +32,6 @@
 }
 
 .dark {
-    --vp-c-text-1: #dfdfd6;
     /* --vp-c-indigo-1: #3dd68c; */
     /* --vp-c-indigo-2: #30a46c; */
     /* --vp-c-indigo-3: #1f7d51; */

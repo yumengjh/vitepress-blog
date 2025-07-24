@@ -82,8 +82,14 @@ onMounted(() => {
 
 <style scoped>
 .post-item {
+  --vp-c-text-1: #000;
+}
+.dark .post-item {
+  --vp-c-text-1: #dfdfd6;
+}
+.post-item {
   padding: 1.5rem 0;
-  /* border-bottom: 1px solid var(--vp-c-divider); */
+  border-bottom: 1px solid var(--vp-c-divider);
 }
 
 .post-item:first-child {
