@@ -3,7 +3,7 @@
     <div v-for="(article, index) in posts" :key="index" class="post-item">
       <div class="post-header">
         <h2 class="post-title">
-          <a :href="withBase(article.regularPath)">
+          <a :href="withBase(article.regularPath)" @mouseenter="handleTitleHover">
             {{ article.frontMatter.title }}
           </a>
         </h2>
@@ -69,6 +69,18 @@ const getSentence = () => {
       sentence.value = defaultSentence;
     });
 }
+
+// 处理标题链接的悬浮效果
+const handleTitleHover = (event) => {
+  const link = event.currentTarget;
+  const rect = link.getBoundingClientRect();
+  const mouseX = event.clientX - rect.left;
+  const percentage = (mouseX / rect.width) * 100;
+  
+  // 设置 CSS 变量来控制背景位置
+  link.style.setProperty('--hover-origin', `${percentage}%`);
+}
+
 const { theme } = useData()
 const props = defineProps({
   posts: Array,
@@ -115,26 +127,21 @@ onMounted(() => {
   position: relative;
 }
 
-.post-title a::after {
-  content: "";
-  display: block;
-  position: absolute;
-  left: 0;
-  bottom: -2px;
-  width: 100%;
-  height: 2px;
-  background: var(--vp-c-text-2);
-  transform: scaleX(0);
-  transform-origin: center;
-  transition: transform 0.6s;
+.post-title a {
+  color: var(--vp-c-text-1);
+  text-decoration: none;
+  transition: color 0.2s;
+  /* font-weight: bold; */
+  position: relative;
+  background-image: linear-gradient(var(--vp-c-text-3), var(--vp-c-text-3));
+  background-size: 0 2px;
+  background-repeat: no-repeat;
+  background-position: var(--hover-origin, 0%) bottom;
+  transition: background-size 0.6s; 
 }
 
-/* .post-title a:hover {
-  color: var(--vp-c-text-2);
-} */
-
-.post-title a:hover::after {
-  transform: scaleX(1);
+.post-title a:hover {
+  background-size: 100% 30px;
 }
 
 .post-meta {
