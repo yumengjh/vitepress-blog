@@ -293,7 +293,7 @@ export default defineConfig({
     vite: {
         server: { port: 5000 },
         plugins: [
-            // RssPlugin(RSS),
+            RssPlugin(RSS),
             // pagefindPlugin({
             //showDate: true,
             //pageResultCount: 4,
