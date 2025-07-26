@@ -133,7 +133,7 @@ onMounted(() => {
   transition: color 0.2s;
   /* font-weight: bold; */
   position: relative;
-  background-image: linear-gradient(var(--vp-c-text-3), var(--vp-c-text-3));
+  background-image: linear-gradient(var(--vp-c-text-1));
   background-size: 0 2px;
   background-repeat: no-repeat;
   background-position: var(--hover-origin, 0%) bottom;
@@ -141,7 +141,7 @@ onMounted(() => {
 }
 
 .post-title a:hover {
-  background-size: 100% 30px;
+  background-size: 100% 2px;
 }
 
 .post-meta {

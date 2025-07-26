@@ -57,7 +57,7 @@ const toggleAppearance = inject('toggle-appearance', async (e) => {
     document.documentElement.animate(
       { clipPath: isDark.value ? clipPath.reverse() : clipPath },
       {
-        duration: 300,
+        duration: 400,
         easing: 'ease-in',
         pseudoElement: `::view-transition-${isDark.value ? 'old' : 'new'}(root)`
       }
@@ -70,8 +70,8 @@ const toggleAppearance = inject('toggle-appearance', async (e) => {
 })
 
 function toggle(e) {
-  // toggleAppearance(e)
-    isDark.value = !isDark.value
+  toggleAppearance(e)
+    // isDark.value = !isDark.value
 }
 </script>
 
