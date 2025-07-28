@@ -164,7 +164,7 @@ const displayUpdatedTime = computed(() => {
     .post-info {
         flex-direction: column;
         align-items: flex-start;
-        margin: 0.75rem 0 0rem;
+        /* margin: 0.75rem 0 0rem; */
         gap: 10px;
     }
 
