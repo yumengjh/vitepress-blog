@@ -78,7 +78,13 @@ export default defineConfig({
                 returnToTopLabel: '返回顶部',
                 footer: {
                     message: '如有转载或 CV 的请标注本站原文地址',
-                    copyright: '版权所有 © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/pages/about">鱼梦江湖</a>'
+                    copyright: `版权所有 © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/pages/about">鱼梦江湖</a>
+                    <br>
+                    部署平台：
+                    <a href="https://yumeng.icu" target="_blank">Netlify</a> |
+                    <a href="https://blog.yumeng.icu" target="_blank">Vercel</a> |    
+                    <a href="https://www.yumeng.icu" target="_blank">Server</a>
+                    `
                 },
                 notFound: {
                     code: 404,
@@ -172,7 +178,13 @@ export default defineConfig({
             themeConfig: {
                 footer: {
                     message: 'If there is a reprint, please mark this site',
-                    copyright: 'Copyright © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/en/pages/about">YuMeng</a>'
+                    copyright: `Copyright © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/en/pages/about">YuMeng</a>
+                    <br>
+                    Deploy Platform:
+                    <a href="https://yumeng.icu/en" target="_blank">Netlify</a> |
+                    <a href="https://blog.yumeng.icu/en" target="_blank">Vercel</a> |    
+                    <a href="https://www.yumeng.icu/en" target="_blank">Server</a>
+                    `
                 },
                 notFound: {
                     code: 404,
