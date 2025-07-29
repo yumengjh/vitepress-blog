@@ -1,5 +1,5 @@
 [build]
-  command = "npm run netlifybuild"
+  command = "npm run deploy"
   publish = ".vitepress/dist" 
   functions = "netlify/functions"  # 指定 functions 目录
 
