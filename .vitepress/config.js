@@ -101,6 +101,8 @@ export default defineConfig({
                     { text: '标签', link: '/pages/tags' },
                     { text: '书签', link: '/pages/bookmark' },
                     { text: '聊天', link: 'https://chat.yumeng.icu' },
+                    { text: '备忘录', link: 'https://memo.yumeng.icu' },
+                    { text: '开发', link: 'https://dev.yumeng.icu' },
                     { text: '关于', link: '/pages/about' },
                 ],
                 lastUpdated: {
@@ -201,6 +203,8 @@ export default defineConfig({
                     { text: 'Tags', link: '/en/pages/tags' },
                     { text: 'Bookmarks', link: '/en/pages/bookmark' },
                     { text: 'Chat', link: 'https://chat.yumeng.icu' },
+                    { text: 'Memo', link: 'https://memo.yumeng.icu' },
+                    { text: 'Dev', link: 'https://dev.yumeng.icu' },
                     { text: 'About', link: '/en/pages/about' },
                 ],
                 website: {
