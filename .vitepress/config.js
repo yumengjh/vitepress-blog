@@ -65,6 +65,7 @@ export default defineConfig({
         ['link', { rel: 'icon', href: 'https://image.yumeng.icu/images/logo.png' }],
         ['meta', { name: 'author', content: 'YuMeng' }],
         ['meta', { name: 'keywords', content: '博客,前端,JavaScript' }],
+        ['script', { defer: true, src: 'https://monitor.yumeng.icu/script.js', 'data-website-id': 'e4835023-fa4d-408f-8988-b1738d85425c' }]
     ],
     locales: {
         root: {
