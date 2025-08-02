@@ -62,6 +62,53 @@ export default {
             removeAutoAnchor = setupAutoAnchorOnScroll(frontmatter.value);
         };
 
+        // 出站链接跟踪函数
+        const trackOutboundLinks = () => {
+            const name = 'outbound-link-click';
+            document.querySelectorAll('a').forEach(a => {
+                if (a.host !== window.location.host && !a.getAttribute('data-umami-event')) {
+                    a.setAttribute('data-umami-event', name);
+                    a.setAttribute('data-umami-event-url', a.href);
+                }
+            });
+        };
+
+        // 使用 MutationObserver 监听DOM变化，确保动态加载的内容也能被跟踪
+        let observer = null;
+        const setupOutboundLinkObserver = () => {
+            if (observer) {
+                observer.disconnect();
+            }
+            
+            observer = new MutationObserver((mutations) => {
+                let shouldTrack = false;
+                mutations.forEach((mutation) => {
+                    if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                        // 检查是否有新的链接被添加
+                        mutation.addedNodes.forEach((node) => {
+                            if (node.nodeType === Node.ELEMENT_NODE) {
+                                if (node.tagName === 'A' || node.querySelectorAll('a').length > 0) {
+                                    shouldTrack = true;
+                                }
+                            }
+                        });
+                    }
+                });
+                
+                if (shouldTrack) {
+                    // 延迟执行以确保所有内容都已渲染
+                    setTimeout(() => {
+                        trackOutboundLinks();
+                    }, 50);
+                }
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        };
+
         // 组件挂载后执行
         onMounted(() => {
             // 初始化图片处理
@@ -78,6 +125,16 @@ export default {
 
             // 国际化
             // internationalization(theme.value.website.SearchText);
+
+            // 确保DOM完全渲染后再执行出站链接跟踪
+            nextTick(() => {
+                // 使用 setTimeout 确保在下一个事件循环中执行
+                setTimeout(() => {
+                    trackOutboundLinks();
+                    // 设置DOM变化观察器
+                    setupOutboundLinkObserver();
+                }, 100);
+            });
         });
 
         // 路由变化监听
@@ -92,6 +149,13 @@ export default {
                 initImageTitles();
                 initAutoAnchor();
                 // internationalization(theme.value.website.SearchText);
+
+                // 路由变化后重新执行出站链接跟踪
+                setTimeout(() => {
+                    trackOutboundLinks();
+                    // 重新设置DOM变化观察器
+                    setupOutboundLinkObserver();
+                }, 100);
             })
         );
         // frontmatter变化监听
@@ -104,6 +168,10 @@ export default {
         // 离开页面时解绑
         onUnmounted(() => {
             if (removeAutoAnchor) removeAutoAnchor();
+            if (observer) {
+                observer.disconnect();
+                observer = null;
+            }
         });
     }
 }
