@@ -37,11 +37,11 @@ jobs:
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
           VITE_AUTH_SECRET_KEY: ${{ secrets.VITE_AUTH_SECRET_KEY }}
   
-      - name: 上传构建产物到服务器（FTP）
+      - name: 上传至服务器
         uses: sebastianpopp/ftp-action@v1.1.0
         with:
           host: ${{ secrets.FTPADDRESS }}
-          username: ${{ secrets.FTPACCOUNT }}
+          user: ${{ secrets.FTPACCOUNT }}
           password: ${{ secrets.FTPPASSWORD }}
-          localDir: dist
+          localDir: .vitepress/dist
           remoteDir: /
