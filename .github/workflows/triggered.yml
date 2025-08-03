@@ -45,3 +45,6 @@ jobs:
           password: ${{ secrets.FTPPASSWORD }}
           local-dir: .vitepress/dist/
           server-dir: /
+          dangerous-clean-slate: false
+          dry-run: false
+          state-name: deploy-state.json  
