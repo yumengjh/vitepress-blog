@@ -43,5 +43,5 @@ jobs:
           server: ${{ secrets.FTPADDRESS }}
           username: ${{ secrets.FTPACCOUNT }}
           password: ${{ secrets.FTPPASSWORD }}
-          local-dir: .vitepress/dist
+          local-dir: .vitepress/dist/
           remoteDir: /
