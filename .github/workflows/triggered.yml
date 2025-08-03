@@ -36,19 +36,12 @@ jobs:
           VITE_ALGOLIA_INDEX_NAME: ${{ secrets.VITE_ALGOLIA_INDEX_NAME }}
           VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
           VITE_AUTH_SECRET_KEY: ${{ secrets.VITE_AUTH_SECRET_KEY }}
-
-      - name: 打印 FTP 配置（调试用，记得删除）
-        run: |
-          echo "host=${{ secrets.FTPADDRESS }}"
-          echo "username=${{ secrets.FTPACCOUNT }}"
-          echo "password=${{ secrets.FTPPASSWORD }}"
-
   
       - name: 上传至服务器
-        uses: sebastianpopp/ftp-action@v1.1.0
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.4
         with:
-          host: ${{ secrets.FTPADDRESS }}
-          user: ${{ secrets.FTPACCOUNT }}
+          server: ${{ secrets.FTPADDRESS }}
+          username: ${{ secrets.FTPACCOUNT }}
           password: ${{ secrets.FTPPASSWORD }}
-          localDir: .vitepress/dist
+          local-dir: .vitepress/dist
           remoteDir: /
