@@ -7,5 +7,40 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
-      - run: echo "✅ 收到私有仓库触发信号，开始执行任务"
+      - name: ✅ 收到私有仓库触发信号
+        run: echo "开始执行任务"
+
+      - name: 拉取代码
+        uses: actions/checkout@v4
+
+      - name: 安装 Node.js 环境
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - name: 安装依赖
+        run: npm ci
+
+      - name: 执行 pull 操作
+        run: npm run pull
+
+      - name: 执行构建
+        run: npm run build
+        env:
+          VITE_ALGOLIA_APP_ID: ${{ secrets.VITE_ALGOLIA_APP_ID }}
+          VITE_ALGOLIA_API_KEY: ${{ secrets.VITE_ALGOLIA_API_KEY }}
+          VITE_ALGOLIA_INDEX_NAME: ${{ secrets.VITE_ALGOLIA_INDEX_NAME }}
+          VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
+          VITE_AUTH_SECRET_KEY: ${{ secrets.VITE_AUTH_SECRET_KEY }}
+          VITE_GITHUB_TOKEN: ${{ secrets.VITE_GITHUB_TOKEN }}
+  
+      - name: 上传构建产物到服务器（FTP）
+        uses: sebastianpopp/ftp-action@v1.1.0
+        with:
+          host: ${{ secrets.FTPADDRESS }}
+          username: ${{ secrets.FTPACCOUNT }}
+          password: ${{ secrets.FTPPASSWORD }}
+          localDir: dist
+          remoteDir: /
