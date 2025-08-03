@@ -1,0 +1,11 @@
+name: Triggered by private repo
+
+on:
+  repository_dispatch:
+    types: [build-triggered]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo "✅ 收到私有仓库触发信号，开始执行任务"
