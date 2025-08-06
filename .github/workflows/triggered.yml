@@ -21,7 +21,7 @@ jobs:
           node-version: 18
 
       - name: 安装依赖
-        run: npm ci
+        run: npm install
 
       - name: 执行 pull 操作
         run: npm run pull
