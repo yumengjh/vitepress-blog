@@ -47,7 +47,7 @@ const initTwikoo = async () => {
     if (typeof window !== 'undefined') {
         const twikoo = await import('twikoo');
         twikoo.init({
-            envId: 'https://twikoo-yu.netlify.app/.netlify/functions/twikoo',
+            envId: import.meta.env.VITE_TWIKOO_ENV_ID,
             el: '#tcomment',
             theme: twikooTheme.value,
             lang: twikooLang.value,
