@@ -1,5 +1,5 @@
 <template>
-    <div class="twikoo-wrapper" v-if="showComments">
+    <div class="twikoo-wrapper vp-raw" v-if="showComments" >
         <div id="tcomment" :key="currentPath"></div>
     </div>
 </template>
