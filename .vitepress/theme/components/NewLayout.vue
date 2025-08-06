@@ -31,7 +31,8 @@
         </template>
         <template #doc-footer-before>
             <!-- 文档页脚前 - 原评论系统位置 -->
-            <Giscus />
+            <!-- <Giscus /> -->
+            <Twikoo />
         </template>
         <!-- 6. 未找到页面插槽 -->
         <template #not-found>
@@ -46,7 +47,8 @@ import DefaultTheme from 'vitepress/theme'
 // import Copyright from './Copyright.vue'
 import CustomNavbar from './CustomNavbar.vue'
 // import NotFound from './notfound.vue'
-import Giscus from './giscus.vue'
+// import Giscus from './giscus.vue'
+import Twikoo from './twikoo.vue'
 import { withBase, useData } from "vitepress"
 import { computed } from 'vue'
 import { getRelativeTime, formatDate } from '../functions'

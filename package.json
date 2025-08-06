@@ -28,6 +28,7 @@
     "crypto-js": "^4.2.0",
     "dotenv": "^17.0.1",
     "medium-zoom": "^1.1.0",
+    "twikoo": "^1.6.44",
     "vitepress-markdown-timeline": "^1.2.2",
     "vitepress-plugin-codeblocks-fold": "^1.2.35",
     "vitepress-plugin-rss": "^0.3.1"
