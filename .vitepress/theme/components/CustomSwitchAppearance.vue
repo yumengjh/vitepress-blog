@@ -2,7 +2,7 @@
 <template>
   <button
     class="VPSwitchAppearance"
-    title="切换浅色/深色模式"
+    title="🌏"
     @click="toggle"
   >
     <div class="sun">

@@ -26,7 +26,7 @@
     <div class="pagination" :class="{ 'pagination-center': pageCurrent === 1, 'pagination-between': pageCurrent > 1 }">
       <template v-if="theme.website.showPrevNextBtn">
         <a v-if="pageCurrent > 1" class="page-btn" :class="{ disabled: pageCurrent <= 1 }"
-          :href="pageCurrent > 2 ? withBase(`/page_${pageCurrent - 1}.html`) : withBase('/index.html')">
+          :href="getPageUrl(pageCurrent - 1)">
           <!-- <svg style="transform: scaleX(-1)" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
             <path fill="currentColor"
               d="M6 14h2q0-1.475 1.075-2.488T11.65 10.5q.9 0 1.675.413T14.6 12H13v2h5V9h-2v1.55q-.8-.95-1.912-1.5T11.65 8.5q-2.375 0-4.012 1.6T6 14m6 8q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22m0-2q3.35 0 5.675-2.325T20 12t-2.325-5.675T12 4T6.325 6.325T4 12t2.325 5.675T12 20m0-8" />
@@ -35,7 +35,7 @@
         </a>
         <span v-else></span>
         <a v-if="pageCurrent < pagesNum" class="page-btn" :class="{ disabled: pageCurrent >= pagesNum }"
-          :href="withBase(`/page_${pageCurrent + 1}.html`)">
+          :href="getPageUrl(pageCurrent + 1)">
           {{ theme.website.turnPageNextText }}
         </a>
       </template>
@@ -44,8 +44,8 @@
 </template>
 
 <script setup>
-import { withBase, useData } from 'vitepress'
-import { ref, onMounted } from 'vue'
+import { withBase, useData, useRoute } from 'vitepress'
+import { ref, onMounted, computed } from 'vue'
 let sentence = ref('Come on!');
 
 const getSentence = () => {
@@ -82,11 +82,35 @@ const handleTitleHover = (event) => {
 }
 
 const { theme } = useData()
+const route = useRoute()
 const props = defineProps({
   posts: Array,
   pageCurrent: Number,
   pagesNum: Number
 })
+
+// 检测当前页面的语言路径
+const getCurrentLangPath = computed(() => {
+  const path = route.path
+  // 匹配 /{lang}/ 格式的路径，如 /en/, /ja/, /ko/ 等
+  const langMatch = path.match(/^\/([a-z]{2})\//)
+  return langMatch ? langMatch[1] : null
+})
+
+// 生成分页链接
+const getPageUrl = (pageNum) => {
+  const langPath = getCurrentLangPath.value
+  
+  if (pageNum === 1) {
+    // 首页：如果有语言路径则返回 /{lang}/，否则返回 /
+    return langPath ? withBase(`/${langPath}/`) : withBase('/')
+  } else {
+    // 分页：如果有语言路径则返回 /{lang}/page_{num}.html，否则返回 /page_{num}.html
+    const prefix = langPath ? `/${langPath}` : ''
+    return withBase(`${prefix}/page_${pageNum}.html`)
+  }
+}
+
 onMounted(() => {
   // getSentence(); 
 })

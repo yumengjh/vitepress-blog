@@ -7,8 +7,60 @@ import { resolve } from 'path'        // resolve 是一个用于解析文件路�
 // 待发布文档的标识
 const DRAFT_FLAG = 'draft: true'
 
+// 支持的语言配置
+const SUPPORTED_LANGUAGES = {
+    root: {
+        label: '简体中文',
+        lang: 'zh-CN',
+        title: '鱼梦江湖',
+        postsDir: 'posts',
+        outputDir: './',
+        pageTitle: '鱼梦江湖'
+    },
+    en: {
+        label: 'English',
+        lang: 'en-US',
+        title: 'YuMeng',
+        postsDir: 'en/posts',
+        outputDir: './en/',
+        pageTitle: 'YuMeng'
+    },
+    ja: {
+        label: '日本語',
+        lang: 'ja-JP',
+        title: '魚の夢',
+        postsDir: 'ja/posts',
+        outputDir: './ja/',
+        pageTitle: '魚の夢'
+    }
+    // 可以继续添加更多语言
+    // fr: {
+    //     label: 'Français',
+    //     lang: 'fr-FR',
+    //     title: 'MonBlog',
+    //     postsDir: 'fr/posts',
+    //     outputDir: './fr/',
+    //     pageTitle: 'MonBlog'
+    // }
+}
+
 async function getPosts(pageSize) {
-    let paths = await globby(['posts/**.md'])   // 获取posts目录下的所有md文件
+    const allPosts = {}
+    
+    // 为每种语言处理文章
+    for (const [langKey, langConfig] of Object.entries(SUPPORTED_LANGUAGES)) {
+        console.warn('正在处理多语言支持')
+        console.log('语言：',langKey)
+        console.log('语言配置：',langConfig)
+        const posts = await getPostsForLanguage(langKey, langConfig, pageSize)
+        allPosts[langKey] = posts
+    }
+    
+    return allPosts
+}
+
+async function getPostsForLanguage(langKey, langConfig, pageSize) {
+    let paths = await globby([`${langConfig.postsDir}/**.md`])   // 获取对应语言目录下的所有md文件
 
     // 过滤掉待发布的文档
     let validPaths = []
@@ -25,7 +77,7 @@ async function getPosts(pageSize) {
     }
 
     //生成分页页面markdown
-    await generatePaginationPages(validPaths.length, pageSize)
+    await generatePaginationPages(validPaths.length, pageSize, langConfig, langKey)
 
     let posts = await Promise.all(
         validPaths.map(async (item) => {
@@ -46,25 +98,28 @@ async function getPosts(pageSize) {
     return posts
 }
 
-async function generatePaginationPages(total, pageSize) {
+async function generatePaginationPages(total, pageSize, langConfig, langKey) {
     //  pagesNum
     let pagesNum = total % pageSize === 0 ? total / pageSize : Math.floor(total / pageSize) + 1
-    const paths = resolve('./')
+    const paths = resolve(langConfig.outputDir)
+    
+    // 确保输出目录存在
+    await fs.ensureDir(paths)
+    
     if (total > 0) {
         for (let i = 1; i < pagesNum + 1; i++) {
             const page = `
 ---
 page: true
-title: ${i === 1 ? '鱼梦江湖' : '第 ' + i + ' 页'}
+title: ${i === 1 ? langConfig.pageTitle : langConfig.lang === 'zh-CN' ? '第 ' + i + ' 页' : 'Page ' + i}
 aside: false
 lastUpdated: false
 comments: false
 ---
 <script setup>
-import Page from "./.vitepress/theme/components/Page.vue";
 import { useData } from "vitepress";
 const { theme } = useData();
-const posts = theme.value.posts.slice(${pageSize * (i - 1)},${pageSize * i})
+const posts = theme.value.posts.${langConfig.lang === 'zh-CN' ? 'root' : langKey}.slice(${pageSize * (i - 1)},${pageSize * i})
 </script>
 <Page :posts="posts" :pageCurrent="${i}" :pagesNum="${pagesNum}" />
 `.trim()
@@ -72,7 +127,8 @@ const posts = theme.value.posts.slice(${pageSize * (i - 1)},${pageSize * i})
             await fs.writeFile(file, page)
         }
     }
-    // rename page_1 to index for homepage
+    
+    // 重命名 page_1 为 index 作为首页
     await fs.move(paths + '/page_1.md', paths + '/index.md', { overwrite: true })
 }
 
@@ -97,4 +153,4 @@ function _compareDate(obj1, obj2) {
     return obj1.frontMatter.date < obj2.frontMatter.date ? 1 : -1
 }
 
-export { getPosts } 
+export { getPosts, SUPPORTED_LANGUAGES } 

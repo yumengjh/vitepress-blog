@@ -26,6 +26,8 @@ const twikooLang = computed(() => {
         'zh': 'zh-CN',
         'en-US': 'en',
         'en': 'en',
+        'ja-JP': 'ja',
+        'ja': 'ja',
     };
     return langMap[lang.value] || 'en';
 });

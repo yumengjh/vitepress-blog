@@ -13,3 +13,8 @@
   to = "/.netlify/functions/:splat"
   status = 200
 
+[[redirects]]
+  from = "/zh/*"
+  to = "/:splat"
+  status = 301
+  force = true
