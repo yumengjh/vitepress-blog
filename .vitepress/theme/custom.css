@@ -312,6 +312,13 @@ img[class="medium-zoom-image"]:not([no-style]):not([loading-error]) {
     }
 }
 
+@media (min-width: 767px) {
+    .vpi-chevron-down {
+        display: none !important;
+    }
+}
+
+
 :not(pre)>code {
     /* font-family: "Fira Code", monospace; */
 }
@@ -345,9 +352,7 @@ html {
     scrollbar-gutter: stable;
 }
 
-.vpi-chevron-down {
-    display: none !important;
-}
+
 
 .VPSocialLink:hover {
     animation: swing 0.6s cubic-bezier(.36,.07,.19,.97) both;

@@ -201,7 +201,7 @@ export default defineConfig({
                 },
                 nav: [
                     { text: 'Home', link: '/en/' },
-                    // { text: 'Tags', link: '/en/pages/tags' },
+                    { text: 'Tags', link: '/en/pages/tags' },
                     // { text: 'Bookmarks', link: '/en/pages/bookmark' },
                     // { text: 'Chat', link: 'https://chat.yumeng.icu' },
                     // { text: 'Memo', link: 'https://memo.yumeng.icu' },
@@ -303,7 +303,7 @@ export default defineConfig({
                 },
                 nav: [
                     { text: 'ホーム', link: '/ja/' },
-                    // { text: 'Tags', link: '/en/pages/tags' },
+                    { text: 'ブックマーク', link: '/ja/pages/tags' },
                     // { text: 'Bookmarks', link: '/en/pages/bookmark' },
                     // { text: 'Chat', link: 'https://chat.yumeng.icu' },
                     // { text: 'Memo', link: 'https://memo.yumeng.icu' },

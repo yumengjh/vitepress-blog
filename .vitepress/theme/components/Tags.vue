@@ -1,13 +1,13 @@
 <template>
     <div class="tags">
-        <span @click="toggleTag(String(key))" v-for="(_, key) in data" class="tag"
+        <span @click="toggleTag(String(key))" v-for="(_, key) in currentData" class="tag"
             :class="{ 'tag-active': selectTag === key }">
-            {{ key }} <sup>{{ data[key].length }}</sup>
+            {{ key }} <sup>{{ currentData[key].length }}</sup>
         </span>
     </div>
     <div class="tag-header">{{ selectTag }}</div>
     <div class="posts-container">
-        <a :href="withBase(article.regularPath)" v-for="(article, index) in selectTag ? data[selectTag] : []"
+        <a :href="withBase(article.regularPath)" v-for="(article, index) in selectTag ? currentData[selectTag] : []"
             :key="index" class="posts">
             <div class="post-container">
                 <span class="post-title">{{ article.frontMatter.title }}</span>
@@ -18,13 +18,23 @@
 </template>
 
 <script setup>
-import { computed, ref, onMounted } from 'vue'
-import { useData, withBase } from 'vitepress'
+import { computed, ref, onMounted, watch } from 'vue'
+import { useData, withBase, useRoute } from 'vitepress'
 import { initTags } from '../functions'
 
 const { theme } = useData()
-const data = computed(() => initTags(theme.value.posts || []))
+const route = useRoute()
+
+// 检测当前页面的语言路径
+const getCurrentLangPath = computed(() => {
+    const path = route.path
+    // 匹配 /{lang}/ 格式的路径，如 /en/, /ja/, /ko/ 等
+    const langMatch = path.match(/^\/([a-z]{2})\//)
+    return langMatch ? langMatch[1] : 'root'
+})
+
 let selectTag = ref('')
+let currentData = ref({})
 
 // 从URL中获取tag参数
 function getTagFromUrl() {
@@ -42,19 +52,50 @@ const toggleTag = (tag) => {
     window.history.pushState({}, '', url.toString())
 }
 
-// 组件挂载时从URL中读取tag参数
-onMounted(() => {
-    const tagFromUrl = getTagFromUrl()
-    if (tagFromUrl && data.value[tagFromUrl]) {
-        // 如果URL中有tag参数且该标签存在，则选中该标签
-        selectTag.value = tagFromUrl
-    } else {
-        // 否则选择第一个标签
-        // const defaultDisplayTag = Object.keys(data.value)[0]
-        // if (defaultDisplayTag) {
-        //     toggleTag(defaultDisplayTag)
-        // }
+// 更新数据
+const updateData = async () => {
+    try {
+        const langKey = getCurrentLangPath.value
+        
+        // 直接从主题配置中获取对应语言的文章
+        let posts = []
+        if (theme.value.posts && theme.value.posts[langKey]) {
+            posts = theme.value.posts[langKey]
+        } else if (langKey === 'root' && theme.value.posts && theme.value.posts.root) {
+            posts = theme.value.posts.root
+        } else {
+            console.warn(`未找到${langKey}语言的文章数据`)
+            posts = []
+        }
+        
+        // 生成标签数据
+        currentData.value = initTags(posts)
+        
+        // 重新设置选中的标签
+        const tagFromUrl = getTagFromUrl()
+        if (tagFromUrl && currentData.value[tagFromUrl]) {
+            selectTag.value = tagFromUrl
+        } else {
+            // 选择第一个可用的标签
+            const firstTag = Object.keys(currentData.value)[0]
+            if (firstTag) {
+                selectTag.value = firstTag
+            }
+        }
+    } catch (error) {
+        console.error('更新标签数据失败:', error)
+        currentData.value = {}
     }
+}
+
+// 监听语言变化，重新获取数据
+watch(() => getCurrentLangPath.value, async () => {
+    await updateData()
+})
+
+// 组件挂载时初始化
+onMounted(async () => {
+    await updateData()
 })
 </script>
 
