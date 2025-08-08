@@ -19,7 +19,7 @@
     "fs-extra": "^11.3.0",
     "globby": "^14.1.0",
     "gray-matter": "^4.0.3",
-    "vitepress": "^1.6.3",
+    "vitepress": "file:./package/vitepress-2.0.0-alpha.9.tgz",
     "vitepress-plugin-nprogress": "^0.0.4",
     "vitepress-plugin-pagefind": "^0.4.13"
   },

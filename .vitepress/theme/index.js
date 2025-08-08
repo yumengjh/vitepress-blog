@@ -10,8 +10,8 @@ import codeblocksFold from 'vitepress-plugin-codeblocks-fold'; // 导入方法
 import 'vitepress-plugin-codeblocks-fold/style/index.css'; // 导入样式
 
 // 进度条
-import vitepressNprogress from 'vitepress-plugin-nprogress'
-import 'vitepress-plugin-nprogress/lib/css/index.css'
+// import vitepressNprogress from 'vitepress-plugin-nprogress'
+// import 'vitepress-plugin-nprogress/lib/css/index.css'
 
 // 时间轴
 import "vitepress-markdown-timeline/dist/theme/index.css";
@@ -37,7 +37,7 @@ export default {
     ...DefaultTheme,
     Layout: NewLayout,
     enhanceApp(ctx) {
-        vitepressNprogress(ctx)
+        // vitepressNprogress(ctx)
         ctx.app.component('Tags', Tags)
         ctx.app.component('Page', Page)
         ctx.app.component('Bookmark', Bookmark)
