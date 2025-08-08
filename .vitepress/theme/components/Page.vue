@@ -6,6 +6,17 @@
           <a :href="withBase(article.regularPath)" @mouseenter="handleTitleHover">
             {{ article.frontMatter.title }}
           </a>
+          <span class="sticky-icon" v-if="article.frontMatter.sticky">
+            <svg t="1754660972034" class="icon" viewBox="0 0 1024 1024" version="1.1" xmlns="http://www.w3.org/2000/svg"
+              p-id="8443" width="24" height="24">
+              <path
+                d="M730.112 815.701333H292.778667a34.133333 34.133333 0 0 1-34.133334-29.781333l-20.992-162.133333v-1.621334a566.357333 566.357333 0 0 1 156.074667-437.504l93.098667-96.853333a34.133333 34.133333 0 0 1 49.237333 0l93.098667 96.853333A566.357333 566.357333 0 0 1 785.066667 621.824v1.621333l-20.992 162.133334a34.133333 34.133333 0 0 1-33.962667 30.122666z m-407.296-68.266666H699.733333l17.066667-131.925334a497.749333 497.749333 0 0 0-136.533333-383.488l-68.266667-71.338666-68.266667 71.338666a497.749333 497.749333 0 0 0-137.984 383.488z"
+                p-id="8444"></path>
+              <path
+                d="M511.402667 647.765333a154.624 154.624 0 1 1 154.709333-154.624 154.794667 154.794667 0 0 1-154.709333 154.624z m0-240.981333a86.357333 86.357333 0 1 0 86.442666 86.357333 86.442667 86.442667 0 0 0-86.442666-86.357333zM511.402667 938.666667a34.133333 34.133333 0 0 1-34.133334-34.133334V712.277333a34.133333 34.133333 0 0 1 68.266667 0V904.533333a34.133333 34.133333 0 0 1-34.133333 34.133334zM198.997333 946.688a34.133333 34.133333 0 0 1-33.450666-27.392C135.082667 768 257.792 679.509333 262.997333 675.84a34.133333 34.133333 0 1 1 39.509334 55.637333c-4.010667 2.901333-91.562667 67.669333-70.058667 174.336a34.133333 34.133333 0 0 1-26.709333 40.192 30.634667 30.634667 0 0 1-6.741334 0.682667zM825.002667 946.688a30.634667 30.634667 0 0 1-6.741334-0.682667 34.133333 34.133333 0 0 1-26.709333-40.192c21.76-107.946667-69.034667-173.653333-69.973333-174.250666a34.133333 34.133333 0 1 1 39.424-55.722667c5.205333 3.669333 128 92.416 97.450666 243.456a34.133333 34.133333 0 0 1-33.450666 27.392z"
+                p-id="8445"></path>
+            </svg>
+          </span>
         </h2>
         <div class="post-meta">
           <time>{{ article.frontMatter.date }}</time>
@@ -59,7 +70,7 @@ const getSentence = () => {
     })
     .then(data => {
       if (data && data.data[0]) {
-        sentence.value = data.data[0].quote ;
+        sentence.value = data.data[0].quote;
       } else {
         throw new Error('返回数据格式错误');
       }
@@ -76,7 +87,7 @@ const handleTitleHover = (event) => {
   const rect = link.getBoundingClientRect();
   const mouseX = event.clientX - rect.left;
   const percentage = (mouseX / rect.width) * 100;
-  
+
   // 设置 CSS 变量来控制背景位置
   link.style.setProperty('--hover-origin', `${percentage}%`);
 }
@@ -100,7 +111,7 @@ const getCurrentLangPath = computed(() => {
 // 生成分页链接
 const getPageUrl = (pageNum) => {
   const langPath = getCurrentLangPath.value
-  
+
   if (pageNum === 1) {
     // 首页：如果有语言路径则返回 /{lang}/，否则返回 /
     return langPath ? withBase(`/${langPath}/`) : withBase('/')
@@ -120,9 +131,11 @@ onMounted(() => {
 .post-item {
   --vp-c-text-1: #000;
 }
+
 .dark .post-item {
   --vp-c-text-1: #dfdfd6;
 }
+
 .post-item {
   padding: 1.5rem 0;
   border-bottom: 1px solid var(--vp-c-divider);
@@ -141,6 +154,12 @@ onMounted(() => {
   font-size: 1.2rem;
   line-height: 1.4;
   border: none;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.sticky-icon {
+  fill: var(--vp-c-text-1);
 }
 
 .post-title a {
@@ -161,7 +180,7 @@ onMounted(() => {
   background-size: 0 2px;
   background-repeat: no-repeat;
   background-position: var(--hover-origin, 0%) bottom;
-  transition: background-size 0.6s; 
+  transition: background-size 0.6s;
 }
 
 .post-title a:hover {
