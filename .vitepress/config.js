@@ -133,6 +133,7 @@ export default defineConfig({
                         appId: process.env.VITE_ALGOLIA_APP_ID || '',
                         apiKey: process.env.VITE_ALGOLIA_API_KEY || '',
                         indexName: process.env.VITE_ALGOLIA_INDEX_NAME || '',
+                        askAi: process.env.VITE_ALGOLIA_ASK_AI || '',
                         placeholder: '搜索文章',
                         translations: {
                             button: {
