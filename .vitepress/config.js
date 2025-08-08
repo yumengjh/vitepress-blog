@@ -201,8 +201,8 @@ export default defineConfig({
                 },
                 nav: [
                     { text: 'Home', link: '/en/' },
-                    { text: 'Tags', link: '/en/pages/tags' },
-                    { text: 'Bookmarks', link: '/en/pages/bookmark' },
+                    // { text: 'Tags', link: '/en/pages/tags' },
+                    // { text: 'Bookmarks', link: '/en/pages/bookmark' },
                     // { text: 'Chat', link: 'https://chat.yumeng.icu' },
                     // { text: 'Memo', link: 'https://memo.yumeng.icu' },
                     // { text: 'Dev', link: 'https://dev.yumeng.icu' },

@@ -30,7 +30,6 @@
             </div> -->
         </template>
         <template #doc-footer-before>
-            <!-- 文档页脚前 - 原评论系统位置 -->
             <!-- <Giscus /> -->
             <Twikoo />
         </template>

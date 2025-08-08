@@ -1,5 +1,5 @@
 <template>
-    <div class="custom-navbar" v-if="isMobile">
+    <div class="custom-navbar" v-if="isMobile && lang === 'zh-CN'">
         <div class="custom-navbar-item">
             <div class="link-background">
                 <a href="/pages/bookmark">
@@ -12,6 +12,9 @@
 
 <script setup>
 import { ref ,onMounted,onBeforeUnmount} from 'vue';
+import { useData } from 'vitepress'
+
+const { lang } = useData()
 
 const isMobile = ref(false)
 
