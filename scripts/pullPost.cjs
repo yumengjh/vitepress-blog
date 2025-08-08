@@ -22,6 +22,16 @@ async function copyDirTo(src, dest) {
   }
 }
 
+async function ensureDirectory(dirPath) {
+  try {
+    await fs.access(dirPath);
+  } catch (err) {
+    // 如果访问失败，说明文件夹不存在，需要创建
+    await fs.mkdir(dirPath, { recursive: true });
+    console.log(`📁 ${dirPath} 文件夹已创建`);
+  }
+}
+
 async function fetchDocs() {
   console.log('🚀 开始拉取私有仓库文档...');
 
@@ -55,24 +65,59 @@ async function fetchDocs() {
     await deleteFolder('scripts');
     await deleteFolder('.github');
 
-
     console.log('🗑️ 删除.git、LICENSE、README.md 完成');
 
-    // 清空目标 docs 文件夹
-    // await fs.rm('./docs', { recursive: true, force: true });
-    // await fs.mkdir('./docs', { recursive: true });
+    // 确保多语言目录存在
+    await ensureDirectory('posts');
+    await ensureDirectory('en/posts');
+    await ensureDirectory('ja/posts');
 
-    // 判断是否存在posts文件夹，如果不存在则创建
-    try {
-      await fs.access('posts');
-    } catch (err) {
-      // 如果访问失败，说明posts文件夹不存在，需要创建
-      await fs.mkdir('posts', { recursive: true });
-      console.log('📁 posts 文件夹已创建');
+    // 多语言文档复制配置
+    const copyConfigs = [
+      {
+        src: 'temp-docs',
+        dest: 'posts',
+        description: '中文文档'
+      },
+      {
+        src: 'temp-docs/en',
+        dest: 'en/posts',
+        description: '英文文档'
+      },
+      {
+        src: 'temp-docs/ja',
+        dest: 'ja/posts',
+        description: '日文文档'
+      }
+    ];
+
+    // 执行多语言文档复制
+    for (const config of copyConfigs) {
+      try {
+        // 检查源目录是否存在
+        const srcExists = await fs.access(config.src).then(() => true).catch(() => false);
+        
+        if (srcExists) {
+          // 获取源目录下的所有.md文件
+          const entries = await fs.readdir(config.src, { withFileTypes: true });
+          const mdFiles = entries.filter(entry => 
+            entry.isFile() && entry.name.endsWith('.md')
+          );
+
+          if (mdFiles.length > 0) {
+            console.log(`📝 开始复制${config.description}...`);
+            await copyDirTo(config.src, config.dest);
+            console.log(`✅ ${config.description}复制完成，共 ${mdFiles.length} 个文件`);
+          } else {
+            console.log(`ℹ️ ${config.description}目录为空，跳过复制`);
+          }
+        } else {
+          console.log(`ℹ️ ${config.description}源目录不存在，跳过复制`);
+        }
+      } catch (err) {
+        console.warn(`⚠️ 复制${config.description}时出错:`, err.message);
+      }
     }
-
-    // 复制文档：用Node.js原生方法跨平台复制
-    await copyDirTo('temp-docs', 'posts');
 
     // 删除临时文件夹，若遇 ENOTEMPTY 错误则重试
     async function removeTempDocs(retry = 3) {
@@ -95,7 +140,7 @@ async function fetchDocs() {
     }
     await removeTempDocs();
 
-    console.log('✅ 云端文档合并至 posts/ 完成');
+    console.log('✅ 多语言云端文档拉取完成');
   } catch (err) {
     console.error('❌ 拉取文档失败:', err);
     process.exit(1);
