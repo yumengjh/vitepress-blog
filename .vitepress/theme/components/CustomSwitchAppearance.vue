@@ -1,8 +1,6 @@
-@ -1,118 +0,0 @@
 <template>
   <button
     class="VPSwitchAppearance"
-    title="🌏"
     @click="toggle"
   >
     <div class="sun">
