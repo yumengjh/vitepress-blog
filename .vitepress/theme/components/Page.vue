@@ -154,12 +154,12 @@ onMounted(() => {
   font-size: 1.2rem;
   line-height: 1.4;
   border: none;
-  display: flex;
-  gap: 0.5rem;
 }
 
 .sticky-icon {
   fill: var(--vp-c-text-1);
+  position: absolute;
+  margin-left: 0.3rem;
 }
 
 .post-title a {
