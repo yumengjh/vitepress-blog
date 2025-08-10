@@ -6,7 +6,7 @@ import { RssPlugin } from 'vitepress-plugin-rss'
 import { fileURLToPath } from 'url'
 import { pagefindPlugin } from 'vitepress-plugin-pagefind'
 //每页的文章数量
-const pageSize = 5
+const pageSize = 100
 
 // RSS 配置
 const baseUrl = 'https://blog.yumeng.icu'

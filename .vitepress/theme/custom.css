@@ -1,6 +1,6 @@
 :root {
     /* 覆盖配置 */
-    --vp-code-color: #3451b2;
+    --vp-code-color: var(--vp-c-text-1);
     /* --vp-c-bg: #fdfdfd; */
     /* --vp-c-indigo-1: #2a8b5e; */
     /* --vp-c-indigo-2: #30a46c; */
@@ -37,7 +37,7 @@
     /* --vp-c-indigo-3: #1f7d51; */
     /* --vp-c-bg: #161618; */
     --vp-c-gutter: var(--vp-c-divider);
-    --vp-code-color: #a8b1ff;
+    --vp-code-color: var(--vp-c-text-1);
     --yu-theme-title: #fff;
     --vp-custom-block-tip-border: #747bff;
     --vp-custom-block-warning-border: #cc8400;
@@ -352,6 +352,11 @@ html {
     scrollbar-gutter: stable;
 }
 
+.VPLocalNav {
+    /* border: none !important; */
+    background-color: transparent !important;
+    backdrop-filter: blur(1px);
+}
 
 
 .VPSocialLink:hover {
