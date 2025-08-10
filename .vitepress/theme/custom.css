@@ -353,7 +353,7 @@ html {
 }
 
 .VPLocalNav {
-    /* border: none !important; */
+    border: none !important;
     background-color: transparent !important;
     backdrop-filter: blur(1px);
 }
