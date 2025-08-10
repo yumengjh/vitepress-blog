@@ -130,9 +130,9 @@ export default {
             nextTick(() => {
                 // 使用 setTimeout 确保在下一个事件循环中执行
                 setTimeout(() => {
-                    trackOutboundLinks();
+                    // trackOutboundLinks();
                     // 设置DOM变化观察器
-                    setupOutboundLinkObserver();
+                    // setupOutboundLinkObserver();
                 }, 100);
             });
         });
@@ -152,9 +152,9 @@ export default {
 
                 // 路由变化后重新执行出站链接跟踪
                 setTimeout(() => {
-                    trackOutboundLinks();
+                    // trackOutboundLinks();
                     // 重新设置DOM变化观察器
-                    setupOutboundLinkObserver();
+                    // setupOutboundLinkObserver();
                 }, 100);
             })
         );
