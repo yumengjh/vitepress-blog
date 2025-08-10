@@ -20,6 +20,7 @@
     "globby": "^14.1.0",
     "gray-matter": "^4.0.3",
     "vitepress": "file:./package/vitepress-2.0.0-alpha.9.tgz",
+    "vitepress-plugin-google-analytics": "^1.0.2",
     "vitepress-plugin-nprogress": "^0.0.4",
     "vitepress-plugin-pagefind": "^0.4.13"
   },

@@ -23,6 +23,9 @@ import "vitepress-markdown-timeline/dist/theme/index.css";
 import { setupAutoAnchorOnScroll, internationalization } from './functions'
 import './custom.css'
 
+// Google Analytics
+import googleAnalytics from 'vitepress-plugin-google-analytics'
+
 // 工具函数导入
 import { useRoute, useData } from 'vitepress';
 import { onMounted, watch, nextTick, onUnmounted } from 'vue';
@@ -37,6 +40,9 @@ export default {
     ...DefaultTheme,
     Layout: NewLayout,
     enhanceApp(ctx) {
+        googleAnalytics({
+            id: 'G-RRQEZJHJ20' // 替换为您的 GoogleAnalytics ID，该 ID 应以“G-”开头
+        })
         // vitepressNprogress(ctx)
         ctx.app.component('Tags', Tags)
         ctx.app.component('Page', Page)
@@ -79,7 +85,7 @@ export default {
             if (observer) {
                 observer.disconnect();
             }
-            
+
             observer = new MutationObserver((mutations) => {
                 let shouldTrack = false;
                 mutations.forEach((mutation) => {
@@ -94,7 +100,7 @@ export default {
                         });
                     }
                 });
-                
+
                 if (shouldTrack) {
                     // 延迟执行以确保所有内容都已渲染
                     setTimeout(() => {
@@ -102,7 +108,7 @@ export default {
                     }, 50);
                 }
             });
-            
+
             observer.observe(document.body, {
                 childList: true,
                 subtree: true
