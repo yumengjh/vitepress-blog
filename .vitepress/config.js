@@ -35,7 +35,7 @@ export default defineConfig({
     description: '鱼梦江湖的个人博客，记录生活，分享技术。',
     ignoreDeadLinks: true,
     lastUpdated: true,
-    cleanUrls: true,
+    // cleanUrls: true,
     rewrites: {
         // 'posts/:name': ':name',
         // 'pages/:page': ':page',
@@ -101,7 +101,9 @@ export default defineConfig({
                 },
                 nav: [
                     { text: '首页', link: '/' },
+                    // { text: '分类', link: '/pages/categroy' },
                     { text: '标签', link: '/pages/tags' },
+                    // { text: '归档', link: '/pages/archives' },
                     { text: '书签', link: '/pages/bookmark' },
                     // { text: '聊天', link: 'https://chat.yumeng.icu' },
                     // { text: '备忘录', link: 'https://memo.yumeng.icu' },
@@ -112,6 +114,7 @@ export default defineConfig({
                     text: '最后更新时间'
                 },
                 website: {
+                    author: '鱼梦江湖',
                     // copyrightLink: '/pages/about',
                     turnPageNextText: '下一页',
                     turnPagePrevText: '上一页',
@@ -238,6 +241,7 @@ export default defineConfig({
                 },
                 nav: [
                     { text: 'Home', link: '/en/' },
+                    // { text: 'Category', link: '/en/pages/categroy' },
                     { text: 'Tags', link: '/en/pages/tags' },
                     // { text: 'Bookmarks', link: '/en/pages/bookmark' },
                     // { text: 'Chat', link: 'https://chat.yumeng.icu' },
@@ -246,6 +250,7 @@ export default defineConfig({
                     { text: 'About', link: '/en/pages/about' },
                 ],
                 website: {
+                    author: 'YuMeng',
                     turnPageNextText: 'Next',
                     turnPagePrevText: 'Previous',
                     SearchText: 'Search',
@@ -340,6 +345,7 @@ export default defineConfig({
                 },
                 nav: [
                     { text: 'ホーム', link: '/ja/' },
+                    // { text: 'カテゴリ', link: '/ja/pages/categroy' },
                     { text: 'ブックマーク', link: '/ja/pages/tags' },
                     // { text: 'Bookmarks', link: '/en/pages/bookmark' },
                     // { text: 'Chat', link: 'https://chat.yumeng.icu' },
@@ -348,6 +354,7 @@ export default defineConfig({
                     { text: '私について', link: '/ja/pages/about' },
                 ],
                 website: {
+                    author: '魚の夢',
                     turnPageNextText: '次へ',
                     turnPagePrevText: '前へ',
                     SearchText: '検索',

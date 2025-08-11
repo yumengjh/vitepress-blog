@@ -3,6 +3,8 @@ import NewLayout from './components/NewLayout.vue'
 import Tags from './components/Tags.vue'
 import Page from './components/Page.vue'
 import Bookmark from './components/bookmark.vue'
+// import Category from './components/Category.vue'
+// import Archives from './components/Archives.vue'
 
 // 代码块折叠
 // https://github.com/T-miracle/vitepress-plugin-codeblocks-fold/blob/main/README_zh.md
@@ -42,6 +44,8 @@ export default {
         ctx.app.component('Tags', Tags)
         ctx.app.component('Page', Page)
         ctx.app.component('Bookmark', Bookmark)
+        // ctx.app.component('Category', Category)
+        // ctx.app.component('Archives', Archives)
         // ctx.app.use(directives)
     },
     setup() {

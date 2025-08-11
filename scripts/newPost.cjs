@@ -14,6 +14,7 @@ const date = new Date().toISOString().split('T')[0]
 const frontmatter = `---
 title: ${title}
 date: ${date}
+update: ${date}
 category: Note
 tags: 
     - ${tags.split(',').join('\n    - ')}
@@ -27,6 +28,7 @@ publish: true
 AutoAnchor: false
 aside: false
 noSearch: false 
+author: 鱼梦江湖
 ---
 
 ::: details 目录
