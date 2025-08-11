@@ -1,5 +1,6 @@
 :root {
     /* 覆盖配置 */
+    --vp-code-font-size: 15px;
     --vp-code-color: var(--vp-c-text-1);
     /* --vp-c-bg: #fdfdfd; */
     /* --vp-c-indigo-1: #2a8b5e; */
