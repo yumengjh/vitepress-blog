@@ -13,7 +13,7 @@ const SUPPORTED_LANGUAGES = {
         label: '简体中文',
         lang: 'zh-CN',
         title: '鱼梦江湖',
-        postsDir: 'posts',
+        postsDir: 'post',
         outputDir: './',
         pageTitle: '鱼梦江湖'
     },
@@ -21,7 +21,7 @@ const SUPPORTED_LANGUAGES = {
         label: 'English',
         lang: 'en-US',
         title: 'YuMeng',
-        postsDir: 'en/posts',
+        postsDir: 'en/post',
         outputDir: './en/',
         pageTitle: 'YuMeng'
     },
@@ -29,7 +29,7 @@ const SUPPORTED_LANGUAGES = {
         label: '日本語',
         lang: 'ja-JP',
         title: '魚の夢',
-        postsDir: 'ja/posts',
+        postsDir: 'ja/post',
         outputDir: './ja/',
         pageTitle: '魚の夢'
     }

@@ -22,6 +22,7 @@ import "vitepress-markdown-timeline/dist/theme/index.css";
 // 自动锚点
 import { setupAutoAnchorOnScroll, internationalization } from './functions'
 import './custom.css'
+import './fonts.css'
 
 // 工具函数导入
 import { useRoute, useData } from 'vitepress';

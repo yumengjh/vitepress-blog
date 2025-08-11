@@ -74,26 +74,26 @@ async function fetchDocs() {
     console.log('删除.git、LICENSE、README.md 完成');
 
     // 确保多语言目录存在
-    await ensureDirectory('posts');
-    await ensureDirectory('en/posts');
-    await ensureDirectory('ja/posts');
+    await ensureDirectory('post');
+    await ensureDirectory('en/post');
+    await ensureDirectory('ja/post');
 
     // 多语言文档复制配置
     const copyConfigs = [
       {
         src: 'temp-docs',
-        dest: 'posts',
+        dest: 'post',
         description: '中文文档',
         excludeDirs: ['en', 'ja'] // 排除 en 和 ja 目录
       },
       {
         src: 'temp-docs/en',
-        dest: 'en/posts',
+        dest: 'en/post',
         description: '英文文档'
       },
       {
         src: 'temp-docs/ja',
-        dest: 'ja/posts',
+        dest: 'ja/post',
         description: '日文文档'
       }
     ];

@@ -21,4 +21,9 @@ no-uploading-files/
 .cursor/
 .env
 posts/
+post/
+index.md
+en/index.md
+ja/index.md
 page_*.md
+

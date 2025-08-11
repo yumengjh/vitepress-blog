@@ -1,6 +1,5 @@
 :root {
     /* 覆盖配置 */
-    --vp-code-font-size: 15px;
     --vp-code-color: var(--vp-c-text-1);
     /* --vp-c-bg: #fdfdfd; */
     /* --vp-c-indigo-1: #2a8b5e; */
@@ -140,10 +139,48 @@ h3 {
     font-weight: 500 !important;
 }
 
-p {
+.vp-doc p {
     font-size: 15px !important;
 }
 
+
+
+/* 仿语雀代码块 */
+code:not(.shiki code):not(.shiki) {
+    font-family: "JetBrains Mono", "Fira Code", "Source Code Pro", "Roboto Mono", monospace;
+    font-size: 0.9em;
+    /* 内联代码略比正文小一点 */
+    font-weight: 500;
+    /* 适度偏中等厚度 */
+    padding: 0em 0.36em !important;
+    /* 内边距，使代码有“块感” */
+    border-radius: 6px;
+    /* 微圆角，语雀风格 */
+    background: rgba(27, 31, 35, 0.06);
+    /* 浅灰或带微色背景 */
+    border: 1px solid rgba(27, 31, 35, 0.06);
+    /* 轻微边框，增强层次 */
+    line-height: 1;
+    /* 防止换行导致高度异常 */
+    white-space: nowrap;
+    /* 大多数内联 code 不换行 */
+    vertical-align: baseline;
+    letter-spacing: 0.01em;
+    /* 细微调整字间距 */
+    -webkit-font-smoothing: antialiased;
+    font-variant-ligatures: contextual;
+    /* 连字支持（如果字体有） */
+}
+
+.dark code:not(.shiki code):not(.shiki) {
+    background: #272a2f;
+    border: 1px solid #414141;
+}
+
+.vp-doc div[class*='language-'] {
+    /* background-color: transparent !important; */
+    border: 1px solid var(--vp-c-divider);
+}
 
 .VPNavBarTitle .title,
 .site-footer .title {
@@ -154,7 +191,7 @@ p {
 }
 
 .VPNav {
-    /* position: absolute !important; */
+    position: absolute !important;
 }
 
 .VPContent {

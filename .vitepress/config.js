@@ -5,6 +5,7 @@ import timeline from "vitepress-markdown-timeline";
 import { RssPlugin } from 'vitepress-plugin-rss'
 import { fileURLToPath } from 'url'
 import { pagefindPlugin } from 'vitepress-plugin-pagefind'
+
 //每页的文章数量
 const pageSize = 100
 
@@ -34,7 +35,7 @@ export default defineConfig({
     description: '鱼梦江湖的个人博客，记录生活，分享技术。',
     ignoreDeadLinks: true,
     lastUpdated: true,
-    // cleanUrls: true,
+    cleanUrls: true,
     rewrites: {
         // 'posts/:name': ':name',
         // 'pages/:page': ':page',
@@ -44,7 +45,7 @@ export default defineConfig({
         //     light: 'vitesse-light',      // 浅色模式用的主题
         //     dark: 'vitesse-dark'        // 深色模式用的主题
         // },
-        // lineNumbers: true,
+        lineNumbers: true,
         config: (md) => {
             // use more markdown-it plugins!
             // md.use(mdItCustomAttrs, 'image', {
@@ -65,7 +66,8 @@ export default defineConfig({
         ['link', { rel: 'icon', href: 'https://image.yumeng.icu/images/logo.png' }],
         ['meta', { name: 'author', content: 'YuMeng' }],
         ['meta', { name: 'keywords', content: '博客,前端,JavaScript' }],
-        ['script', { defer: true, src: 'https://monitor.yumeng.icu/script.js', 'data-website-id': 'e4835023-fa4d-408f-8988-b1738d85425c' }]
+        // ['script', { defer: true, src: 'https://monitor.yumeng.icu/script.js', 'data-website-id': 'e4835023-fa4d-408f-8988-b1738d85425c' }],
+        // ['link', { href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap', rel: 'stylesheet' }]
     ],
     locales: {
         root: {

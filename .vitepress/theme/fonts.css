@@ -1,0 +1,26 @@
+/* JetBrains Mono - 正常体 */
+@font-face {
+    font-family: 'JetBrains Mono';
+    src: url('/fonts/JetBrains_Mono/JetBrainsMono-VariableFont_wght.woff2') format('woff2');
+    font-weight: 400; /* 变体字体可覆盖多个权重 */
+    font-style: normal;
+    font-display: swap;
+  }
+  
+  /* JetBrains Mono - 斜体 */
+  @font-face {
+    font-family: 'JetBrains Mono';
+    src: url('/fonts/JetBrains_Mono/JetBrainsMono-Italic-VariableFont_wght.woff2') format('woff2');
+    font-weight: 400;
+    font-style: italic;
+    font-display: swap;
+  }
+  
+  /* ZCOOL QingKe HuangYou - 正常体 */
+  @font-face {
+    font-family: 'ZCOOL QingKe HuangYou';
+    src: url('/fonts/ZCOOL_QingKe_HuangYou/ZCOOLQingKeHuangYou-Regular.woff2') format('woff2');
+    font-weight: 400;
+    font-style: normal;
+    font-display: swap;
+  }
