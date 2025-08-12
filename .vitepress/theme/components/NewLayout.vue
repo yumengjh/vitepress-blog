@@ -34,7 +34,7 @@
                                 d="M509.387755 538.122449c-11.493878 0-20.897959-9.404082-20.897959-20.897959V256c0-11.493878 9.404082-20.897959 20.897959-20.897959s20.897959 9.404082 20.897959 20.897959v261.22449c0 11.493878-9.404082 20.897959-20.897959 20.897959z"
                                 fill="currentColor" p-id="8006"></path>
                         </svg>
-                        <span>
+                        <span :title="$frontmatter.date ? $frontmatter.date : '--'">
                             {{ $frontmatter.date?.substring(0, 10) }}
                         </span>
                     </span>
@@ -63,7 +63,7 @@
                                 d="M816.864 192l-304.96 46.72L206.912 192 160 192l0 578.128 20.176 0L488.432 864 496 864l32 0 7.36 0 0-5.76 308.256-88.096 20.176 0L863.792 192 816.864 192zM493.184 832 192 740.288 192 224l12.48 0L496 268.656 496 832 493.184 832zM831.776 740.224l-303.792 86.832L527.984 268.624 819.296 224l12.48 0L831.776 740.224z"
                                 p-id="11971" fill="currentColor"></path>
                         </svg>
-                        <span :title="updateText + ': ' + $frontmatter.update || '--'">
+                        <span :title="updateText + ': ' + ($frontmatter.update ? $frontmatter.update : '--')">
                             {{ $frontmatter.update?.substring(0, 10) || '--' }}
                         </span>
                     </span>
