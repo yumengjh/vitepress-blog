@@ -13,7 +13,7 @@
           <time>{{ article.frontMatter.date }}</time>
           <div v-if="article.frontMatter.tags" class="post-tags">
             <a v-for="tag in article.frontMatter.tags" :key="tag" class="post-tag"
-              :href="withBase(`/pages/tags?tag=${tag}`)" :title="`${tag} → `">
+              :href="getTagUrl(tag)" :title="`${tag} → `">
               <!-- <span style="margin-right: -5px;">#</span> -->
               {{ tag }}
             </a>
@@ -110,6 +110,19 @@ const getPageUrl = (pageNum) => {
     // 分页：如果有语言路径则返回 /{lang}/page_{num}.html，否则返回 /page_{num}.html
     const prefix = langPath ? `/${langPath}` : ''
     return withBase(`${prefix}/page_${pageNum}.html`)
+  }
+}
+
+// 生成标签链接
+const getTagUrl = (tag) => {
+  const langPath = getCurrentLangPath.value
+  
+  if (langPath) {
+    // 如果有语言路径，则跳转到对应语言的标签页面
+    return withBase(`/${langPath}/pages/tags?tag=${tag}`)
+  } else {
+    // 如果没有语言路径（中文），则跳转到中文标签页面
+    return withBase(`/pages/tags?tag=${tag}`)
   }
 }
 
