@@ -1,9 +1,5 @@
 <template>
     <Layout>
-        <template #nav-bar-content-after>
-            <!-- 导航栏内容后 -->
-            <CustomNavbar />
-        </template>
         <template #doc-before>
             <div class="post-info" v-if="!$frontmatter.page">
                 <div class="post-info-left">
@@ -69,30 +65,15 @@
                     </span>
                 </div>
             </div>
-
-            <!-- 文章简介 -->
-            <!-- <div class="post-description" v-if="$frontmatter.description && $frontmatter.date">
-                <p>{{ $frontmatter.description }}</p>
-            </div> -->
         </template>
         <template #doc-footer-before>
-            <!-- <Giscus /> -->
             <Twikoo />
         </template>
-        <!-- 6. 未找到页面插槽 -->
-        <template #not-found>
-            <!-- <NotFound /> -->
-        </template>
     </Layout>
-    <!-- <Copyright /> -->
 </template>
 
 <script setup>
 import DefaultTheme from 'vitepress/theme'
-// import Copyright from './Copyright.vue'
-import CustomNavbar from './CustomNavbar.vue'
-// import NotFound from './notfound.vue'
-// import Giscus from './giscus.vue'
 import Twikoo from './twikoo.vue'
 import { withBase, useData } from "vitepress"
 import { computed } from 'vue'
@@ -192,6 +173,7 @@ const displayUpdatedTime = computed(() => {
     text-decoration: none;
     font-size: 0.7.5rem;
     transition: opacity 0.2s;
+    color: var(--vp-c-text-3);
 }
 
 .post-tag:hover {
@@ -207,26 +189,10 @@ const displayUpdatedTime = computed(() => {
     gap: 4px;
 }
 
-/* 文章简介样式 */
-/* .post-description {
-    margin: 1rem 0 1.5rem;
-    padding: 12px 16px;
-    border-radius: 2px;
-    line-height: 1.6;
-    font-size: 0.95rem;
-    color: var(--vp-c-text-2);
-    border-left: 4px solid var(--vp-c-border);
-} */
-
-.post-description p {
-    margin: 0;
-}
-
 @media screen and (max-width: 768px) {
     .post-info {
         flex-direction: column;
         align-items: flex-start;
-        /* margin: 0.75rem 0 0rem; */
         gap: 10px;
     }
 

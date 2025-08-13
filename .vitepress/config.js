@@ -1,10 +1,14 @@
-import 'dotenv/config'  // 环境变量
+import 'dotenv/config'
 import { defineConfig } from 'vitepress'
 import { getPosts } from './theme/serverUtils'
 import timeline from "vitepress-markdown-timeline";
-import { RssPlugin } from 'vitepress-plugin-rss'
+// import { RssPlugin } from 'vitepress-plugin-rss'
 import { fileURLToPath } from 'url'
-import { pagefindPlugin } from 'vitepress-plugin-pagefind'
+// import { pagefindPlugin } from 'vitepress-plugin-pagefind'
+
+import zhConfig from './config/zh.config'
+import enConfig from './config/en.config'
+import jaConfig from './config/ja.config';
 
 //每页的文章数量
 const pageSize = 100
@@ -35,7 +39,9 @@ export default defineConfig({
     description: '鱼梦江湖的个人博客，记录生活，分享技术。',
     ignoreDeadLinks: true,
     lastUpdated: true,
-    // cleanUrls: true,
+    cleanUrls: false,
+
+    // 重定向规则
     rewrites: {
         // 'posts/:name': ':name',
         // 'pages/:page': ':page',
@@ -47,10 +53,6 @@ export default defineConfig({
         // },
         lineNumbers: true,
         config: (md) => {
-            // use more markdown-it plugins!
-            // md.use(mdItCustomAttrs, 'image', {
-            //     'data-fancybox': "gallery"
-            // })
             md.use(timeline);
         },
         image: {
@@ -62,378 +64,20 @@ export default defineConfig({
     },
     head: [
         ["link", { rel: "alternate", type: "application/rss+xml", title: "RSS Feed", href: "/feed.xml" }],  // 使浏览器能够自动发现 RSS 源
-        // ['link', { rel: 'icon', href: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg' }],
         ['link', { rel: 'icon', href: 'https://image.yumeng.icu/images/logo.png' }],
         ['meta', { name: 'author', content: 'YuMeng' }],
         ['meta', { name: 'keywords', content: '博客,前端,JavaScript' }],
         // ['script', { defer: true, src: 'https://monitor.yumeng.icu/script.js', 'data-website-id': 'e4835023-fa4d-408f-8988-b1738d85425c' }],
-        // ['link', { href: 'https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&display=swap', rel: 'stylesheet' }]
     ],
     locales: {
-        root: {
-            label: '简体中文',
-            lang: 'zh-CN',
-            title: '鱼梦江湖',
-            themeConfig: {
-                darkModeSwitchLabel: '主题',
-                lightModeSwitchTitle: '浅色模式',
-                darkModeSwitchTitle: '深色模式',
-                returnToTopLabel: '返回顶部',
-                footer: {
-                    message: '如有转载或 CV 的请标注本站原文地址',
-                    copyright: `版权所有 © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/pages/about">鱼梦江湖</a>
-                    <br>
-                    部署平台：
-                    <a href="https://yumeng.icu" target="_blank">Netlify</a> |
-                    <a href="https://blog.yumeng.icu" target="_blank">Vercel</a> |    
-                    <a href="https://www.yumeng.icu" target="_blank">Server</a>
-                    `
-                },
-                notFound: {
-                    code: 404,
-                    title: '页面不存在',
-                    quote: '但是，如果你不改变方向，如果你继续寻找，你最终可能会到达你要去的地方。',
-                    linkText: '返回首页',
-                },
-                outline: {
-                    label: '文章摘要',
-                    level: [2, 3]
-                },
-                nav: [
-                    { text: '首页', link: '/' },
-                    // { text: '分类', link: '/pages/categroy' },
-                    { text: '标签', link: '/pages/tags' },
-                    // { text: '归档', link: '/pages/archives' },
-                    { text: '书签', link: '/pages/bookmark' },
-                    // { text: '聊天', link: 'https://chat.yumeng.icu' },
-                    // { text: '备忘录', link: 'https://memo.yumeng.icu' },
-                    // { text: '开发', link: 'https://dev.yumeng.icu' },
-                    { text: '关于', link: '/pages/about' },
-                ],
-                lastUpdated: {
-                    text: '最后更新时间'
-                },
-                website: {
-                    author: '鱼梦江湖',
-                    // copyrightLink: '/pages/about',
-                    turnPageNextText: '下一页',
-                    turnPagePrevText: '上一页',
-                    SearchText: '搜索文章',
-                    showPrevNextBtn: true,
-                    updateText: '更新',
-                    UpdateTextsuffix: {
-                        front: '前',
-                        back: '后'
-                    },
-                    RelativeTimeText: {
-                        now: '刚刚',
-                        minute: '分钟',
-                        hour: '小时',
-                        day: '天'
-                    }
-                },
-                search: {
-                    provider: 'algolia',
-                    options: {
-                        appId: process.env.VITE_ALGOLIA_APP_ID || '',
-                        apiKey: process.env.VITE_ALGOLIA_API_KEY || '',
-                        indexName: process.env.VITE_ALGOLIA_INDEX_NAME || '',
-                        askAi: process.env.VITE_ALGOLIA_ASK_AI || '',
-                        placeholder: '搜索文章',
-                        translations: {
-                            button: {
-                                buttonText: '搜索文章',
-                                buttonAriaLabel: '搜索'
-                            },
-                            modal: {
-                                searchBox: {
-                                    clearButtonTitle: '清除查询条件',
-                                    clearButtonAriaLabel: '清除查询条件',
-                                    closeButtonText: '关闭',
-                                    closeButtonAriaLabel: '关闭',
-                                    placeholderText: '搜索文章',
-                                    placeholderTextAskAi: '向 AI 提问：',
-                                    placeholderTextAskAiStreaming: '回答中...',
-                                    searchInputLabel: '搜索',
-                                    backToKeywordSearchButtonText: '返回关键字搜索',
-                                    backToKeywordSearchButtonAriaLabel: '返回关键字搜索'
-                                },
-                                startScreen: {
-                                    recentSearchesTitle: '搜索历史',
-                                    noRecentSearchesText: '没有搜索历史',
-                                    saveRecentSearchButtonTitle: '保存至搜索历史',
-                                    removeRecentSearchButtonTitle: '从搜索历史中移除',
-                                    favoriteSearchesTitle: '收藏',
-                                    removeFavoriteSearchButtonTitle: '从收藏中移除',
-                                    recentConversationsTitle: '最近的对话',
-                                    removeRecentConversationButtonTitle: '从历史记录中删除对话'
-                                },
-                                errorScreen: {
-                                    titleText: '无法获取结果',
-                                    helpText: '你可能需要检查你的网络连接'
-                                },
-                                noResultsScreen: {
-                                    noResultsText: '无法找到相关结果',
-                                    suggestedQueryText: '你可以尝试查询',
-                                    reportMissingResultsText: '你认为该查询应该有结果？',
-                                    reportMissingResultsLinkText: '点击反馈'
-                                },
-                                resultsScreen: {
-                                    askAiPlaceholder: '向 AI 提问： '
-                                },
-                                askAiScreen: {
-                                    disclaimerText: '答案由 AI 生成，可能不准确，请自行验证。',
-                                    relatedSourcesText: '相关来源',
-                                    thinkingText: '思考中...',
-                                    copyButtonText: '复制',
-                                    copyButtonCopiedText: '已复制！',
-                                    copyButtonTitle: '复制',
-                                    likeButtonTitle: '赞',
-                                    dislikeButtonTitle: '踩',
-                                    thanksForFeedbackText: '感谢你的反馈！',
-                                    preToolCallText: '搜索中...',
-                                    duringToolCallText: '搜索 ',
-                                    afterToolCallText: '已搜索',
-                                    aggregatedToolCallText: '已搜索'
-                                },
-                                footer: {
-                                    selectText: '选择',
-                                    submitQuestionText: '提交问题',
-                                    selectKeyAriaLabel: 'Enter 键',
-                                    navigateText: '切换',
-                                    navigateUpKeyAriaLabel: '向上箭头',
-                                    navigateDownKeyAriaLabel: '向下箭头',
-                                    closeText: '关闭',
-                                    backToSearchText: '返回搜索',
-                                    closeKeyAriaLabel: 'Esc 键',
-                                    poweredByText: '搜索提供者'
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        en: {
-            label: 'English',
-            lang: 'en-US',
-            title: 'YuMeng',
-            themeConfig: {
-                footer: {
-                    message: 'If there is a reprint, please mark this site',
-                    copyright: `Copyright © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/en/pages/about">YuMeng</a>
-                    <br>
-                    Deploy Platform:
-                    <a href="https://yumeng.icu/en" target="_blank">Netlify</a> |
-                    <a href="https://blog.yumeng.icu/en" target="_blank">Vercel</a> |    
-                    <a href="https://www.yumeng.icu/en" target="_blank">Server</a>
-                    `
-                },
-                notFound: {
-                    code: 404,
-                    title: 'PAGE NOT FOUND',
-                    quote: "But if you don't change your direction, and if you keep looking, you may end up where you are heading.",
-                    linkText: 'Take me home',
-                },
-                outline: {
-                    label: 'Table of Contents',
-                    level: [2, 3]
-                },
-                nav: [
-                    { text: 'Home', link: '/en/' },
-                    // { text: 'Category', link: '/en/pages/categroy' },
-                    { text: 'Tags', link: '/en/pages/tags' },
-                    // { text: 'Bookmarks', link: '/en/pages/bookmark' },
-                    // { text: 'Chat', link: 'https://chat.yumeng.icu' },
-                    // { text: 'Memo', link: 'https://memo.yumeng.icu' },
-                    // { text: 'Dev', link: 'https://dev.yumeng.icu' },
-                    { text: 'About', link: '/en/pages/about' },
-                ],
-                website: {
-                    author: 'YuMeng',
-                    turnPageNextText: 'Next',
-                    turnPagePrevText: 'Previous',
-                    SearchText: 'Search',
-                    // copyrightLink: 'en/pages/about',
-                    showPrevNextBtn: true,
-                    updateText: 'Update',
-                    RelativeTimeText: {
-                        now: ' Just now',
-                        minute: ' Minute',
-                        hour: ' Hour',
-                        day: ' Day'
-                    },
-                    UpdateTextsuffix: {
-                        front: ' Before',
-                        back: ' After'
-                    },
-                },
-                lastUpdated: {
-                    text: 'Last updated'
-                },
-                search: {
-                    provider: 'algolia',
-                    options: {
-                        appId: process.env.VITE_ALGOLIA_APP_ID || '',
-                        apiKey: process.env.VITE_ALGOLIA_API_KEY || '',
-                        indexName: process.env.VITE_ALGOLIA_INDEX_NAME || '',
-                        placeholder: 'Search article',
-                        translations: {
-                            button: {
-                                buttonText: 'Search',
-                                buttonAriaLabel: 'Search'
-                            },
-                            modal: {
-                                searchBox: {
-                                    resetButtonTitle: 'Clear query',
-                                    resetButtonAriaLabel: 'Clear query',
-                                    cancelButtonText: 'Cancel',
-                                    cancelButtonAriaLabel: 'Cancel'
-                                },
-                                startScreen: {
-                                    recentSearchesTitle: 'Recent',
-                                    noRecentSearchesText: 'No recent searches',
-                                    saveRecentSearchButtonTitle: 'Save to recent',
-                                    removeRecentSearchButtonTitle: 'Remove from recent'
-                                },
-                                errorScreen: {
-                                    titleText: 'Unable to fetch results',
-                                    helpText: 'You might want to check your network connection'
-                                },
-                                footer: {
-                                    selectText: 'Select',
-                                    navigateText: 'Navigate',
-                                    closeText: 'Close',
-                                    searchByText: 'Search by'
-                                },
-                                noResultsScreen: {
-                                    noResultsText: 'No results for',
-                                    suggestedQueryText: 'You can try',
-                                    reportMissingResultsText: 'Think this query should return results?',
-                                    reportMissingResultsLinkText: 'Let us know'
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        },
-        ja: {
-            label: '日本語',
-            lang: 'ja-JP',
-            title: '魚の夢',
-            themeConfig: {
-                footer: {
-                    message: '再版がある場合は、このサイトにマークを付けてください',
-                    copyright: `Copyright © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/ja/pages/about">魚の夢</a>
-                    <br>
-                    プラットフォームの展開：
-                    <a href="https://yumeng.icu/ja" target="_blank">Netlify</a> |
-                    <a href="https://blog.yumeng.icu/ja" target="_blank">Vercel</a> |    
-                    <a href="https://www.yumeng.icu/ja" target="_blank">Server</a>
-                    `
-                },
-                notFound: {
-                    code: 404,
-                    title: 'ページが見つかりません',
-                    quote: "方向を変えない場合、見続けると、あなたが向かっているところに到達するかもしれません。",
-                    linkText: 'ホームに戻る',
-                },
-                outline: {
-                    label: '目次',
-                    level: [2, 3]
-                },
-                nav: [
-                    { text: 'ホーム', link: '/ja/' },
-                    // { text: 'カテゴリ', link: '/ja/pages/categroy' },
-                    { text: 'ブックマーク', link: '/ja/pages/tags' },
-                    // { text: 'Bookmarks', link: '/en/pages/bookmark' },
-                    // { text: 'Chat', link: 'https://chat.yumeng.icu' },
-                    // { text: 'Memo', link: 'https://memo.yumeng.icu' },
-                    // { text: 'Dev', link: 'https://dev.yumeng.icu' },
-                    { text: '私について', link: '/ja/pages/about' },
-                ],
-                website: {
-                    author: '魚の夢',
-                    turnPageNextText: '次へ',
-                    turnPagePrevText: '前へ',
-                    SearchText: '検索',
-                    // copyrightLink: 'en/pages/about',
-                    showPrevNextBtn: true,
-                    updateText: '更新',
-                    RelativeTimeText: {
-                        now: ' たった今',
-                        minute: ' 分',
-                        hour: ' 時間',
-                        day: ' 日'
-                    },
-                    UpdateTextsuffix: {
-                        front: ' 前',
-                        back: ' 後'
-                    },
-                },
-                lastUpdated: {
-                    text: '最終更新'
-                },
-                search: {
-                    provider: 'algolia',
-                    options: {
-                        appId: process.env.VITE_ALGOLIA_APP_ID || '',
-                        apiKey: process.env.VITE_ALGOLIA_API_KEY || '',
-                        indexName: process.env.VITE_ALGOLIA_INDEX_NAME || '',
-                        placeholder: '記事を検索',
-                        translations: {
-                            button: {
-                                buttonText: '検索',
-                                buttonAriaLabel: '検索'
-                            },
-                            modal: {
-                                searchBox: {
-                                    resetButtonTitle: 'クエリをクリア',
-                                    resetButtonAriaLabel: 'クエリをクリア',
-                                    cancelButtonText: 'キャンセル',
-                                    cancelButtonAriaLabel: 'キャンセル'
-                                },
-                                startScreen: {
-                                    recentSearchesTitle: '最近',
-                                    noRecentSearchesText: '最近の検索がありません',
-                                    saveRecentSearchButtonTitle: '最近に保存',
-                                    removeRecentSearchButtonTitle: '最近から削除'
-                                },
-                                errorScreen: {
-                                    titleText: '結果を取得できません',
-                                    helpText: 'ネットワーク接続を確認してください'
-                                },
-                                footer: {
-                                    selectText: '選択',
-                                    navigateText: 'ナビゲート',
-                                    closeText: '閉じる',
-                                    searchByText: '検索'
-                                },
-                                noResultsScreen: {
-                                    noResultsText: '結果がありません',
-                                    suggestedQueryText: '試してください',
-                                    reportMissingResultsText: 'このクエリが結果を返すべきですか？',
-                                    reportMissingResultsLinkText: 'お知らせください'
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        root: zhConfig,
+        en: enConfig,
+        ja: jaConfig
     },
     themeConfig: {
         search: {
             provider: 'algolia',
-            options: {
-            }
         },
-        // logo: {
-        //     light: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg?color=black',
-        //     dark: 'https://api.iconify.design/fluent-emoji-high-contrast:fish-cake-with-swirl.svg?color=white'
-        // },
-        // logo:'https://image.yumeng.icu/images/logo.png',
         externalLinkIcon: false,
         lastUpdated: {
             formatOptions: {

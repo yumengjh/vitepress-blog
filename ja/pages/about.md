@@ -25,7 +25,7 @@ zoomable: false
 ## 技術スタック
 
 <p>
-<img src="https://img.shields.io/badge/-NestJs-ea2845?logo=nestjs&logoColor=white" alt="Node.js" style="display: inline-block;" />&nbsp;
+<img src="https://img.shields.io/badge/-NestJs-ea2845?logo=nestjs&logoColor=white" alt="Nest.js" style="display: inline-block;" />&nbsp;
   <img src="https://img.shields.io/badge/-Node.js-D3D3D3?logo=Node.js&logoColor=339933" alt="Node.js" style="display: inline-block;" />&nbsp;
   <img src="https://img.shields.io/badge/Express-000000?logo=Express&logoColor=fff" alt="Express" style="display: inline-block;" />&nbsp;
   <img src="https://img.shields.io/badge/JavaScript-F7DF1E?logo=JavaScript&amp;logoColor=333" alt="JavaScript" style="display: inline-block;" />&nbsp;

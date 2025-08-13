@@ -4,23 +4,27 @@
             <div class="category-header">
                 <div class="category-title">
                     <svg class="category-icon" viewBox="0 0 24 24" width="20" height="20">
-                        <path d="M4 4C4 3.44772 4.44772 3 5 3H9C9.55228 3 10 3.44772 10 4V9C10 9.55228 9.55228 10 9 10H5C4.44772 10 4 9.55228 4 9V4Z" fill="currentColor"/>
-                        <path d="M14 4C14 3.44772 14.4477 3 15 3H19C19.5523 3 20 3.44772 20 4V9C20 9.55228 19.5523 10 19 10H15C14.4477 10 14 9.55228 14 9V4Z" fill="currentColor"/>
-                        <path d="M4 14C4 13.4477 4.44772 13 5 13H9C9.55228 13 10 13.4477 10 14V19C10 19.5523 9.55228 20 9 20H5C4.44772 20 4 19.5523 4 19V14Z" fill="currentColor"/>
-                        <path d="M14 14C14 13.4477 14.4477 13 15 13H19C19.5523 13 20 13.4477 20 14V19C20 19.5523 19.5523 20 19 20H15C14.4477 20 14 19.5523 14 19V14Z" fill="currentColor"/>
+                        <path
+                            d="M4 4C4 3.44772 4.44772 3 5 3H9C9.55228 3 10 3.44772 10 4V9C10 9.55228 9.55228 10 9 10H5C4.44772 10 4 9.55228 4 9V4Z"
+                            fill="currentColor" />
+                        <path
+                            d="M14 4C14 3.44772 14.4477 3 15 3H19C19.5523 3 20 3.44772 20 4V9C20 9.55228 19.5523 10 19 10H15C14.4477 10 14 9.55228 14 9V4Z"
+                            fill="currentColor" />
+                        <path
+                            d="M4 14C4 13.4477 4.44772 13 5 13H9C9.55228 13 10 13.4477 10 14V19C10 19.5523 9.55228 20 9 20H5C4.44772 20 4 19.5523 4 19V14Z"
+                            fill="currentColor" />
+                        <path
+                            d="M14 14C14 13.4477 14.4477 13 15 13H19C19.5523 13 20 13.4477 20 14V19C20 19.5523 19.5523 20 19 20H15C14.4477 20 14 19.5523 14 19V14Z"
+                            fill="currentColor" />
                     </svg>
                     <span class="category-name">{{ key }}</span>
                     <span class="post-count">{{ posts.length }}</span>
                 </div>
             </div>
-            
+
             <div class="posts-list">
-                <a 
-                    v-for="(article, index) in posts" 
-                    :key="`${key}-${index}`" 
-                    :href="withBase(article.regularPath)"
-                    class="post-item"
-                >
+                <a v-for="(article, index) in posts" :key="`${key}-${index}`" :href="withBase(article.regularPath)"
+                    class="post-item">
                     <div class="post-content">
                         <h3 class="post-title">{{ article.frontMatter.title }}</h3>
                         <!-- <p v-if="article.frontMatter.description" class="post-desc">
@@ -30,11 +34,7 @@
                     <div class="post-meta">
                         <time class="post-date">{{ formatDate(article.frontMatter.date) }}</time>
                         <div v-if="article.frontMatter.tags?.length" class="post-tags">
-                            <span 
-                                v-for="tag in article.frontMatter.tags.slice(0, 2)" 
-                                :key="tag" 
-                                class="tag"
-                            >
+                            <span v-for="tag in article.frontMatter.tags.slice(0, 2)" :key="tag" class="tag">
                                 {{ tag }}
                             </span>
                         </div>
@@ -46,8 +46,9 @@
         <!-- 空状态 -->
         <div v-if="Object.keys(data).length === 0" class="empty-state">
             <svg class="empty-icon" viewBox="0 0 24 24" width="48" height="48">
-                <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z" fill="currentColor"/>
-                <path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" fill="currentColor"/>
+                <path d="M19 5v14H5V5h14m0-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2z"
+                    fill="currentColor" />
+                <path d="M14 17H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" fill="currentColor" />
             </svg>
             <p>暂无分类文章</p>
         </div>
@@ -170,7 +171,7 @@ const formatDate = (dateStr) => {
 }
 
 .post-item:hover {
-    /* transform: translateY(-2px); */
+    transform: translateY(-2px);
 }
 
 .post-item:hover::before {
@@ -196,7 +197,7 @@ const formatDate = (dateStr) => {
     color: var(--vp-c-text-2);
     line-height: 1.6;
     display: -webkit-box;
-    -webkit-line-clamp: 2;
+    /* -webkit-line-clamp: 2; */
     -webkit-box-orient: vertical;
     overflow: hidden;
 }

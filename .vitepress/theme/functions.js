@@ -433,14 +433,3 @@ export function setupAutoAnchorOnScroll(frontmatter) {
     };
 }
 
-
-export function internationalization(frontmatter) {
-    replaceElementContent('.search-tip', frontmatter || '搜索');
-}
-
-export function replaceElementContent(selector, content) {
-    const el = document.querySelector(selector);
-    if (el) {
-        el.innerHTML = content;
-    }
-}

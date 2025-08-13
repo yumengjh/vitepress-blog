@@ -1,7 +1,7 @@
 {
   "name": "yumeng",
   "version": "1.0.0",
-  "description": "",
+  "description": "一个基于 VitePress 的现代化多语言极简博客主题，支持中文、英文、日文等多种语言",
   "main": "index.js",
   "scripts": {
     "dev": "vitepress dev --host 0.0.0.0",
@@ -19,7 +19,7 @@
     "fs-extra": "^11.3.0",
     "globby": "^14.1.0",
     "gray-matter": "^4.0.3",
-    "vitepress": "file:./package/vitepress-2.0.0-alpha.9-1.0.tgz",
+    "vitepress": "^1.6.4",
     "vitepress-plugin-nprogress": "^0.0.4",
     "vitepress-plugin-pagefind": "^0.4.13"
   },

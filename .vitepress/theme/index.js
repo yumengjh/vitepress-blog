@@ -12,17 +12,16 @@ import codeblocksFold from 'vitepress-plugin-codeblocks-fold'; // 导入方法
 import 'vitepress-plugin-codeblocks-fold/style/index.css'; // 导入样式
 
 // 进度条
-// import vitepressNprogress from 'vitepress-plugin-nprogress'
-// import 'vitepress-plugin-nprogress/lib/css/index.css'
+import vitepressNprogress from 'vitepress-plugin-nprogress'
+import 'vitepress-plugin-nprogress/lib/css/index.css'
 
 // 时间轴
 import "vitepress-markdown-timeline/dist/theme/index.css";
 
-// 指令
-// import directives from './utils/directives'
-
 // 自动锚点
-import { setupAutoAnchorOnScroll, internationalization } from './functions'
+import { setupAutoAnchorOnScroll } from './functions'
+
+// 自定义样式
 import './custom.css'
 import './fonts.css'
 
@@ -33,20 +32,20 @@ import {
     initImages,
     initZoom,
     updateErrorImages,
-    initImageTitles
+    initImageTitles,
+    moveElement
 } from './functions';
 
 export default {
     ...DefaultTheme,
     Layout: NewLayout,
     enhanceApp(ctx) {
-        // vitepressNprogress(ctx)
+        vitepressNprogress(ctx)
         ctx.app.component('Tags', Tags)
         ctx.app.component('Page', Page)
         ctx.app.component('Bookmark', Bookmark)
         // ctx.app.component('Category', Category)
         // ctx.app.component('Archives', Archives)
-        // ctx.app.use(directives)
     },
     setup() {
         const route = useRoute();
@@ -84,7 +83,7 @@ export default {
             if (observer) {
                 observer.disconnect();
             }
-            
+
             observer = new MutationObserver((mutations) => {
                 let shouldTrack = false;
                 mutations.forEach((mutation) => {
@@ -99,7 +98,7 @@ export default {
                         });
                     }
                 });
-                
+
                 if (shouldTrack) {
                     // 延迟执行以确保所有内容都已渲染
                     setTimeout(() => {
@@ -107,7 +106,7 @@ export default {
                     }, 50);
                 }
             });
-            
+
             observer.observe(document.body, {
                 childList: true,
                 subtree: true
@@ -128,8 +127,8 @@ export default {
             // 自动锚点
             initAutoAnchor();
 
-            // 国际化
-            // internationalization(theme.value.website.SearchText);
+
+
 
             // 确保DOM完全渲染后再执行出站链接跟踪
             nextTick(() => {
@@ -153,7 +152,9 @@ export default {
                 // 重新初始化图片标题显示
                 initImageTitles();
                 initAutoAnchor();
-                // internationalization(theme.value.website.SearchText);
+
+                // 将元信息移到一级标题下
+                // moveElement('.post-info', '.vp-doc h1', 'after')
 
                 // 路由变化后重新执行出站链接跟踪
                 setTimeout(() => {

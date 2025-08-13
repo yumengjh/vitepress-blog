@@ -289,7 +289,7 @@ onMounted(async () => {
   transition: background-color var(--bookmark-transition-duration);
 
   &:hover {
-    /* background-color: var(--vp-c-bg-soft); */
+    background-color: var(--vp-c-bg-soft);
   }
 
   .header-content {
@@ -389,7 +389,7 @@ onMounted(async () => {
     background-color: var(--vp-c-bg-soft);
 
     .title {
-      /* color: var(--vp-c-brand); */
+      color: var(--vp-c-brand);
     }
   }
 }
@@ -473,7 +473,7 @@ onMounted(async () => {
   color: var(--vp-c-text-2);
   line-height: 1.5;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  /* -webkit-line-clamp: 2; */
   -webkit-box-orient: vertical;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -532,11 +532,11 @@ time {
   /* background-color: var(--vp-c-bg-soft); */
   border-radius: var(--bookmark-border-radius);
   margin: 16px;
-
+/* 
   &.error {
-    /* color: var(--vp-c-danger-1); */
-    /* background-color: var(--vp-c-danger-soft); */
-  }
+    color: var(--vp-c-danger-1);
+    background-color: var(--vp-c-danger-soft);
+  } */
 }
 
 @keyframes spin {

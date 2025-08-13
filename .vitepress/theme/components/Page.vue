@@ -12,9 +12,8 @@
         <div class="post-meta">
           <time>{{ article.frontMatter.date }}</time>
           <div v-if="article.frontMatter.tags" class="post-tags">
-            <a v-for="tag in article.frontMatter.tags" :key="tag" class="post-tag"
-              :href="getTagUrl(tag)" :title="`${tag} → `">
-              <!-- <span style="margin-right: -5px;">#</span> -->
+            <a v-for="tag in article.frontMatter.tags" :key="tag" class="post-tag" :href="getTagUrl(tag)"
+              :title="`${tag} → `">
               {{ tag }}
             </a>
           </div>
@@ -29,10 +28,6 @@
       <template v-if="theme.website.showPrevNextBtn">
         <a v-if="pageCurrent > 1" class="page-btn" :class="{ disabled: pageCurrent <= 1 }"
           :href="getPageUrl(pageCurrent - 1)">
-          <!-- <svg style="transform: scaleX(-1)" xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24">
-            <path fill="currentColor"
-              d="M6 14h2q0-1.475 1.075-2.488T11.65 10.5q.9 0 1.675.413T14.6 12H13v2h5V9h-2v1.55q-.8-.95-1.912-1.5T11.65 8.5q-2.375 0-4.012 1.6T6 14m6 8q-2.075 0-3.9-.788t-3.175-2.137T2.788 15.9T2 12t.788-3.9t2.137-3.175T8.1 2.788T12 2t3.9.788t3.175 2.137T21.213 8.1T22 12t-.788 3.9t-2.137 3.175t-3.175 2.138T12 22m0-2q3.35 0 5.675-2.325T20 12t-2.325-5.675T12 4T6.325 6.325T4 12t2.325 5.675T12 20m0-8" />
-          </svg> -->
           {{ theme.website.turnPagePrevText }}
         </a>
         <span v-else></span>
@@ -47,30 +42,7 @@
 
 <script setup>
 import { withBase, useData, useRoute } from 'vitepress'
-import { ref, onMounted, computed } from 'vue'
-let sentence = ref('Come on!');
-
-const getSentence = () => {
-  const defaultSentence = 'Come on!';
-  fetch('https://api.yumeng.icu/v1/quote')
-    .then(response => {
-      if (!response.ok) {
-        throw new Error('网络请求失败');
-      }
-      return response.json();
-    })
-    .then(data => {
-      if (data && data.data[0]) {
-        sentence.value = data.data[0].quote;
-      } else {
-        throw new Error('返回数据格式错误');
-      }
-    })
-    .catch(error => {
-      console.error('获取句子失败:', error);
-      sentence.value = defaultSentence;
-    });
-}
+import { computed } from 'vue'
 
 // 处理标题链接的悬浮效果
 const handleTitleHover = (event) => {
@@ -116,7 +88,7 @@ const getPageUrl = (pageNum) => {
 // 生成标签链接
 const getTagUrl = (tag) => {
   const langPath = getCurrentLangPath.value
-  
+
   if (langPath) {
     // 如果有语言路径，则跳转到对应语言的标签页面
     return withBase(`/${langPath}/pages/tags?tag=${tag}`)
@@ -126,9 +98,6 @@ const getTagUrl = (tag) => {
   }
 }
 
-onMounted(() => {
-  // getSentence(); 
-})
 </script>
 
 <style scoped>
@@ -170,7 +139,6 @@ onMounted(() => {
   color: var(--vp-c-text-1);
   text-decoration: none;
   transition: color 0.2s;
-  /* font-weight: bold; */
   position: relative;
 }
 
@@ -178,9 +146,8 @@ onMounted(() => {
   color: var(--vp-c-text-1);
   text-decoration: none;
   transition: color 0.2s;
-  /* font-weight: bold; */
   position: relative;
-  background-image: linear-gradient(var(--vp-c-text-1));
+  background-image: linear-gradient(var(--yu-common-color-1));
   background-size: 0 2px;
   background-repeat: no-repeat;
   background-position: var(--hover-origin, 0%) bottom;
@@ -188,7 +155,7 @@ onMounted(() => {
 }
 
 .post-title a:hover {
-  background-size: 100% 2px;
+  background-size: 100% 30px;
 }
 
 .post-meta {
@@ -207,11 +174,8 @@ onMounted(() => {
 
 .post-tag {
   padding: 0rem 0.5rem;
-  /* font-weight: bold; */
   border-radius: 9999px;
-  /* background-color: var(--vp-c-bg-soft); */
   border: 1px solid var(--vp-c-divider);
-  /* font-size: 0.8rem; */
   color: var(--vp-c-text-1);
   text-decoration: none;
   transition: all 0.2s ease;
