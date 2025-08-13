@@ -81,18 +81,18 @@ async function fetchDocs() {
     // 多语言文档复制配置
     const copyConfigs = [
       {
-        src: 'temp-docs',
+        src: 'temp-docs/post-zh',
         dest: 'post',
         description: '中文文档',
         excludeDirs: ['en', 'ja'] // 排除 en 和 ja 目录
       },
       {
-        src: 'temp-docs/en',
+        src: 'temp-docs/post-en',
         dest: 'en/post',
         description: '英文文档'
       },
       {
-        src: 'temp-docs/ja',
+        src: 'temp-docs/post-ja',
         dest: 'ja/post',
         description: '日文文档'
       }
