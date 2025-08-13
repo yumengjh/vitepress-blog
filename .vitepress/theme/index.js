@@ -40,7 +40,7 @@ export default {
     ...DefaultTheme,
     Layout: NewLayout,
     enhanceApp(ctx) {
-        vitepressNprogress(ctx)
+        // vitepressNprogress(ctx)
         ctx.app.component('Tags', Tags)
         ctx.app.component('Page', Page)
         ctx.app.component('Bookmark', Bookmark)
