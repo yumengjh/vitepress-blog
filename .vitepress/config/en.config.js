@@ -5,13 +5,7 @@ export default {
     themeConfig: {
         footer: {
             message: 'If there is a reprint, please mark this site',
-            copyright: `Copyright © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/en/pages/about">YuMeng</a>
-            <br>
-            Deploy Platform:
-            <a href="https://yumeng.icu/en" target="_blank">Netlify</a> |
-            <a href="https://blog.yumeng.icu/en" target="_blank">Vercel</a> |    
-            <a href="https://www.yumeng.icu/en" target="_blank">Server</a>
-            `
+            copyright: `Copyright © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/en/pages/about">YuMeng</a>`
         },
         notFound: {
             code: 404,

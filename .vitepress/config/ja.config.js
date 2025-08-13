@@ -5,13 +5,7 @@ export default {
     themeConfig: {
         footer: {
             message: '再版がある場合は、このサイトにマークを付けてください',
-            copyright: `Copyright © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/ja/pages/about">魚の夢</a>
-            <br>
-            プラットフォームの展開：
-            <a href="https://yumeng.icu/ja" target="_blank">Netlify</a> |
-            <a href="https://blog.yumeng.icu/ja" target="_blank">Vercel</a> |    
-            <a href="https://www.yumeng.icu/ja" target="_blank">Server</a>
-            `
+            copyright: `Copyright © 2024-2025 <a style="text-decoration: none !important; font-weight: bold;" href="/ja/pages/about">魚の夢</a>`
         },
         notFound: {
             code: 404,
