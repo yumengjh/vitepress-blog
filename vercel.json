@@ -1,0 +1,12 @@
+{
+    "cleanUrls": false,
+    "trailingSlash": false,
+    "routes": [
+      {
+        "src": "/.*",
+        "dest": "/index.html",
+        "caseSensitive": true
+      }
+    ]
+  }
+  
