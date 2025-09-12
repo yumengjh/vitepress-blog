@@ -9,7 +9,7 @@
 
 基于 VitePress 的现代化多语言极简博客主题，支持中文、英文、日文等多种语言
 
-
+![](https://github.com/yumengjh/picx-images-hosting/raw/master/vitepress-blog/image.2a5dc6q3fs.webp)
 
 ---
 
